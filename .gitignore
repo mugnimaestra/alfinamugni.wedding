@@ -40,3 +40,30 @@ lerna-debug.log*
 # Yarn
 .yarn/*
 !.yarn/releases
+
+# Documentation
+docs/**/*.draft.md
+docs/**/*.tmp.md
+
+# Testing
+tests/coverage/
+tests/reports/
+tests/screenshots/
+tests/visual/baseline/
+tests/visual/diff/
+tests/visual/current/
+
+# Configuration
+config/**/*.local.*
+config/**/*.backup.*
+
+# Scripts
+scripts/logs/
+scripts/temp/
+
+# AI Context
+config/ai/**/*.cache
+config/ai/**/*.history
+
+# GitHub
+.github/**/*.draft.md

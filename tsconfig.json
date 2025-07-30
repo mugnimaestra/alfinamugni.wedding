@@ -20,5 +20,11 @@
       "~/*": ["./src/*"]
     }
   },
-  "include": ["src", "./*.d.ts", "./*.config.ts"]
+  "include": [
+    "src",
+    "./*.d.ts",
+    "./*.config.ts",
+    "scripts/**/*.js",
+    "config/**/*.js"
+  ]
 }
