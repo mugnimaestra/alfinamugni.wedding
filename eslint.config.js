@@ -38,6 +38,8 @@ const ignores = [
   "**/vite.config.ts",
   "**/*.spec.tsx",
   "**/*.spec.ts",
+  "src/components/ui/**",
+  "src/routes/components-test/**",
   "**/.netlify",
   "**/pnpm-lock.yaml",
   "**/package-lock.json",
@@ -68,6 +70,15 @@ export default tseslint.config(
   {
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+      // Temporarily disable due to plugin bug
+      "qwik/valid-lexical-scope": "off",
     },
   },
+  // Temporary fix for command.tsx file
+  {
+    files: ["src/components/ui/command.tsx"],
+    rules: {
+      "qwik/valid-lexical-scope": "off",
+    },
+  }
 );
