@@ -1,6 +1,6 @@
 # 💍 Alfina & Mugni's Wedding Website
 
-A beautiful, high-performance wedding website built with **Qwik** and modern web technologies. This project showcases the successful migration from a Pinterest UI React codebase to a production-ready Qwik application.
+A beautiful, high-performance wedding website built with **Qwik** and modern web technologies. This project showcases a production-ready wedding website with RSVP functionality, photo galleries, and event information.
 
 ![Qwik](https://img.shields.io/badge/Qwik-Framework-0093D0?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIwIDE5SDE2VjE1aDR2NFoiIGZpbGw9IiMwMDkzRDAiLz4KPHBhdGggZD0iTTIwIDlIMTZ2NHY0SDhWMTRIMTZWMnoiIGZpbGw9IiMwMDkzRDAiLz4KPHBhdGggZD0iTTggMTlINHYtNFYxNWg0djRaIiBmaWxsPSIjMDA5M0QwIi8+CjxwYXRoIGQ9Ik04IDlINHY0VjEzSDRWMloiIGZpbGw9IiMwMDkzRDAiLz4KPC9zdmc+)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
@@ -9,6 +9,13 @@ A beautiful, high-performance wedding website built with **Qwik** and modern web
 
 ## ✨ Features
 
+### 🎨 **Wedding Website Features**
+- **RSVP Management**: Guest registration and attendance tracking
+- **Photo Gallery**: Beautiful image gallery for wedding memories
+- **Event Information**: Detailed schedule and venue information
+- **Contact Form**: Easy way for guests to reach out
+- **Our Story**: Timeline of the couple's journey
+
 ### 🎨 **Modern UI Components**
 - **35+ Reusable Components**: Complete component library with Qwik signals
 - **Wedding-Themed Design**: Specialized components for RSVP, vendors, and galleries
@@ -16,15 +23,15 @@ A beautiful, high-performance wedding website built with **Qwik** and modern web
 - **Accessibility First**: WCAG AA compliance with full keyboard navigation
 
 ### ⚡ **Performance Excellence**
-- **177.37 KB Bundle Size**: Ultra-efficient with 4.03 KB per component
-- **Resumable Architecture**: Qwik's instant loading capabilities
-- **Automatic Code Splitting**: Optimized bundle delivery
-- **Progressive Enhancement**: Enhanced user experience
+- **Ultra-fast Loading**: Qwik's resumable architecture for instant page loads
+- **Optimized Bundle Size**: Efficient code splitting and lazy loading
+- **SEO Friendly**: Server-side rendering for better search engine visibility
+- **Progressive Enhancement**: Enhanced user experience across all devices
 
 ### 🧪 **Development Experience**
 - **Comprehensive Testing**: Vitest framework with component test suites
-- **TypeScript Support**: Complete type safety
-- **CI/CD Pipeline**: Automated testing and deployment
+- **TypeScript Support**: Complete type safety throughout the application
+- **Modern Tooling**: Vite for fast development and building
 - **Documentation**: Complete usage guides and API reference
 
 ## 🚀 Quick Start
@@ -37,8 +44,8 @@ A beautiful, high-performance wedding website built with **Qwik** and modern web
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/wedding-website.git
-cd wedding-website
+git clone https://github.com/mugnimaestra/alfinamugni.wedding.git
+cd alfinamugni.wedding
 
 # Install dependencies
 npm install
@@ -87,16 +94,27 @@ npm run preview
 src/
 ├── components/
 │   ├── ui/              # UI component library (35+ components)
-│   ├── sections/        # Page sections (Hero, Contact, etc.)
-│   └── router-head/     # SEO and meta components
+│   ├── contact-section.tsx   # Contact form section
+│   ├── details-section.tsx   # Wedding details section
+│   ├── footer-section.tsx    # Website footer
+│   ├── gallery-section.tsx   # Photo gallery
+│   ├── hero-section.tsx      # Main hero section
+│   ├── navigation.tsx        # Site navigation
+│   ├── rsvp-section.tsx      # RSVP form
+│   ├── story-section.tsx     # Couple's story
+│   └── theme-provider.tsx    # Theme management
 ├── hooks/               # Custom Qwik hooks
+│   ├── use-mobile.tsx   # Mobile detection hook
+│   ├── use-toast.tsx    # Toast notification hook
+│   └── index.ts         # Hook exports
 ├── routes/              # File-based routing
 │   ├── index.tsx        # Homepage
 │   ├── components-test/ # Component testing page
 │   └── ...
 ├── lib/                 # Utility functions
 ├── utils/               # Helper functions
-└── ...
+├── global.css           # Global styles
+└── root.tsx             # App root component
 
 docs/                    # Documentation
 ├── components-usage-guide.md
@@ -108,9 +126,10 @@ tests/                   # Test suites
 ├── unit/               # Unit tests
 └── integration/        # Integration tests
 
-.github/workflows/      # CI/CD pipelines
-├── ci.yml             # Main CI pipeline
-└── automated-testing.yml
+public/                 # Static assets
+├── favicon.svg         # Site favicon
+├── manifest.json       # PWA manifest
+└── robots.txt          # Search engine instructions
 ```
 
 ## 🎯 Components Overview
@@ -193,11 +212,11 @@ const ThemeProvider = component$(() => {
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| Bundle Size | 177.37 KB | ✅ Excellent |
-| Components | 35+ | ✅ Complete |
-| Efficiency | 4.03 KB/component | ✅ Optimized |
+| Framework | Qwik | ✅ Cutting-edge |
+| Language | TypeScript | ✅ Type-safe |
+| Styling | Tailwind CSS | ✅ Utility-first |
 | Accessibility | WCAG AA | ✅ Compliant |
-| Lighthouse Score | 95+ | ✅ Excellent |
+| Performance | Excellent | ✅ Optimized |
 
 ## 🎨 Customization
 
@@ -318,15 +337,16 @@ npm run test:coverage
 
 ## 🤝 Contributing
 
+This is a private wedding website project. Contributions are currently limited to the wedding party and development team.
+
 ### Development Workflow
 
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/your-feature`
-3. **Make your changes**
-4. **Run tests**: `npm run test`
-5. **Commit your changes**: `git commit -am 'Add new feature'`
-6. **Push to the branch**: `git push origin feature/your-feature`
-7. **Create a Pull Request**
+1. **Create a feature branch**: `git checkout -b feature/your-feature`
+2. **Make your changes**
+3. **Run tests**: `npm run test`
+4. **Commit your changes**: `git commit -am 'Add new feature'`
+5. **Push to the branch**: `git push origin feature/your-feature`
+6. **Create a Pull Request**
 
 ### Code Standards
 
@@ -335,17 +355,18 @@ npm run test:coverage
 - Write tests for new components
 - Update documentation
 - Ensure accessibility compliance
+- Follow the project's styling guidelines
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is private and for personal use only.
 
 ## 🙏 Acknowledgments
 
-- **Qwik Team**: For the incredible framework
+- **Qwik Team**: For the incredible framework that makes this website lightning fast
 - **Builder.io**: For Qwik's innovative architecture
 - **Tailwind CSS**: For the utility-first CSS framework
-- **Pinterest UI**: For the original design inspiration
+- **Our Families**: For their love and support throughout our journey
 
 ## 📞 Support
 
@@ -354,7 +375,7 @@ If you have questions or need help:
 1. Check the [documentation](docs/)
 2. Review existing [components](src/components/ui/)
 3. Look at the [test page](http://localhost:5174/components-test)
-4. Open an [issue](https://github.com/your-username/wedding-website/issues)
+4. Open an [issue](https://github.com/mugnimaestra/alfinamugni.wedding/issues)
 
 ---
 
