@@ -96,7 +96,7 @@ bun run qwik         # Direct access to Qwik CLI commands
 **Framework**: Qwik v1.14.1 with Qwik City for routing
 **Styling**: Tailwind CSS v4.1.8 + custom wedding theme in CSS variables
 **Build Tool**: Vite 5.3.5
-**Package Manager**: Bun (preferred) or npm
+**Package Manager**: Bun (required - do not use npm)
 **Language**: TypeScript 5.4.5
 
 ### Key Directories

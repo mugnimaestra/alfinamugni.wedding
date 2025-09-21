@@ -19,11 +19,14 @@ export const Navigation = component$(() => {
   });
 
   const navItems = [
-    { id: "story-section", label: "Our Story" },
-    { id: "details", label: "Details" },
+    { id: "countdown", label: "Hitung Mundur" },
+    { id: "story-section", label: "Kisah Kami" },
+    { id: "details", label: "Detail Acara" },
+    { id: "gift", label: "Hadiah" },
     { id: "rsvp", label: "RSVP" },
-    { id: "gallery", label: "Gallery" },
-    { id: "contact", label: "Contact" },
+    { id: "wishes", label: "Ucapan" },
+    { id: "gallery", label: "Galeri" },
+    { id: "contact", label: "Kontak" },
   ];
 
   return (

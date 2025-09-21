@@ -8,12 +8,12 @@ export const ContactSection = component$(() => {
     >
       <div class="max-w-6xl mx-auto text-center">
         <h2 class="font-serif text-4xl md:text-6xl text-wedding-brown mb-16 font-light">
-          Contact Us
+          Hubungi Kami
         </h2>
 
         <p class="text-wedding-text-secondary text-lg md:text-xl leading-relaxed mb-16 max-w-3xl mx-auto">
-          For any questions or special requests, please don't hesitate to reach
-          out to us.
+          Untuk pertanyaan atau permintaan khusus, jangan ragu untuk
+          menghubungi kami.
         </p>
 
         <div class="grid md:grid-cols-2 gap-x-16 gap-y-12 max-w-4xl mx-auto">
@@ -26,7 +26,7 @@ export const ContactSection = component$(() => {
 
               <div class="space-y-3 text-wedding-text-muted">
                 <p class="text-center">
-                  Contact details will be shared closer to the wedding date
+                  Detail kontak akan dibagikan menjelang tanggal pernikahan
                 </p>
               </div>
             </div>
@@ -41,7 +41,7 @@ export const ContactSection = component$(() => {
 
               <div class="space-y-3 text-wedding-text-muted">
                 <p class="text-center">
-                  Contact details will be shared closer to the wedding date
+                  Detail kontak akan dibagikan menjelang tanggal pernikahan
                 </p>
               </div>
             </div>

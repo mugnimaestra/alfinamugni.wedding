@@ -8,19 +8,19 @@ import {
 const galleryPins = [
   {
     id: "pin-bali-sunset",
-    title: "Sunset Promises",
+    title: "Janji di Senja",
     description:
-      "We closed the evening barefoot on the sand, planning the future while the sky blushed for us.",
+      "Kami mengakhiri malam dengan bertelanjang kaki di pasir, merencanakan masa depan sementara langit merona untuk kami.",
     location: "Canggu, Bali",
-    date: "July 2024",
-    category: "Proposal",
+    date: "Juli 2024",
+    category: "Lamaran",
     image: {
       src: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
       alt: "Couple holding each other on a beach at sunset",
       width: 900,
       height: 1200,
     },
-    tags: ["Sunset", "Travel", "Promise"],
+    tags: ["Senja", "Perjalanan", "Janji"],
     badgeClass: "bg-white/85 text-wedding-text-secondary",
     avatarGradient: "from-wedding-sage/80 via-white to-wedding-cream",
   },
@@ -121,7 +121,7 @@ const galleryPins = [
       "A coffee stop along the coastal road turned into a ring reveal and tears in the passenger seat.",
     location: "Makassar Coast",
     date: "May 2024",
-    category: "Proposal",
+    category: "Lamaran",
     image: {
       src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80",
       alt: "Couple standing together on an empty road at sunset",
@@ -191,21 +191,21 @@ export const GallerySection = component$(() => {
             class="gallery-subheading text-xs uppercase tracking-[0.45em] text-wedding-text-muted"
             style={{ opacity: 0 }}
           >
-            Photo memories
+            Kenangan foto
           </p>
           <h2
             class="gallery-heading mt-4 font-serif text-4xl font-light text-wedding-brown md:text-6xl"
             style={{ opacity: 0 }}
           >
-            Pinterest Moments We Love
+            Momen Pinterest yang Kami Cinta
           </h2>
           <p
             class="gallery-description mx-auto mt-6 max-w-2xl text-lg text-wedding-text-muted"
             style={{ opacity: 0 }}
           >
-            A Pinterest-inspired wall of the little stories shaping our wedding —
-            from sunrise road trips to rainy-day planning sessions. Tap any pin to
-            feel the textures, tones, and tunes guiding our celebration.
+            Dinding yang terinspirasi Pinterest dari cerita-cerita kecil yang membentuk pernikahan kami —
+            dari perjalanan jalan raya saat matahari terbit hingga sesi perencanaan di hari hujan. Ketuk pin mana pun untuk
+            merasakan tekstur, nada, dan musik yang memandu perayaan kami.
           </p>
         </div>
 

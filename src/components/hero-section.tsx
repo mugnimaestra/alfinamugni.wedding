@@ -22,6 +22,20 @@ export const HeroSection = component$(() => {
       }}
     >
       <div style={{ maxWidth: "1024px", margin: "0 auto" }}>
+        <div
+          class="hero-bismillah"
+          style={{
+            fontSize: "28px",
+            fontFamily: "'Playfair Display', serif",
+            color: "var(--wedding-accent)",
+            marginBottom: "32px",
+            fontWeight: "400",
+            opacity: 0,
+          }}
+        >
+          بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
+        </div>
+
         <p
           class="hero-subtitle"
           style={{
@@ -32,7 +46,7 @@ export const HeroSection = component$(() => {
             opacity: 0,
           }}
         >
-          We're Getting Married!
+          Kami Akan Menikah!
         </p>
 
         <h1
@@ -86,7 +100,7 @@ export const HeroSection = component$(() => {
             opacity: 0,
           }}
         >
-          Join us for a celebration of love
+          Bergabunglah dalam perayaan cinta kami
         </p>
 
         <div
