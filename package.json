@@ -31,6 +31,7 @@
     "@builder.io/qwik-city": "^1.14.1",
     "@eslint/js": "latest",
     "@modular-forms/qwik": "^0.29.1",
+    "@qwikest/icons": "^0.0.13",
     "@tailwindcss/postcss": "4.0.0-alpha.30",
     "@tailwindcss/typography": "^0.5.16",
     "@testing-library/jest-dom": "^6.8.0",

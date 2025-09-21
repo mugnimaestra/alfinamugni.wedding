@@ -15,12 +15,20 @@ A beautiful, high-performance wedding website built with **Qwik** and modern web
 - **Event Information**: Detailed schedule and venue information
 - **Contact Form**: Easy way for guests to reach out
 - **Our Story**: Timeline of the couple's journey
+- **QR Code Section**: Easy mobile access with scannable QR codes
+- **Countdown Timer**: Live countdown to the wedding day
+- **Photo Upload**: Guest photo upload functionality
+- **Gift Registry**: Wedding gift management system
+- **Wishes Section**: Guest well-wishes and messages
+- **Admin Dashboard**: Administrative control panel
 
 ### 🎨 **Modern UI Components**
-- **35+ Reusable Components**: Complete component library with Qwik signals
+- **40+ Reusable Components**: Complete component library with Qwik optimization
 - **Wedding-Themed Design**: Specialized components for RSVP, vendors, and galleries
 - **Responsive Design**: Perfect experience on all devices
 - **Accessibility First**: WCAG AA compliance with full keyboard navigation
+- **Advanced Animations**: Smooth transitions and micro-interactions
+- **Dark/Light Themes**: Flexible theme management system
 
 ### ⚡ **Performance Excellence**
 - **Ultra-fast Loading**: Qwik's resumable architecture for instant page loads
@@ -91,46 +99,250 @@ npm run preview
 ## 📁 Project Structure
 
 ```
-src/
-├── components/
-│   ├── ui/              # UI component library (35+ components)
-│   ├── contact-section.tsx   # Contact form section
-│   ├── details-section.tsx   # Wedding details section
-│   ├── footer-section.tsx    # Website footer
-│   ├── gallery-section.tsx   # Photo gallery
-│   ├── hero-section.tsx      # Main hero section
-│   ├── navigation.tsx        # Site navigation
-│   ├── rsvp-section.tsx      # RSVP form
-│   ├── story-section.tsx     # Couple's story
-│   └── theme-provider.tsx    # Theme management
-├── hooks/               # Custom Qwik hooks
-│   ├── use-mobile.tsx   # Mobile detection hook
-│   ├── use-toast.tsx    # Toast notification hook
-│   └── index.ts         # Hook exports
-├── routes/              # File-based routing
-│   ├── index.tsx        # Homepage
-│   ├── components-test/ # Component testing page
-│   └── ...
-├── lib/                 # Utility functions
-├── utils/               # Helper functions
-├── global.css           # Global styles
-└── root.tsx             # App root component
-
-docs/                    # Documentation
-├── components-usage-guide.md
-├── migration-guide.md
-├── qwik-patterns.md
-└── deployment-guide.md
-
-tests/                   # Test suites
-├── unit/               # Unit tests
-└── integration/        # Integration tests
-
-public/                 # Static assets
-├── favicon.svg         # Site favicon
-├── manifest.json       # PWA manifest
-└── robots.txt          # Search engine instructions
+alfinamugni.wedding/
+├── src/                          # Main application source
+│   ├── components/               # Wedding website components
+│   │   ├── ui/                   # Reusable UI component library (40+ components)
+│   │   │   ├── button.tsx        # Flexible button with variants
+│   │   │   ├── input.tsx         # Accessible form inputs
+│   │   │   ├── card.tsx          # Content containers
+│   │   │   ├── dialog.tsx        # Modal dialogs
+│   │   │   ├── select.tsx        # Dropdown selections
+│   │   │   ├── toast.tsx         # Notification system
+│   │   │   └── ... (40+ UI components)
+│   │   ├── contact-section.tsx   # Contact information
+│   │   ├── countdown-section.tsx # Wedding countdown timer
+│   │   ├── details-section.tsx    # Event details
+│   │   ├── footer-section.tsx     # Website footer
+│   │   ├── gallery-section.tsx    # Photo gallery
+│   │   ├── gallery-upload-section.tsx # Photo upload functionality
+│   │   ├── gift-section.tsx       # Wedding gift registry
+│   │   ├── hero-section.tsx       # Main hero banner
+│   │   ├── hero-section-simple.tsx # Simplified hero
+│   │   ├── navigation.tsx         # Site navigation
+│   │   ├── qr-code-section.tsx    # QR code display
+│   │   ├── rsvp-section.tsx       # RSVP form
+│   │   ├── story-section.tsx      # Couple's story
+│   │   ├── theme-provider.tsx     # Theme management
+│   │   ├── wishes-section.tsx     # Guest well-wishes
+│   │   └── router-head/           # Route-specific head
+│   ├── hooks/                     # Custom Qwik hooks
+│   │   ├── use-gallery.ts         # Gallery state management
+│   │   ├── use-mobile.tsx         # Mobile detection
+│   │   ├── use-toast.ts           # Toast notifications
+│   │   └── index.ts               # Hook exports
+│   ├── routes/                    # File-based routing
+│   │   ├── index.tsx              # Homepage
+│   │   ├── admin/                 # Admin dashboard
+│   │   ├── components-test/       # Component testing page
+│   │   ├── gallery/               # Photo gallery page
+│   │   └── test.tsx               # Test page
+│   ├── services/                  # Business logic services
+│   │   └── gallery-service.ts     # Gallery operations
+│   ├── utils/                     # Helper functions
+│   │   └── animations.ts          # Animation utilities
+│   ├── lib/utils.ts               # Core utilities
+│   ├── global.css                 # Global styles
+│   └── root.tsx                   # App root component
+│
+├── config/                       # Configuration files
+│   ├── README.md                 # Config documentation
+│   ├── ai/                       # AI-powered tools config
+│   ├── deployment/               # Deployment configs
+│   └── development/               # Development configs
+│
+├── docs/                         # Comprehensive documentation
+│   ├── README.md                 # Documentation overview
+│   ├── architecture/             # System architecture docs
+│   ├── api/                      # API documentation
+│   ├── deployment/               # Deployment guides
+│   ├── development/              # Development guides
+│   ├── examples/                 # Usage examples
+│   ├── troubleshooting/          # Troubleshooting guides
+│   └── ... (15+ documentation files)
+│
+├── scripts/                      # Utility scripts
+│   ├── accessibility-audit.js    # Accessibility testing
+│   ├── ai-context-generator.js   # AI context generation
+│   ├── build-docs.js            # Documentation building
+│   ├── performance-benchmark.js  # Performance testing
+│   └── setup.sh                  # Project setup
+│
+├── tests/                        # Test suites
+│   ├── unit/                     # Unit tests (10+ test files)
+│   └── integration/              # Integration tests
+│
+├── public/                       # Static assets
+│   ├── favicon.svg               # Site favicon
+│   ├── manifest.json             # PWA manifest
+│   └── robots.txt                # SEO instructions
+│
+├── pinterest-ui/                 # Pinterest-inspired UI library
+│   └── components/               # Alternative UI components
+│
+└── [config files]                # package.json, tailwind.config.js, etc.
 ```
+
+## 🏗️ Architecture Overview
+
+### System Architecture Diagram
+
+```mermaid
+graph TD
+    A[Wedding Website] --> B[Frontend - Qwik]
+    A --> C[Backend Services]
+    A --> D[Static Assets]
+    
+    B --> E[Qwik Components]
+    B --> F[State Management]
+    B --> G[Routing]
+    
+    E --> H[UI Components]
+    E --> I[Wedding Sections]
+    E --> J[Interactive Features]
+    
+    H --> K[40+ Reusable Components]
+    I --> L[Hero, Story, RSVP, Gallery]
+    J --> M[QR Codes, Countdown, Wishes]
+    
+    F --> N[Qwik Signals]
+    F --> O[Reactive State]
+    
+    G --> P[File-based Routing]
+    G --> Q[Admin Dashboard]
+    
+    C --> R[Gallery Service]
+    C --> S[Form Handling]
+    
+    D --> T[Images]
+    D --> U[Icons]
+    D --> V[Fonts]
+```
+
+### Component Hierarchy
+
+```mermaid
+graph LR
+    A[Root Component] --> B[Theme Provider]
+    A --> C[Navigation]
+    A --> D[Main Content]
+    
+    D --> E[Hero Section]
+    D --> F[Story Section]
+    D --> G[Details Section]
+    D --> H[RSVP Section]
+    D --> I[Gallery Section]
+    D --> J[Contact Section]
+    D --> K[Footer Section]
+    
+    E --> L[Countdown Component]
+    E --> M[QR Code Component]
+    
+    H --> N[Form Components]
+    H --> O[Validation Logic]
+    
+    I --> P[Gallery Upload]
+    I --> Q[Photo Display]
+    
+    N --> R[Input Components]
+    N --> S[Button Components]
+    N --> T[Select Components]
+```
+
+### Technology Stack Architecture
+
+```mermaid
+flowchart TD
+    A[Framework] --> B[Qwik 1.14.1]
+    A --> C[Language: TypeScript 5.3+]
+    A --> D[Build Tool: Vite 5.3.5]
+    
+    B --> E[Performance: Resumability]
+    B --> F[Components: Lazy Loading]
+    B --> G[State: Signals]
+    
+    C --> H[Type Safety]
+    C --> I[Modern Features]
+    C --> J[Developer Experience]
+    
+    D --> K[Fast Development]
+    D --> L[Optimized Builds]
+    D --> M[Hot Reload]
+    
+    subgraph Styling
+        N[Tailwind CSS 4.1.8]
+        O[Custom Design System]
+        P[Wedding Theme]
+    end
+    
+    subgraph Testing
+        Q[Vitest]
+        R[Component Testing]
+        S[E2E Testing]
+    end
+    
+    subgraph Deployment
+        T[Static Generation]
+        U[CDN Optimization]
+        V[Performance Targets]
+    end
+```
+
+## 🎨 Wedding Website ASCII Art
+
+```
+     💒  WEDDING WEBSITE ARCHITECTURE  💒
+
+        ╔══════════════════════════════════════════════╗
+        ║              💍 Alfina & Mugni 💍              ║
+        ║           November 29, 2025 - Jakarta          ║
+        ║                                              ║
+        ║  ┌────────────────────────────────────────┐  ║
+        ║  │             MAIN SECTIONS              │  ║
+        ║  ├────────────────────────────────────────┤  ║
+        ║  │  🏠 Hero          📖 Story              │  ║
+        ║  │  📅 Details        🎁 RSVP               │  ║
+        ║  │  🖼️  Gallery       📞 Contact            │  ║
+        ║  │  🎉 Wishes         ⏰ Countdown          │  ║
+        ║  │  📱 QR Code        🔗 Navigation         │  ║
+        ║  └────────────────────────────────────────┘  ║
+        ║                                              ║
+        ║  ┌────────────────────────────────────────┐  ║
+        ║  │             TECHNOLOGIES               │  ║
+        ║  ├────────────────────────────────────────┤  ║
+        ║  │  ⚡ Qwik           🎨 Tailwind          │  ║
+        ║  │  📱 TypeScript     🧪 Vitest           │  ║
+        ║  │  🚀 Vite           📱 Responsive       │  ║
+        ║  │  ♿ Accessible      🎯 Performance      │  ║
+        ║  └────────────────────────────────────────┘  ║
+        ║                                              ║
+        ║  📊 Performance  🎨 Beautiful  🚀 Fast     ║
+        ╚══════════════════════════════════════════════╝
+```
+
+## ✨ Latest Features
+
+### 🎯 **New Wedding Features**
+- **QR Code Section**: Easy mobile access with scannable QR codes
+- **Countdown Timer**: Live countdown to the wedding day
+- **Photo Upload**: Guest photo upload functionality
+- **Gift Registry**: Wedding gift management system
+- **Wishes Section**: Guest well-wishes and messages
+- **Admin Dashboard**: Administrative control panel
+
+### 🎨 **Enhanced UI Components**
+- **40+ UI Components**: Complete component library with Qwik optimization
+- **Wedding-Themed Design**: Specialized components for wedding context
+- **Advanced Animations**: Smooth transitions and micro-interactions
+- **Mobile-First Design**: Perfect experience on all devices
+- **Dark/Light Themes**: Flexible theme management system
+
+### ⚡ **Performance Excellence**
+- **Qwik Resumability**: Instant page interactivity without hydration
+- **Lazy Loading**: Components load only when needed
+- **Optimized Images**: Progressive loading with WebP support
+- **CDN Ready**: Static site generation for global performance
+- **Core Web Vitals**: Optimized for Google's performance metrics
 
 ## 🎯 Components Overview
 
@@ -140,6 +352,8 @@ public/                 # Static assets
 - **Label**: Form label with proper associations
 - **Card**: Content container with header/footer
 - **Separator**: Visual content divider
+- **Aspect Ratio**: Responsive media containers
+- **Avatar**: User profile images with fallbacks
 
 ### Form Components
 - **Checkbox**: Interactive checkbox with labels
@@ -147,6 +361,8 @@ public/                 # Static assets
 - **Textarea**: Multi-line text input
 - **Switch**: Toggle component
 - **Slider**: Range input control
+- **Input OTP**: One-time password input
+- **Radio Group**: Multiple choice selections
 
 ### Layout Components
 - **Dialog**: Modal dialogs for important interactions
@@ -154,12 +370,16 @@ public/                 # Static assets
 - **Tabs**: Tabbed content organization
 - **Sidebar**: Navigation sidebar with responsive behavior
 - **Accordion**: Collapsible content sections
+- **Collapsible**: Expandable content areas
+- **Resizable**: Panels with drag-to-resize
 
 ### Interactive Components
 - **DropdownMenu**: Contextual menus with accessibility
 - **Popover**: Floating content with collision detection
 - **Tooltip**: Contextual help text
 - **HoverCard**: Rich tooltips with hover delays
+- **Context Menu**: Right-click menus
+- **Command**: Command palette interface
 
 ### Specialized Components
 - **Badge**: Status indicators (RSVP, Vendor, Status variants)
@@ -167,6 +387,10 @@ public/                 # Static assets
 - **Table**: Data display with sorting
 - **Calendar**: Date picker for RSVP management
 - **Toast**: Notification system
+- **Chart**: Data visualization components
+- **Skeleton**: Loading state placeholders
+- **Scroll Area**: Custom scrollable containers
+- **Navigation Menu**: Hierarchical navigation
 
 ## 🏗️ Architecture
 
@@ -212,11 +436,24 @@ const ThemeProvider = component$(() => {
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| Framework | Qwik | ✅ Cutting-edge |
-| Language | TypeScript | ✅ Type-safe |
-| Styling | Tailwind CSS | ✅ Utility-first |
+| Framework | Qwik 1.14.1 | ✅ Cutting-edge |
+| Language | TypeScript 5.3+ | ✅ Type-safe |
+| Styling | Tailwind CSS 4.1.8 | ✅ Utility-first |
+| Build Tool | Vite 5.3.5 | ✅ Fast |
+| Package Manager | Bun | ✅ Efficient |
+| Testing | Vitest | ✅ Comprehensive |
 | Accessibility | WCAG AA | ✅ Compliant |
 | Performance | Excellent | ✅ Optimized |
+
+### Core Web Vitals Targets
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| First Contentful Paint | < 1.5s | ✅ Optimized |
+| Largest Contentful Paint | < 2.5s | ✅ Optimized |
+| Time to Interactive | < 3.0s | ✅ Optimized |
+| Cumulative Layout Shift | < 0.1 | ✅ Optimized |
+| First Input Delay | < 100ms | ✅ Optimized |
 
 ## 🎨 Customization
 
@@ -316,24 +553,44 @@ npm run test:coverage
 ### Guides Available
 
 1. **[Components Usage Guide](docs/components-usage-guide.md)**
-   - Complete API reference
-   - Usage examples
-   - Best practices
+    - Complete API reference
+    - Usage examples
+    - Best practices
 
 2. **[Migration Guide](docs/migration-guide.md)**
-   - React to Qwik transition
-   - Common patterns
-   - Troubleshooting
+    - React to Qwik transition
+    - Common patterns
+    - Troubleshooting
 
 3. **[Qwik Patterns](docs/qwik-patterns.md)**
-   - Advanced Qwik concepts
-   - Performance patterns
-   - Architecture decisions
+    - Advanced Qwik concepts
+    - Performance patterns
+    - Architecture decisions
 
 4. **[Deployment Guide](docs/deployment-guide.md)**
-   - Hosting setup
-   - Performance optimization
-   - Monitoring
+    - Hosting setup
+    - Performance optimization
+    - Monitoring
+
+5. **[System Overview](docs/architecture/system-overview.md)**
+    - Technical architecture
+    - Design principles
+    - Performance targets
+
+6. **[Development Setup](docs/development/setup-guide.md)**
+    - Environment configuration
+    - Development workflow
+    - Tool setup
+
+7. **[Troubleshooting](docs/troubleshooting/common-issues.md)**
+    - Common problems
+    - Solutions
+    - FAQ
+
+8. **[Component Templates](docs/examples/component-templates/)**
+    - Reusable templates
+    - Best practices
+    - Code examples
 
 ## 🤝 Contributing
 
