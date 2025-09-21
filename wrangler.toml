@@ -1,0 +1,58 @@
+name = "alfinamugni-wedding"
+main = "src/entry.cloudflare-pages.tsx"
+compatibility_date = "2024-09-21"
+compatibility_flags = ["nodejs_compat"]
+
+# Qwik City Pages deployment configuration
+pages_build_output_dir = "dist"
+
+# Database bindings
+[[d1_databases]]
+binding = "DB"
+database_name = "wedding-database"
+database_id = "" # Will be set after database creation
+
+# R2 Storage bindings
+[[r2_buckets]]
+binding = "WEDDING_PHOTOS"
+bucket_name = "wedding-photos-bucket"
+preview_bucket_name = "wedding-photos-bucket-preview"
+
+[[r2_buckets]]
+binding = "WEDDING_ASSETS"
+bucket_name = "wedding-assets-bucket"
+preview_bucket_name = "wedding-assets-bucket-preview"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "development"
+WEDDING_DATE = "2025-11-29"
+TIMEZONE = "Asia/Jakarta"
+
+# Environment-specific configuration
+[env.production]
+name = "alfinamugni-wedding-prod"
+[env.production.vars]
+ENVIRONMENT = "production"
+
+[env.staging]
+name = "alfinamugni-wedding-staging"
+[env.staging.vars]
+ENVIRONMENT = "staging"
+
+# Development configuration
+[env.development]
+name = "alfinamugni-wedding-dev"
+[env.development.vars]
+ENVIRONMENT = "development"
+
+# Build configuration
+[build]
+command = "bun run build"
+cwd = "."
+watch_dir = ["src", "public"]
+
+# Asset configuration for Cloudflare Pages
+[site]
+bucket = "./dist"
+entry-point = "workers-site"

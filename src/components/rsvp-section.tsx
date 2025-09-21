@@ -9,47 +9,143 @@ export const RsvpSection = component$(() => {
   const showRsvpForm = useSignal(false);
   const guestName = useSignal("");
   const guestEmail = useSignal("");
+  const guestPhone = useSignal("");
   const attendance = useSignal("");
   const plusOne = useSignal("");
   const plusOneName = useSignal("");
   const mealPreference = useSignal("");
   const plusOneMeal = useSignal("");
   const specialRequests = useSignal("");
+  const dietaryRestrictions = useSignal("");
   const accommodation = useSignal("");
 
-  const handleRsvpSubmit = $(() => {
-    if (!guestName.value || !guestEmail.value || !attendance.value) {
-      alert("Please fill in all required fields.");
+  const isSubmitting = useSignal(false);
+  const submitMessage = useSignal("");
+  const submitError = useSignal("");
+
+  // Enhanced validation helper
+  const validateIndonesianPhone = $((phone: string): boolean => {
+    if (!phone) return true; // Optional field
+
+    // Remove all non-digit characters except + at the beginning
+    const cleanPhone = phone.replace(/[^\d+]/g, '').replace(/(?!^)\+/g, '');
+
+    // Indonesian phone patterns
+    const patterns = [
+      /^\+628\d{8,11}$/, // Mobile with country code
+      /^08\d{8,11}$/, // Mobile without country code
+      /^\+6221\d{7,8}$/, // Jakarta landline with country code
+      /^021\d{7,8}$/, // Jakarta landline
+    ];
+
+    return patterns.some(pattern => pattern.test(cleanPhone));
+  });
+
+  const handleRsvpSubmit = $(async () => {
+    // Reset messages
+    submitError.value = "";
+    submitMessage.value = "";
+
+    // Basic validation
+    if (!guestName.value.trim() || !guestEmail.value.trim() || !attendance.value) {
+      submitError.value = "Mohon isi semua field yang wajib diisi (Nama, Email, Kehadiran).";
       return;
     }
 
-    // In a real implementation, this would send to a backend
-    const rsvpData = {
-      name: guestName.value,
-      email: guestEmail.value,
-      attendance: attendance.value,
-      plusOne: plusOne.value,
-      plusOneName: plusOneName.value,
-      mealPreference: mealPreference.value,
-      plusOneMeal: plusOneMeal.value,
-      specialRequests: specialRequests.value,
-      accommodation: accommodation.value
-    };
+    // Validate name length
+    if (guestName.value.trim().length < 2) {
+      submitError.value = "Nama harus minimal 2 karakter.";
+      return;
+    }
 
-    console.log("RSVP Data:", rsvpData);
-    alert(`Thank you ${guestName.value}! Your RSVP has been received.`);
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(guestEmail.value.trim())) {
+      submitError.value = "Format email tidak valid.";
+      return;
+    }
 
-    // Reset form
-    guestName.value = "";
-    guestEmail.value = "";
-    attendance.value = "";
-    plusOne.value = "";
-    plusOneName.value = "";
-    mealPreference.value = "";
-    plusOneMeal.value = "";
-    specialRequests.value = "";
-    accommodation.value = "";
-    showRsvpForm.value = false;
+    // Validate Indonesian phone number if provided
+    if (guestPhone.value && !validateIndonesianPhone(guestPhone.value)) {
+      submitError.value = "Format nomor telepon Indonesia tidak valid. Contoh: 08123456789 atau +628123456789";
+      return;
+    }
+
+    // Validate plus one requirements
+    if (plusOne.value === "yes" && (!plusOneName.value || plusOneName.value.trim().length < 2)) {
+      submitError.value = "Nama pendamping harus diisi jika membawa tamu tambahan.";
+      return;
+    }
+
+    // Validate meal preferences for attending guests
+    if (attendance.value !== "unable" && !mealPreference.value) {
+      submitError.value = "Pilihan makanan wajib diisi untuk tamu yang hadir.";
+      return;
+    }
+
+    // Validate plus one meal if bringing plus one
+    if (plusOne.value === "yes" && attendance.value !== "unable" && !plusOneMeal.value) {
+      submitError.value = "Pilihan makanan pendamping harus diisi.";
+      return;
+    }
+
+    isSubmitting.value = true;
+
+    try {
+      const rsvpData = {
+        guest_name: guestName.value.trim(),
+        email: guestEmail.value.trim().toLowerCase(),
+        phone: guestPhone.value.trim() || undefined,
+        attending: attendance.value,
+        plus_one_count: plusOne.value === "yes" ? 1 : 0,
+        plus_one_name: plusOneName.value?.trim() || undefined,
+        meal_preference: mealPreference.value || undefined,
+        plus_one_meal: plusOneMeal.value || undefined,
+        special_requests: specialRequests.value?.trim() || undefined,
+        dietary_restrictions: dietaryRestrictions.value?.trim() || undefined,
+        accommodation_needed: accommodation.value === "yes"
+      };
+
+      const response = await fetch("/api/rsvp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(rsvpData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Gagal mengirim RSVP");
+      }
+
+      // Success
+      submitMessage.value = result.message || "RSVP berhasil dikirim! Email konfirmasi akan segera dikirim.";
+
+      // Reset form after a delay
+      setTimeout(() => {
+        guestName.value = "";
+        guestEmail.value = "";
+        guestPhone.value = "";
+        attendance.value = "";
+        plusOne.value = "";
+        plusOneName.value = "";
+        mealPreference.value = "";
+        plusOneMeal.value = "";
+        specialRequests.value = "";
+        dietaryRestrictions.value = "";
+        accommodation.value = "";
+        showRsvpForm.value = false;
+        submitMessage.value = "";
+      }, 3000);
+
+    } catch (error) {
+      console.error("RSVP submission error:", error);
+      submitError.value = error instanceof Error ? error.message : "Terjadi kesalahan. Silakan coba lagi.";
+    } finally {
+      isSubmitting.value = false;
+    }
   });
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
@@ -146,6 +242,21 @@ export const RsvpSection = component$(() => {
                       placeholder="Masukkan email Anda"
                       required
                     />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium mb-2" style={{ color: "var(--wedding-brown)" }}>
+                      Nomor Telepon (Opsional)
+                    </label>
+                    <input
+                      type="tel"
+                      value={guestPhone.value}
+                      onInput$={(e) => guestPhone.value = (e.target as HTMLInputElement).value}
+                      class="w-full p-3 border rounded-md focus:ring-2 focus:ring-wedding-accent focus:border-transparent"
+                      placeholder="08123456789 atau +628123456789"
+                    />
+                    <p class="text-xs text-gray-500 mt-1">
+                      Format Indonesia: 08xx atau +628xx
+                    </p>
                   </div>
                 </div>
 
@@ -334,41 +445,73 @@ export const RsvpSection = component$(() => {
                 )}
 
                 {/* Special Requests */}
-                <div>
-                  <label class="block text-sm font-medium mb-2" style={{ color: "var(--wedding-brown)" }}>
-                    Permintaan Khusus atau Pantangan Makanan
-                  </label>
-                  <textarea
-                    value={specialRequests.value}
-                    onInput$={(e) => specialRequests.value = (e.target as HTMLTextAreaElement).value}
-                    class="w-full p-3 border rounded-md h-24 resize-none focus:ring-2 focus:ring-wedding-accent focus:border-transparent"
-                    placeholder="Alergi, kebutuhan aksesibilitas, atau permintaan khusus..."
-                  />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium mb-2" style={{ color: "var(--wedding-brown)" }}>
+                      Pantangan/Alergi Makanan
+                    </label>
+                    <textarea
+                      value={dietaryRestrictions.value}
+                      onInput$={(e) => dietaryRestrictions.value = (e.target as HTMLTextAreaElement).value}
+                      class="w-full p-3 border rounded-md h-20 resize-none focus:ring-2 focus:ring-wedding-accent focus:border-transparent"
+                      placeholder="Alergi makanan laut, vegetarian, dll..."
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium mb-2" style={{ color: "var(--wedding-brown)" }}>
+                      Permintaan Khusus Lainnya
+                    </label>
+                    <textarea
+                      value={specialRequests.value}
+                      onInput$={(e) => specialRequests.value = (e.target as HTMLTextAreaElement).value}
+                      class="w-full p-3 border rounded-md h-20 resize-none focus:ring-2 focus:ring-wedding-accent focus:border-transparent"
+                      placeholder="Kebutuhan aksesibilitas, kursi roda, dll..."
+                    />
+                  </div>
                 </div>
+
+                {/* Success/Error Messages */}
+                {submitMessage.value && (
+                  <div class="p-4 bg-green-100 border border-green-300 rounded-md text-green-800 text-sm">
+                    {submitMessage.value}
+                  </div>
+                )}
+
+                {submitError.value && (
+                  <div class="p-4 bg-red-100 border border-red-300 rounded-md text-red-800 text-sm">
+                    {submitError.value}
+                  </div>
+                )}
 
                 {/* Buttons */}
                 <div class="flex space-x-4 pt-4">
                   <button
                     type="button"
-                    class="flex-1 py-3 px-6 rounded border transition-colors"
+                    class="flex-1 py-3 px-6 rounded border transition-colors disabled:opacity-50"
                     style={{
                       borderColor: "var(--wedding-accent)",
                       color: "var(--wedding-accent)"
                     }}
-                    onClick$={() => showRsvpForm.value = false}
+                    onClick$={() => {
+                      showRsvpForm.value = false;
+                      submitError.value = "";
+                      submitMessage.value = "";
+                    }}
+                    disabled={isSubmitting.value}
                   >
                     Batal
                   </button>
                   <button
                     type="button"
-                    class="flex-1 py-3 px-6 rounded transition-colors"
+                    class="flex-1 py-3 px-6 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
                       backgroundColor: "var(--wedding-accent)",
                       color: "white"
                     }}
                     onClick$={handleRsvpSubmit}
+                    disabled={isSubmitting.value}
                   >
-                    Kirim RSVP
+                    {isSubmitting.value ? "Mengirim..." : "Kirim RSVP"}
                   </button>
                 </div>
               </form>

@@ -1,4 +1,4 @@
-import { useSignal, useVisibleTask$, type Signal } from "@builder.io/qwik";
+import { useSignal, useTask$, type Signal } from "@builder.io/qwik";
 import { GalleryService, type GalleryItem } from "../services/gallery-service";
 
 export interface UseGalleryReturn {
@@ -17,7 +17,7 @@ export const useGallery = (): UseGalleryReturn => {
   const items = useSignal<GalleryItem[]>([]);
   const loading = useSignal(true);
 
-  useVisibleTask$(() => {
+  useTask$(() => {
     // Initialize service if not already initialized
     if (galleryService.getItems().length === 0) {
       galleryService.initialize();

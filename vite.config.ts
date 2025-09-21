@@ -5,6 +5,7 @@
 import { defineConfig, type UserConfig } from "vite";
 import { qwikVite } from "@builder.io/qwik/optimizer";
 import { qwikCity } from "@builder.io/qwik-city/vite";
+import { qwikPWA } from "./vite-pwa-wrapper";
 import tsconfigPaths from "vite-tsconfig-paths";
 import pkg from "./package.json";
 
@@ -20,8 +21,260 @@ errorOnDuplicatesPkgDeps(devDependencies, dependencies);
  * Note that Vite normally starts from `index.html` but the qwikCity plugin makes start at `src/entry.ssr.tsx` instead.
  */
 export default defineConfig(({ command, mode }): UserConfig => {
+  const isProduction = mode === "production";
+
   return {
-    plugins: [qwikCity(), qwikVite(), tsconfigPaths()],
+    plugins: [
+      qwikCity(),
+      qwikVite({
+        // Enhanced optimization for production builds
+        ...(isProduction && {
+          symbolsOutput: false, // Reduce bundle size
+          inlineOptimizations: true,
+        }),
+      }),
+      tsconfigPaths(),
+      qwikPWA({
+        strategies: "generateSW",
+        registerType: "autoUpdate",
+        workbox: {
+          globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg,woff2}"],
+          // Indonesian-specific caching strategies for mobile networks
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/images\.unsplash\.com\/.*/i,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "unsplash-images",
+                expiration: {
+                  maxEntries: 50,
+                  maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                },
+                cacheKeyWillBeUsed: async ({ request }) => {
+                  const url = new URL(request.url);
+                  // Remove Unsplash query params for better caching
+                  url.searchParams.delete('auto');
+                  url.searchParams.delete('fit');
+                  url.searchParams.delete('w');
+                  url.searchParams.delete('q');
+                  return url.href;
+                },
+              },
+            },
+            // Indonesian wedding content with extended caching
+            {
+              urlPattern: /\/(id-ID|indonesia|jakarta)/i,
+              handler: "StaleWhileRevalidate",
+              options: {
+                cacheName: "indonesian-content",
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 60 * 60 * 24 * 14, // 14 days for Indonesian content
+                },
+              },
+            },
+            // RSVP API with offline queue support
+            {
+              urlPattern: /\/api\/rsvp/,
+              handler: "NetworkFirst",
+              options: {
+                cacheName: "rsvp-api",
+                networkTimeoutSeconds: 5, // Extended for Indonesian networks
+                expiration: {
+                  maxEntries: 20,
+                  maxAgeSeconds: 60 * 60 * 2, // 2 hours
+                },
+                backgroundSync: {
+                  name: "rsvp-queue",
+                  options: {
+                    maxRetentionTime: 24 * 60 * 60 * 1000, // 24 hours
+                  },
+                },
+              },
+            },
+            // Gallery API optimized for Indonesian mobile
+            {
+              urlPattern: /\/api\/gallery/,
+              handler: "NetworkFirst",
+              options: {
+                cacheName: "gallery-api",
+                networkTimeoutSeconds: 8, // Longer timeout for image uploads
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 60 * 60 * 4, // 4 hours for gallery data
+                },
+              },
+            },
+            // Upload API with retry logic
+            {
+              urlPattern: /\/api\/upload/,
+              handler: "NetworkOnly",
+              options: {
+                cacheName: "upload-api",
+                backgroundSync: {
+                  name: "upload-queue",
+                  options: {
+                    maxRetentionTime: 48 * 60 * 60 * 1000, // 48 hours for uploads
+                  },
+                },
+              },
+            },
+            // Indonesian time zone and cultural data
+            {
+              urlPattern: /\/(timezone|cultural-info|prayer-times)/i,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "cultural-data",
+                expiration: {
+                  maxEntries: 20,
+                  maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+                },
+              },
+            },
+            // Wedding assets with Indonesian mobile optimization
+            {
+              urlPattern: ({ request }) =>
+                request.destination === "document" ||
+                request.destination === "script" ||
+                request.destination === "style",
+              handler: "StaleWhileRevalidate",
+              options: {
+                cacheName: "wedding-assets",
+                expiration: {
+                  maxEntries: 150,
+                  maxAgeSeconds: 60 * 60 * 24 * 10, // 10 days for core assets
+                },
+              },
+            },
+            // Fonts and static resources
+            {
+              urlPattern: /\.(woff2|woff|ttf|eot)$/,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "fonts-cache",
+                expiration: {
+                  maxEntries: 30,
+                  maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year for fonts
+                },
+              },
+            },
+          ],
+          // Enhanced offline behavior for Indonesian users
+          skipWaiting: true,
+          clientsClaim: true,
+          navigateFallback: "/",
+          navigateFallbackDenylist: [/^\/_/, /\/api\//, /\.(?:png|jpg|jpeg|svg|webp)$/],
+          // Indonesian mobile network optimizations
+          cleanupOutdatedCaches: true,
+          maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB max for mobile
+        },
+        devOptions: {
+          enabled: true,
+          type: "module",
+        },
+        manifest: {
+          name: "Alfina & Mugni Wedding",
+          short_name: "A&M Wedding",
+          description: "Wedding website for Alfina & Mugni - November 29, 2025, Jakarta, Indonesia",
+          theme_color: "#4d3326",
+          background_color: "#faf7f5",
+          display: "standalone",
+          orientation: "portrait",
+          scope: "/",
+          start_url: "/",
+          lang: "id-ID",
+          categories: ["lifestyle", "wedding", "photography"],
+          icons: [
+            {
+              src: "/icons/icon-72x72.png",
+              sizes: "72x72",
+              type: "image/png",
+              purpose: "maskable any"
+            },
+            {
+              src: "/icons/icon-96x96.png",
+              sizes: "96x96",
+              type: "image/png",
+              purpose: "maskable any"
+            },
+            {
+              src: "/icons/icon-128x128.png",
+              sizes: "128x128",
+              type: "image/png",
+              purpose: "maskable any"
+            },
+            {
+              src: "/icons/icon-144x144.png",
+              sizes: "144x144",
+              type: "image/png",
+              purpose: "maskable any"
+            },
+            {
+              src: "/icons/icon-152x152.png",
+              sizes: "152x152",
+              type: "image/png",
+              purpose: "maskable any"
+            },
+            {
+              src: "/icons/icon-192x192.png",
+              sizes: "192x192",
+              type: "image/png",
+              purpose: "maskable any"
+            },
+            {
+              src: "/icons/icon-384x384.png",
+              sizes: "384x384",
+              type: "image/png",
+              purpose: "maskable any"
+            },
+            {
+              src: "/icons/icon-512x512.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "maskable any"
+            }
+          ],
+          shortcuts: [
+            {
+              name: "Photo Gallery",
+              short_name: "Gallery",
+              description: "View and upload wedding photos",
+              url: "/#gallery",
+              icons: [
+                {
+                  src: "/icons/gallery-shortcut.png",
+                  sizes: "96x96"
+                }
+              ]
+            },
+            {
+              name: "RSVP",
+              short_name: "RSVP",
+              description: "Confirm your attendance",
+              url: "/#rsvp",
+              icons: [
+                {
+                  src: "/icons/rsvp-shortcut.png",
+                  sizes: "96x96"
+                }
+              ]
+            },
+            {
+              name: "Wedding Details",
+              short_name: "Details",
+              description: "Venue and schedule information",
+              url: "/#details",
+              icons: [
+                {
+                  src: "/icons/details-shortcut.png",
+                  sizes: "96x96"
+                }
+              ]
+            }
+          ],
+        },
+      })
+    ],
     css: {
       postcss: './postcss.config.js',
     },
