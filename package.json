@@ -58,7 +58,7 @@
     "vite-tsconfig-paths": "^4.2.1",
     "vitest": "^3.2.4"
   },
-  "packageManager": "bun@1.0.0",
+  "packageManager": "pnpm@9.15.4",
   "dependencies": {
     "@auth/core": "^0.40.0",
     "@cloudflare/workers-types": "^4.20250921.0",

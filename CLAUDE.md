@@ -12,17 +12,17 @@ This is a wedding website for Alfina & Mugni's wedding (November 29, 2025, Jakar
 
 ```bash
 # Primary development server with SSR support
-bun run dev          # Start Vite development server with SSR mode
+pnpm run dev         # Start Vite development server with SSR mode
                      # Use case: Main development workflow, hot reloading, SSR testing
                      # Output: http://localhost:5173 with full SSR capabilities
 
 # Alternative development server with browser auto-open
-bun run start        # Same as dev but automatically opens browser
+pnpm run start       # Same as dev but automatically opens browser
                      # Use case: Quick development start, demo purposes
                      # Output: Auto-opens http://localhost:5173
 
 # Debug mode development server
-bun run dev.debug    # Start dev server with Node.js inspector for debugging
+pnpm run dev.debug   # Start dev server with Node.js inspector for debugging
                      # Use case: Debugging SSR issues, server-side code inspection
                      # Output: Debugger available at chrome://inspect
 ```
@@ -31,27 +31,27 @@ bun run dev.debug    # Start dev server with Node.js inspector for debugging
 
 ```bash
 # Full production build (recommended)
-bun run build        # Complete Qwik build with SSR optimization and static generation
+pnpm run build       # Complete Qwik build with SSR optimization and static generation
                      # Use case: Production deployment, creates dist/ with optimized bundles
                      # Output: dist/ folder with client and server builds
 
 # Client-only build
-bun run build.client # Vite build for client-side only (no SSR)
-                     # Use case: Static hosting, SPA deployment, CDN distribution
-                     # Output: dist/ with client-side assets only
+pnpm run build.client # Vite build for client-side only (no SSR)
+                      # Use case: Static hosting, SPA deployment, CDN distribution
+                      # Output: dist/ with client-side assets only
 
 # Preview build for local testing
-bun run build.preview # SSR build optimized for local preview testing
-                      # Use case: Testing SSR behavior locally before deployment
-                      # Output: Optimized build for vite preview command
+pnpm run build.preview # SSR build optimized for local preview testing
+                       # Use case: Testing SSR behavior locally before deployment
+                       # Output: Optimized build for vite preview command
 
 # TypeScript compilation check
-bun run build.types  # TypeScript compilation without output files
+pnpm run build.types # TypeScript compilation without output files
                      # Use case: Type checking before commits, CI/CD validation
                      # Output: Type errors/warnings, no files generated
 
 # Build and preview locally
-bun run preview      # Builds production and starts local preview server
+pnpm run preview     # Builds production and starts local preview server
                      # Use case: Testing production build locally, final QA
                      # Output: Production server at http://localhost:4173
 ```
@@ -60,17 +60,17 @@ bun run preview      # Builds production and starts local preview server
 
 ```bash
 # Code formatting
-bun run fmt          # Format all files with Prettier using project config
+pnpm run fmt         # Format all files with Prettier using project config
                      # Use case: Consistent code style, pre-commit formatting
                      # Output: Modifies files in place according to .prettierrc
 
 # Format validation
-bun run fmt.check    # Check if files are properly formatted without changes
+pnpm run fmt.check   # Check if files are properly formatted without changes
                      # Use case: CI/CD checks, pre-commit hooks, code review
                      # Output: Lists improperly formatted files, exit code 1 if issues
 
 # Code linting
-bun run lint         # Run ESLint on all TypeScript files in src/
+pnpm run lint        # Run ESLint on all TypeScript files in src/
                      # Use case: Code quality checks, identifying potential issues
                      # Output: Lint errors/warnings, follows eslint.config.js rules
 ```
@@ -79,49 +79,59 @@ bun run lint         # Run ESLint on all TypeScript files in src/
 
 ```bash
 # Run all tests
-bun run test         # Run test suite in watch mode using Vitest
+pnpm run test        # Run test suite in watch mode using Vitest
                      # Use case: Development testing, continuous feedback
                      # Output: Interactive test runner at http://localhost:51204
 
 # Test UI interface
-bun run test:ui      # Launch Vitest UI for visual test management
+pnpm run test:ui     # Launch Vitest UI for visual test management
                      # Use case: Visual test debugging, test result analysis
                      # Output: Web interface for test visualization
 
 # Single test run
-bun run test:run     # Run all tests once and exit (for CI/CD)
+pnpm run test:run    # Run all tests once and exit (for CI/CD)
                      # Use case: CI/CD pipelines, automated testing
                      # Output: Test results summary with pass/fail status
 
 # Test coverage
-bun run test:coverage # Generate test coverage report using @vitest/coverage-v8
-                      # Use case: Code quality assessment, coverage analysis
-                      # Output: Coverage report in coverage/ directory
+pnpm run test:coverage # Generate test coverage report using @vitest/coverage-v8
+                       # Use case: Code quality assessment, coverage analysis
+                       # Output: Coverage report in coverage/ directory
 ```
 
 ### Utility Scripts
 
 ```bash
 # Deployment guidance
-bun run deploy       # Shows message about adding server adapter
+pnpm run deploy      # Shows message about adding server adapter
                      # Use case: Deployment setup guidance, adapter installation
                      # Output: Instructions to run "npm run qwik add"
 
 # Qwik CLI access
-bun run qwik         # Direct access to Qwik CLI commands
+pnpm run qwik        # Direct access to Qwik CLI commands
                      # Use case: Adding integrations, generating components
                      # Output: Qwik CLI help and available commands
 ```
 
-**Important**: Always run `bun run build.types` and `bun run lint` before committing to ensure code quality.
+**Important**: Always run `pnpm run build.types` and `pnpm run lint` before committing to ensure code quality.
 
 ## Architecture
 
 **Framework**: Qwik v1.14.1 with Qwik City for routing
 **Styling**: Tailwind CSS v4.1.8 + custom wedding theme in CSS variables
 **Build Tool**: Vite 5.3.5
-**Package Manager**: Bun (required - do not use npm)
+**Package Manager**: pnpm (required - efficient, disk space-saving package manager)
 **Language**: TypeScript 5.4.5
+
+### pnpm Benefits
+
+The project migrated to pnpm for better dependency management:
+
+- **Disk Efficiency**: pnpm dedupes dependencies, reducing disk usage by 30-50%
+- **Installation Speed**: Faster installs due to efficient dependency resolution
+- **Strict Mode**: Prevents phantom dependencies and improves dependency security
+- **Workspace Support**: Ready for future monorepo expansion
+- **Better Lockfiles**: More reliable and deterministic installations
 
 ### Key Directories
 
