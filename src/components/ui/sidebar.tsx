@@ -1,4 +1,4 @@
-import { component$, useSignal, useStore, useContext, createContextId, useContextProvider, useTask$, $, type PropsOf, Slot, type QRL } from "@builder.io/qwik";
+import { component$, useSignal, useStore, useContext, createContextId, useContextProvider, useTask$, $, type PropsOf, type JSXOutput, Slot, type QRL } from "@builder.io/qwik";
 import { cn } from "~/lib/utils";
 
 const SIDEBAR_WIDTH = "16rem";
@@ -24,7 +24,7 @@ export interface SidebarProviderProps {
   onOpenChange?: QRL<(open: boolean) => void>;
   class?: string;
   style?: Record<string, string | number>;
-  children?: any;
+  children?: JSXOutput;
 }
 
 export const SidebarProvider = component$<SidebarProviderProps>(({

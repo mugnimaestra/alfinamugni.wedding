@@ -4,7 +4,7 @@
  * Based on the official Qwik testing patterns from documentation
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from "vitest";
 
 // Re-export commonly used testing utilities
 export { describe, it, expect, vi };
@@ -21,27 +21,29 @@ export const setupDOM = () => {
 
 // Clean up after tests
 export const cleanupDOM = () => {
-  document.body.innerHTML = '';
+  document.body.innerHTML = "";
 };
 
 // Mock QRL function creator
-export const createMockQRL = <T extends (...args: any[]) => any>(fn: T) => {
+export const createMockQRL = <T extends (...args: unknown[]) => unknown>(
+  fn: T,
+) => {
   const qrl = (...args: Parameters<T>) => fn(...args);
-  qrl.__brand__ = 'QRL' as const;
+  qrl.__brand__ = "QRL" as const;
   return qrl;
 };
 
 // Simple component renderer (for basic testing)
 export const renderComponent = async () => {
-  const container = document.getElementById('qwik-test-container');
+  const container = document.getElementById("qwik-test-container");
   if (!container) {
-    throw new Error('Test container not found. Call setupDOM() first.');
+    throw new Error("Test container not found. Call setupDOM() first.");
   }
 
   // Create a simple mock element for testing
-  const mockElement = document.createElement('div');
-  mockElement.setAttribute('data-testid', 'mock-component');
-  mockElement.textContent = 'Mock Component Rendered';
+  const mockElement = document.createElement("div");
+  mockElement.setAttribute("data-testid", "mock-component");
+  mockElement.textContent = "Mock Component Rendered";
 
   container.appendChild(mockElement);
 
@@ -49,12 +51,16 @@ export const renderComponent = async () => {
     container: mockElement,
     cleanup: () => {
       container.removeChild(mockElement);
-    }
+    },
   };
 };
 
 // User event simulation
-export const simulateEvent = (element: Element, eventType: string, eventData?: Record<string, unknown>) => {
+export const simulateEvent = (
+  element: Element,
+  eventType: string,
+  eventData?: Record<string, unknown>,
+) => {
   const event = new Event(eventType, { bubbles: true });
   if (eventData) {
     Object.assign(event, eventData);
@@ -68,9 +74,11 @@ export const getByTestId = (testId: string): Element | null => {
 };
 
 export const getByText = (text: string): Element | null => {
-  return Array.from(document.querySelectorAll('*')).find(
-    el => el.textContent?.includes(text)
-  ) || null;
+  return (
+    Array.from(document.querySelectorAll("*")).find((el) =>
+      el.textContent?.includes(text),
+    ) || null
+  );
 };
 
 export const getByRole = (role: string): Element | null => {
@@ -81,12 +89,12 @@ export const getByRole = (role: string): Element | null => {
 export const customMatchers = {
   toHaveQwikClass: (element: Element, className: string) => ({
     pass: element.classList.contains(className),
-    message: () => `Expected element to have class "${className}"`
+    message: () => `Expected element to have class "${className}"`,
   }),
 
   toHaveTextContent: (element: Element, text: string) => ({
     pass: element.textContent?.includes(text) || false,
-    message: () => `Expected element to contain text "${text}"`
+    message: () => `Expected element to contain text "${text}"`,
   }),
 
   toHaveAttribute: (element: Element, name: string, value?: string) => {
@@ -96,9 +104,10 @@ export const customMatchers = {
 
     return {
       pass: hasAttr && matchesValue,
-      message: () => `Expected element to have attribute "${name}"${value ? ` with value "${value}"` : ''}`
+      message: () =>
+        `Expected element to have attribute "${name}"${value ? ` with value "${value}"` : ""}`,
     };
-  }
+  },
 };
 
 // Test wrapper for Qwik components

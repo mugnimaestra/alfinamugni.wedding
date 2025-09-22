@@ -3,7 +3,7 @@ import {
   type QwikIntrinsicElements,
   useSignal,
   useTask$,
-  useVisibleTask$,
+  useOnDocument,
   $,
 } from "@builder.io/qwik";
 import { cn } from "~/lib/utils";
@@ -79,25 +79,24 @@ export const Slider = component$<SliderProps>(
       isDragging.value = false;
     });
 
-    useVisibleTask$(({ cleanup }) => {
-      const handleGlobalPointerMove = (event: PointerEvent) => {
-        handlePointerMove(event);
-      };
+    // Handle global pointer events for dragging
+    useOnDocument(
+      "pointermove",
+      $((event: PointerEvent) => {
+        if (isDragging.value && !disabled) {
+          handlePointerMove(event);
+        }
+      })
+    );
 
-      const handleGlobalPointerUp = () => {
-        handlePointerUp();
-      };
-
-      if (isDragging.value) {
-        document.addEventListener("pointermove", handleGlobalPointerMove);
-        document.addEventListener("pointerup", handleGlobalPointerUp);
-
-        cleanup(() => {
-          document.removeEventListener("pointermove", handleGlobalPointerMove);
-          document.removeEventListener("pointerup", handleGlobalPointerUp);
-        });
-      }
-    });
+    useOnDocument(
+      "pointerup",
+      $(() => {
+        if (isDragging.value) {
+          handlePointerUp();
+        }
+      })
+    );
 
     const percentage = ((currentValue.value[0] - min) / (max - min)) * 100;
 

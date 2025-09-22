@@ -1,4 +1,4 @@
-import { component$, useSignal, useTask$ } from '@builder.io/qwik';
+import { component$, useSignal, useTask$, type Component } from '@builder.io/qwik';
 import type { DocumentHead } from '@builder.io/qwik-city';
 import { routeLoader$ } from '@builder.io/qwik-city';
 import { Card } from '../../../components/ui/card';
@@ -165,7 +165,7 @@ export default component$(() => {
   }: {
     id: string;
     label: string;
-    icon: any;
+    icon: Component<{ class?: string }>;
     isActive: boolean;
   }) => (
     <button

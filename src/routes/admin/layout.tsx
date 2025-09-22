@@ -3,6 +3,19 @@ import { useSession, useSignIn, useSignOut } from '../plugin@auth';
 import { routeLoader$ } from '@builder.io/qwik-city';
 import type { RequestHandler } from '@builder.io/qwik-city';
 
+type WeddingUser = {
+  id?: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+};
+
+type WeddinSession = {
+  user?: WeddingUser;
+  expires: string;
+};
+
 // Enhanced server-side session validation with security measures
 export const onRequest: RequestHandler = async ({ request, redirect, url, headers }) => {
   const sessionUrl = new URL('/api/auth/session', url.origin);
@@ -139,7 +152,7 @@ export default component$(() => {
                     onClick$={async () => {
                       isLoading.value = true;
                       try {
-                        await signOut.submit();
+                        await signOut.submit({});
                         window.location.href = '/';
                       } catch (error) {
                         console.error('Sign out error:', error);
@@ -156,7 +169,7 @@ export default component$(() => {
               ) : (
                 <button
                   onClick$={async () => {
-                    await signIn.submit();
+                    await signIn.submit({});
                   }}
                   class="bg-wedding-accent hover:bg-opacity-80 px-4 py-2 rounded-md text-sm font-medium transition-colors"
                 >
@@ -176,7 +189,7 @@ export default component$(() => {
 
       {/* Main Content */}
       <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {session.value && session.value.user?.role === 'admin' ? (
+        {session.value && (session.value as WeddinSession).user?.role === 'admin' ? (
           <Slot />
         ) : (
           <div class="text-center py-12">
@@ -189,7 +202,7 @@ export default component$(() => {
               </p>
               <button
                 onClick$={async () => {
-                  await signIn.submit();
+                  await signIn.submit({});
                 }}
                 class="wedding-button"
               >

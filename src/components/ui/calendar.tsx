@@ -20,6 +20,7 @@ import {
   isToday,
   isBefore,
   addDays,
+  type Locale,
 } from "date-fns";
 
 type CalendarProps = QwikIntrinsicElements["div"] & {
@@ -112,7 +113,7 @@ export const Calendar = component$<CalendarProps>(
           </button>
 
           <h2 class="text-sm font-semibold">
-            {format(currentMonth.value, "MMMM yyyy", { locale: locale as any })}
+            {format(currentMonth.value, "MMMM yyyy", { locale: locale as unknown as Locale })}
           </h2>
 
           <button
@@ -228,7 +229,7 @@ export const CalendarWithInput = component$<CalendarWithInputProps>(
       track(() => calendarProps.value);
       if (inputRef.value && calendarProps.value) {
         inputRef.value.value = format(calendarProps.value, dateFormat, {
-          locale: calendarProps.locale as any,
+          locale: calendarProps.locale as unknown as Locale,
         });
       }
     });

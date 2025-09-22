@@ -10,6 +10,10 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+interface NavigatorWithStandalone extends Navigator {
+  standalone?: boolean;
+}
+
 interface InstallPromptState {
   isVisible: boolean;
   canInstall: boolean;
@@ -53,7 +57,7 @@ export const InstallPrompt = component$(() => {
     const checkIfInstalled = () => {
       // Check if running in standalone mode (already installed)
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-      const isIOSInstalled = (navigator as any).standalone === true;
+      const isIOSInstalled = (navigator as NavigatorWithStandalone).standalone === true;
 
       installState.isInstalled = isStandalone || isIOSInstalled;
     };

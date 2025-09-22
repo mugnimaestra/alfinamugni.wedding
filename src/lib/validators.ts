@@ -43,7 +43,7 @@ export function sanitizeString(input: string): string {
   return input
     .trim()
     .replace(/[<>]/g, '') // Remove potential HTML tags
-    .replace(/[\u0000-\u001f\u007f-\u009f]/g, '') // Remove control characters
+    .replace(/[\p{Cc}]/gu, '') // Remove control characters
     .substring(0, 1000); // Limit length
 }
 
@@ -171,25 +171,25 @@ export function normalizeIndonesianEmail(email: string): string {
 }
 
 // Form data sanitization wrapper
-export function sanitizeRsvpData(rawData: any): any {
+export function sanitizeRsvpData(rawData: Record<string, unknown>): Record<string, unknown> {
   return {
     ...rawData,
-    guest_name: sanitizeString(rawData.guest_name || ''),
-    email: normalizeIndonesianEmail(rawData.email || ''),
-    phone: rawData.phone ? sanitizePhone(rawData.phone) : undefined,
-    plus_one_name: rawData.plus_one_name ? sanitizeString(rawData.plus_one_name) : undefined,
-    special_requests: rawData.special_requests ? sanitizeString(rawData.special_requests) : undefined,
-    dietary_restrictions: rawData.dietary_restrictions ? sanitizeString(rawData.dietary_restrictions) : undefined,
+    guest_name: sanitizeString(String(rawData.guest_name || '')),
+    email: normalizeIndonesianEmail(String(rawData.email || '')),
+    phone: rawData.phone ? sanitizePhone(String(rawData.phone)) : undefined,
+    plus_one_name: rawData.plus_one_name ? sanitizeString(String(rawData.plus_one_name)) : undefined,
+    special_requests: rawData.special_requests ? sanitizeString(String(rawData.special_requests)) : undefined,
+    dietary_restrictions: rawData.dietary_restrictions ? sanitizeString(String(rawData.dietary_restrictions)) : undefined,
   };
 }
 
-export function sanitizeWishData(rawData: any): any {
-  const moderated = moderateContent(rawData.message || '');
+export function sanitizeWishData(rawData: Record<string, unknown>): Record<string, unknown> {
+  const moderated = moderateContent(String(rawData.message || ''));
 
   return {
     ...rawData,
-    guest_name: sanitizeString(rawData.guest_name || ''),
-    email: rawData.email ? normalizeIndonesianEmail(rawData.email) : undefined,
+    guest_name: sanitizeString(String(rawData.guest_name || '')),
+    email: rawData.email ? normalizeIndonesianEmail(String(rawData.email)) : undefined,
     message: moderated.moderatedText,
     auto_approved: moderated.isAppropriate,
     moderation_notes: moderated.reasons.length > 0 ? moderated.reasons.join(', ') : undefined

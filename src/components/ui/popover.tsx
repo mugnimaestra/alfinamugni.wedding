@@ -5,9 +5,9 @@ import {
   useTask$,
   useOnDocument,
   type PropsOf,
+  type JSXOutput,
   Slot,
   $,
-  type PropFunction,
 } from "@builder.io/qwik";
 import { cva } from "class-variance-authority";
 import { cn } from "~/lib/utils";
@@ -39,7 +39,7 @@ const popoverVariants = cva(
 export interface PopoverProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  children: any;
+  children: JSXOutput;
 }
 
 export const Popover = component$<PopoverProps>(

@@ -1,7 +1,25 @@
 import { QwikAuth$ } from '@auth/qwik';
 import Credentials from '@auth/core/providers/credentials';
 import type { Provider } from '@auth/core/providers';
+import type { JWT } from '@auth/core/jwt';
+import type { Session, User as DefaultUser } from '@auth/core/types';
 import bcrypt from 'bcryptjs';
+
+// Extend the User interface to include custom properties for the wedding website admin
+interface WeddingUser extends DefaultUser {
+  role?: string;
+}
+
+// Extend the Session interface to include custom properties for the wedding website admin
+interface WeddingSession extends Session {
+  user: {
+    id?: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    role?: string;
+  };
+}
 
 // Enhanced password verification with bcrypt
 async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
@@ -169,17 +187,19 @@ export const { onRequest, useSession, useSignIn, useSignOut } = QwikAuth$(
         }),
       ] as Provider[],
       callbacks: {
-        jwt({ token, user }: { token: any; user: any }) {
-          if (user) {
+        jwt({ token, user }: { token: JWT; user?: WeddingUser | null }) {
+          if (user && 'role' in user) {
             token.role = user.role;
           }
           return token;
         },
-        session({ session, token }: { session: any; token: any }) {
-          if (token.role && session.user) {
-            session.user.role = token.role;
+        session({ session, token }: { session: Session; token: JWT }) {
+          // Cast session to WeddingSession to access the custom role property
+          const weddingSession = session as WeddingSession;
+          if (token.role && weddingSession.user) {
+            weddingSession.user.role = token.role as string;
           }
-          return session;
+          return weddingSession;
         },
       },
       pages: {

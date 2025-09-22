@@ -3,6 +3,8 @@
  * Optimized for Indonesian wedding content and cultural context
  */
 
+import type { NetworkConnectionAPI } from '../utils/network-utils';
+
 export interface IndonesianCacheConfig {
   weddingContentTTL: number; // Wedding-specific content cache duration
   culturalContentTTL: number; // Indonesian cultural content cache duration
@@ -21,9 +23,9 @@ const DEFAULT_CONFIG: IndonesianCacheConfig = {
   workingHoursOptimization: true,
 };
 
-export interface CachedContent {
+export interface CachedContent<T = unknown> {
   key: string;
-  data: any;
+  data: T;
   timestamp: number;
   ttl: number;
   contentType: IndonesianContentType;
@@ -85,9 +87,9 @@ export class IndonesianCache {
     });
   }
 
-  async cacheContent(
+  async cacheContent<T>(
     key: string,
-    data: any,
+    data: T,
     contentType: IndonesianContentType,
     customTTL?: number
   ): Promise<void> {
@@ -108,7 +110,7 @@ export class IndonesianCache {
     const carrier = this.detectIndonesianCarrier();
     const networkType = this.getNetworkType();
 
-    const cachedContent: CachedContent = {
+    const cachedContent: CachedContent<T> = {
       key,
       data,
       timestamp: now,
@@ -137,7 +139,7 @@ export class IndonesianCache {
     });
   }
 
-  async getContent(key: string): Promise<any | null> {
+  async getContent<T = unknown>(key: string): Promise<T | null> {
     if (!this.db) await this.initDB();
 
     const transaction = this.db!.transaction([this.storeName], 'readonly');
@@ -147,7 +149,7 @@ export class IndonesianCache {
       const request = store.get(key);
 
       request.onsuccess = () => {
-        const cached: CachedContent | undefined = request.result;
+        const cached: CachedContent<T> | undefined = request.result;
 
         if (!cached) {
           resolve(null);
@@ -170,17 +172,17 @@ export class IndonesianCache {
         }
 
         console.log(`[IndonesianCache] Retrieved valid content: ${key}`);
-        resolve(cached.data);
+        resolve(cached.data as T);
       };
 
       request.onerror = () => reject(request.error);
     });
   }
 
-  async getContentByType(contentType: IndonesianContentType): Promise<CachedContent[]> {
+  async getContentByType(contentType: IndonesianContentType): Promise<CachedContent<unknown>[]> {
     if (!this.db) await this.initDB();
 
-    const transaction = this.db.transaction([this.storeName], 'readonly');
+    const transaction = this.db!.transaction([this.storeName], 'readonly');
     const store = transaction.objectStore(this.storeName);
     const index = store.index('contentType');
 
@@ -188,7 +190,7 @@ export class IndonesianCache {
       const request = index.getAll(contentType);
 
       request.onsuccess = () => {
-        const results: CachedContent[] = request.result.filter(item => !this.isExpired(item));
+        const results: CachedContent<unknown>[] = request.result.filter(item => !this.isExpired(item));
         resolve(results);
       };
 
@@ -231,7 +233,7 @@ export class IndonesianCache {
       return 'unknown';
     }
 
-    const connection = (navigator as any).connection;
+    const connection = (navigator as NetworkConnectionAPI).connection;
     const downlink = connection?.downlink || 0;
     const rtt = connection?.rtt || 0;
 
@@ -254,11 +256,11 @@ export class IndonesianCache {
       return '4g';
     }
 
-    const connection = (navigator as any).connection;
+    const connection = (navigator as NetworkConnectionAPI).connection;
     return connection?.effectiveType || '4g';
   }
 
-  private isExpired(cached: CachedContent): boolean {
+  private isExpired(cached: CachedContent<unknown>): boolean {
     const now = Date.now();
 
     // Adjust TTL based on Indonesian context
@@ -281,7 +283,7 @@ export class IndonesianCache {
     return (now - cached.timestamp) > adjustedTTL;
   }
 
-  private isContentValidForCurrentConditions(cached: CachedContent): boolean {
+  private isContentValidForCurrentConditions(cached: CachedContent<unknown>): boolean {
     const currentCarrier = this.detectIndonesianCarrier();
 
     // If carrier optimization is important for this content type
@@ -313,7 +315,7 @@ export class IndonesianCache {
     return hour >= 8 && hour <= 18;
   }
 
-  private calculateDataSize(data: any): number {
+  private calculateDataSize<T>(data: T): number {
     return new Blob([JSON.stringify(data)]).size;
   }
 
@@ -340,7 +342,7 @@ export class IndonesianCache {
       const request = store.getAll();
 
       request.onsuccess = () => {
-        const allContent: CachedContent[] = request.result;
+        const allContent: CachedContent<unknown>[] = request.result;
         const deletePromises = allContent
           .filter(content => this.isExpired(content))
           .map(content => this.deleteContent(content.key));
@@ -365,14 +367,14 @@ export class IndonesianCache {
       oldestItem: null,
     };
 
-    const transaction = this.db.transaction([this.storeName], 'readonly');
+    const transaction = this.db!.transaction([this.storeName], 'readonly');
     const store = transaction.objectStore(this.storeName);
 
     return new Promise((resolve, reject) => {
       const request = store.getAll();
 
       request.onsuccess = () => {
-        const allContent: CachedContent[] = request.result;
+        const allContent: CachedContent<unknown>[] = request.result;
 
         const stats = {
           totalItems: allContent.length,
@@ -408,9 +410,9 @@ export function initIndonesianCache(config?: Partial<IndonesianCacheConfig>): vo
   }, 60 * 60 * 1000); // Every hour
 }
 
-export function cacheIndonesianContent(
+export function cacheIndonesianContent<T>(
   key: string,
-  data: any,
+  data: T,
   contentType: IndonesianContentType,
   customTTL?: number
 ): Promise<void> {
@@ -421,7 +423,7 @@ export function cacheIndonesianContent(
   return indonesianCache.cacheContent(key, data, contentType, customTTL);
 }
 
-export function getIndonesianContent(key: string): Promise<any | null> {
+export function getIndonesianContent<T = unknown>(key: string): Promise<T | null> {
   if (!indonesianCache) {
     initIndonesianCache();
   }
@@ -429,7 +431,7 @@ export function getIndonesianContent(key: string): Promise<any | null> {
   return indonesianCache.getContent(key);
 }
 
-export function getIndonesianContentByType(contentType: IndonesianContentType): Promise<CachedContent[]> {
+export function getIndonesianContentByType(contentType: IndonesianContentType): Promise<CachedContent<unknown>[]> {
   if (!indonesianCache) {
     initIndonesianCache();
   }

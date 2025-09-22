@@ -44,7 +44,7 @@ export default component$(() => {
           <Form
             action={signInAction}
             onSubmitCompleted$={(result) => {
-              if (result.failed) {
+              if ('failed' in result && result.failed) {
                 error.value = 'Invalid username or password';
               }
             }}

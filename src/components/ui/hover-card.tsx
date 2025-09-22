@@ -4,6 +4,7 @@ import {
   useStore,
   useTask$,
   type PropsOf,
+  type JSXOutput,
   Slot,
   $,
   useOnDocument,
@@ -37,7 +38,7 @@ const hoverCardVariants = cva(
 );
 
 export interface HoverCardProps {
-  children: any;
+  children: JSXOutput;
   openDelay?: number;
   closeDelay?: number;
   defaultOpen?: boolean;
@@ -52,7 +53,6 @@ export const HoverCard = component$<HoverCardProps>(
     closeDelay = 300,
     defaultOpen,
     open,
-    onOpenChange,
   }) => {
     const store = useStore<HoverCardStore>({
       isOpen: open ?? defaultOpen ?? false,

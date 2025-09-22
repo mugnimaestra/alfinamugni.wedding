@@ -7,6 +7,7 @@ import {
   type PropsOf,
   Slot,
   $,
+  type JSXChildren,
 } from "@builder.io/qwik";
 import { cva } from "class-variance-authority";
 import { cn } from "~/lib/utils";
@@ -42,7 +43,7 @@ const contextMenuItemVariants = cva(
 const contextMenuSeparatorVariants = cva("-mx-1 my-1 h-px bg-muted");
 
 export interface ContextMenuProps {
-  children: any;
+  children: JSXChildren;
 }
 
 export const ContextMenu = component$<ContextMenuProps>(({ children }) => {
@@ -341,7 +342,7 @@ export const ContextMenuLabel = component$<ContextMenuLabelProps>(
 );
 
 export interface ContextMenuSubProps {
-  children: any;
+  children: JSXChildren;
 }
 
 export const ContextMenuSub = component$<ContextMenuSubProps>(

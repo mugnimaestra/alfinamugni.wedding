@@ -171,7 +171,7 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
         console.log('Wish flagged for review:', {
           id: wishId,
           guest: wish?.guest_name,
-          message: wish?.message?.substring(0, 100) + (wish?.message?.length > 100 ? '...' : ''),
+          message: wish?.message?.substring(0, 100) + (wish?.message?.length && wish?.message?.length > 100 ? '...' : ''),
           timestamp: new Date().toISOString()
         });
 

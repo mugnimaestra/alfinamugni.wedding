@@ -949,7 +949,7 @@ export default component$(() => {
                             }
                           )}
                         >
-                          {status}
+                          {String(status)}
                         </span>
                       ),
                     },
@@ -1058,7 +1058,7 @@ export default component$(() => {
                             }
                           )}
                         >
-                          {status}
+                          {String(status)}
                         </span>
                       ),
                     },

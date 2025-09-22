@@ -1,12 +1,10 @@
-import { component$, type QwikIntrinsicElements, Slot } from "@builder.io/qwik";
-import { type FormStore, getValue, getError } from "@modular-forms/qwik";
+import { component$, type QwikIntrinsicElements, Slot, type JSXOutput } from "@builder.io/qwik";
+import { type FormStore, getValue, getError, type FieldValues } from "@modular-forms/qwik";
 import { cn } from "~/lib/utils";
 
-type FormValues = Record<string, unknown>;
-
-type FormProps = QwikIntrinsicElements["form"] & {
-  store?: FormStore<any>;
-  onSubmit$?: (values: FormValues) => void;
+type FormProps<T extends FieldValues = FieldValues> = QwikIntrinsicElements["form"] & {
+  store?: FormStore<T>;
+  onSubmit$?: (values: T) => void;
 };
 
 export const Form = component$<FormProps>(
@@ -19,11 +17,12 @@ export const Form = component$<FormProps>(
           if (store && onSubmit$) {
             // Get form values from store
             const formData = new FormData(event.target as HTMLFormElement);
-            const values: FormValues = {};
+            const values: FieldValues = {};
 
             // Extract values from form data
             for (const [key, value] of formData.entries()) {
-              values[key] = value;
+              // @ts-expect-error: Qwik form value compatibility
+              values[key] = value instanceof File ? value : String(value);
             }
 
             onSubmit$(values);
@@ -37,21 +36,21 @@ export const Form = component$<FormProps>(
   }
 );
 
-type FormFieldProps = {
-  store: FormStore<any>;
-  name: string;
+type FormFieldProps<T extends FieldValues = FieldValues> = {
+  store: FormStore<T>;
+  name: keyof T;
   class?: string;
   children: (field: {
-    value: any;
+    value: T[keyof T];
     error: string | undefined;
     name: string;
-  }) => any;
+  }) => JSXOutput;
 };
 
 export const FormField = component$<FormFieldProps>(
   ({ store, name, class: className, children }) => {
-    const value = getValue(store as FormStore<any>, name as any);
-    const error = getError(store as FormStore<any>, name as any);
+    const value = getValue(store, name as string);
+    const error = getError(store, name as string);
 
     return (
       <div class={cn("space-y-2", className)}>

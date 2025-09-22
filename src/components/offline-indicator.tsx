@@ -5,6 +5,7 @@
 
 import { component$, useSignal, useVisibleTask$, useStore } from '@builder.io/qwik';
 import { getOfflineQueueStatus } from '../sw-plugins/offline-queue';
+import { type NetworkConnectionAPI } from '../utils/network-utils';
 
 interface NetworkStatus {
   isOnline: boolean;
@@ -41,8 +42,9 @@ export const OfflineIndicator = component$(() => {
     const updateNetworkStatus = () => {
       networkStatus.isOnline = navigator.onLine;
 
+      let connection: NetworkConnectionAPI['connection'] | null = null;
       if ('connection' in navigator) {
-        const connection = (navigator as any).connection;
+        connection = (navigator as NetworkConnectionAPI).connection;
         networkStatus.effectiveType = connection?.effectiveType || '4g';
         networkStatus.downlink = connection?.downlink || 26.1;
         networkStatus.saveData = connection?.saveData || false;
@@ -50,7 +52,7 @@ export const OfflineIndicator = component$(() => {
 
       // Detect Indonesian carrier (heuristic)
       networkStatus.carrier = detectIndonesianCarrier(networkStatus.downlink,
-        'rtt' in (navigator as any).connection ? (navigator as any).connection.rtt : 50);
+        connection && 'rtt' in connection && connection.rtt !== undefined ? connection.rtt : 50);
 
       lastUpdateTime.value = Date.now();
 
@@ -95,7 +97,8 @@ export const OfflineIndicator = component$(() => {
 
     // Listen for connection changes on supported browsers
     if ('connection' in navigator) {
-      (navigator as any).connection.addEventListener('change', handleConnectionChange);
+      const conn = (navigator as NetworkConnectionAPI).connection;
+      conn?.addEventListener('change', handleConnectionChange);
     }
 
     // Update queue status periodically
@@ -106,7 +109,8 @@ export const OfflineIndicator = component$(() => {
       window.removeEventListener('offline', handleOffline);
 
       if ('connection' in navigator) {
-        (navigator as any).connection.removeEventListener('change', handleConnectionChange);
+        const conn = (navigator as NetworkConnectionAPI).connection;
+        conn?.removeEventListener?.('change', handleConnectionChange);
       }
 
       clearInterval(queueInterval);

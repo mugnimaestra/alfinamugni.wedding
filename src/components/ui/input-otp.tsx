@@ -5,7 +5,6 @@ import {
   useTask$,
   type PropsOf,
   $,
-  useOnDocument,
   Slot,
 } from "@builder.io/qwik";
 import { cva } from "class-variance-authority";
@@ -57,18 +56,6 @@ const inputOtpInputVariants = cva(
   }
 );
 
-const inputOtpSeparatorVariants = cva("text-muted-foreground", {
-  variants: {
-    size: {
-      sm: "text-xs",
-      default: "text-sm",
-      lg: "text-base",
-    },
-  },
-  defaultVariants: {
-    size: "default",
-  },
-});
 
 // OTP Input Context Store
 interface OTPInputStore {
@@ -93,7 +80,6 @@ export const InputOTP = component$<InputOTPProps>(
     onChange,
     onComplete,
     maxLength = 6,
-    disabled = false,
     size = "default",
     class: className,
     ...props
@@ -124,7 +110,7 @@ export const InputOTP = component$<InputOTPProps>(
   }
 );
 
-export interface InputOTPGroupProps extends PropsOf<"div"> {}
+export type InputOTPGroupProps = PropsOf<"div">
 
 export const InputOTPGroup = component$<InputOTPGroupProps>(
   ({ class: className, ...props }) => {
@@ -342,7 +328,7 @@ export const InputOTPSlot = component$<InputOTPSlotProps>(
   }
 );
 
-export interface InputOTPSeparatorProps extends PropsOf<"div"> {}
+export type InputOTPSeparatorProps = PropsOf<"div">
 
 export const InputOTPSeparator = component$<InputOTPSeparatorProps>(
   ({ ...props }) => {

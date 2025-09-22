@@ -4,7 +4,7 @@
  */
 
 import { component$, useSignal, useVisibleTask$, useStore, $ } from '@builder.io/qwik';
-import { getNetworkInfo, type NetworkInfo } from '../utils/network-utils';
+import { getNetworkInfo, type NetworkInfo, type NetworkConnectionAPI } from '../utils/network-utils';
 
 export interface AdaptiveImageProps {
   src: string;
@@ -114,13 +114,14 @@ export const AdaptiveImage = component$<AdaptiveImageProps>((props) => {
 
     window.addEventListener('online', handleNetworkChange);
     if ('connection' in navigator) {
-      (navigator as any).connection.addEventListener('change', handleNetworkChange);
+      (navigator as NetworkConnectionAPI).connection.addEventListener('change', handleNetworkChange);
     }
 
     cleanup(() => {
       window.removeEventListener('online', handleNetworkChange);
       if ('connection' in navigator) {
-        (navigator as any).connection.removeEventListener('change', handleNetworkChange);
+        const conn = (navigator as NetworkConnectionAPI).connection;
+        conn?.removeEventListener?.('change', handleNetworkChange);
       }
     });
   });

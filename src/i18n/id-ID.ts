@@ -407,443 +407,508 @@ export interface WeddingTranslations {
 
 export const indonesianTranslations: WeddingTranslations = {
   common: {
-    loading: 'Memuat...',
-    error: 'Terjadi kesalahan',
-    retry: 'Coba lagi',
-    save: 'Simpan',
-    cancel: 'Batal',
-    submit: 'Kirim',
-    close: 'Tutup',
-    next: 'Selanjutnya',
-    previous: 'Sebelumnya',
-    continue: 'Lanjutkan',
-    back: 'Kembali',
-    yes: 'Ya',
-    no: 'Tidak',
-    maybe: 'Mungkin',
-    required: 'Wajib diisi',
-    optional: 'Opsional',
-    email: 'Email',
-    phone: 'Nomor telepon',
-    name: 'Nama',
-    address: 'Alamat',
-    message: 'Pesan',
-    date: 'Tanggal',
-    time: 'Waktu',
-    location: 'Lokasi',
-    quantity: 'Jumlah',
-    guests: 'Tamu',
+    loading: "Memuat...",
+    error: "Terjadi kesalahan",
+    retry: "Coba lagi",
+    save: "Simpan",
+    cancel: "Batal",
+    submit: "Kirim",
+    close: "Tutup",
+    next: "Selanjutnya",
+    previous: "Sebelumnya",
+    continue: "Lanjutkan",
+    back: "Kembali",
+    yes: "Ya",
+    no: "Tidak",
+    maybe: "Mungkin",
+    required: "Wajib diisi",
+    optional: "Opsional",
+    email: "Email",
+    phone: "Nomor telepon",
+    name: "Nama",
+    address: "Alamat",
+    message: "Pesan",
+    date: "Tanggal",
+    time: "Waktu",
+    location: "Lokasi",
+    quantity: "Jumlah",
+    guests: "Tamu",
   },
 
   wedding: {
-    bride: 'Pengantin Wanita',
-    groom: 'Pengantin Pria',
-    couple: 'Pasangan Pengantin',
-    ceremony: 'Akad Nikah',
-    reception: 'Resepsi',
-    wedding: 'Pernikahan',
-    marriage: 'Perkawinan',
-    invitation: 'Undangan',
-    celebration: 'Perayaan',
-    blessing: 'Berkat',
-    unity: 'Persatuan',
-    love: 'Cinta',
-    happiness: 'Kebahagiaan',
-    honor: 'Kehormatan',
-    respect: 'Penghormatan',
+    bride: "Pengantin Wanita",
+    groom: "Pengantin Pria",
+    couple: "Pasangan Pengantin",
+    ceremony: "Akad Nikah",
+    reception: "Resepsi",
+    wedding: "Pernikahan",
+    marriage: "Perkawinan",
+    invitation: "Undangan",
+    celebration: "Perayaan",
+    blessing: "Berkat",
+    unity: "Persatuan",
+    love: "Cinta",
+    happiness: "Kebahagiaan",
+    honor: "Kehormatan",
+    respect: "Penghormatan",
   },
 
   navigation: {
-    home: 'Beranda',
-    story: 'Kisah Kami',
-    details: 'Detail Acara',
-    gallery: 'Galeri Foto',
-    rsvp: 'Konfirmasi Kehadiran',
-    contact: 'Kontak',
-    gifts: 'Kado & Hadiah',
-    wishes: 'Ucapan & Doa',
-    accommodation: 'Akomodasi',
-    transportation: 'Transportasi',
-    schedule: 'Jadwal Acara',
+    home: "Beranda",
+    story: "Kisah Kami",
+    details: "Detail Acara",
+    gallery: "Galeri Foto",
+    rsvp: "Konfirmasi Kehadiran",
+    contact: "Kontak",
+    gifts: "Kado & Hadiah",
+    wishes: "Ucapan & Doa",
+    accommodation: "Akomodasi",
+    transportation: "Transportasi",
+    schedule: "Jadwal Acara",
   },
 
   rsvp: {
-    title: 'Konfirmasi Kehadiran',
-    subtitle: 'Mohon konfirmasi kehadiran Anda pada acara pernikahan kami',
+    title: "Konfirmasi Kehadiran",
+    subtitle: "Mohon konfirmasi kehadiran Anda pada acara pernikahan kami",
     form: {
-      fullName: 'Nama Lengkap',
-      email: 'Alamat Email',
-      phone: 'Nomor WhatsApp',
-      attendance: 'Kehadiran',
-      attendingYes: 'Hadir',
-      attendingNo: 'Tidak Hadir',
-      attendingMaybe: 'Masih Ragu',
-      guestCount: 'Jumlah Tamu',
-      guestCountPlaceholder: 'Berapa orang yang akan hadir?',
-      dietaryRequirements: 'Pantangan Makanan',
-      dietaryPlaceholder: 'Halal, vegetarian, alergi, dll.',
-      specialRequests: 'Permintaan Khusus',
-      specialRequestsPlaceholder: 'Kursi roda, tempat duduk khusus, dll.',
-      transportation: 'Transportasi',
+      fullName: "Nama Lengkap",
+      email: "Alamat Email",
+      phone: "Nomor WhatsApp",
+      attendance: "Kehadiran",
+      attendingYes: "Hadir",
+      attendingNo: "Tidak Hadir",
+      attendingMaybe: "Masih Ragu",
+      guestCount: "Jumlah Tamu",
+      guestCountPlaceholder: "Berapa orang yang akan hadir?",
+      dietaryRequirements: "Pantangan Makanan",
+      dietaryPlaceholder: "Halal, vegetarian, alergi, dll.",
+      specialRequests: "Permintaan Khusus",
+      specialRequestsPlaceholder: "Kursi roda, tempat duduk khusus, dll.",
+      transportation: "Transportasi",
       transportationOptions: {
-        ownVehicle: 'Kendaraan Pribadi',
-        shuttle: 'Shuttle yang Disediakan',
-        publicTransport: 'Transportasi Umum',
-        taxi: 'Taxi/Online',
+        ownVehicle: "Kendaraan Pribadi",
+        shuttle: "Shuttle yang Disediakan",
+        publicTransport: "Transportasi Umum",
+        taxi: "Taxi/Online",
       },
-      accommodation: 'Memerlukan Akomodasi',
-      accommodationYes: 'Ya, saya memerlukan bantuan akomodasi',
-      accommodationNo: 'Tidak, terima kasih',
-      message: 'Pesan untuk Pengantin',
-      messagePlaceholder: 'Ucapan selamat, doa, atau pesan khusus...',
+      accommodation: "Memerlukan Akomodasi",
+      accommodationYes: "Ya, saya memerlukan bantuan akomodasi",
+      accommodationNo: "Tidak, terima kasih",
+      message: "Pesan untuk Pengantin",
+      messagePlaceholder: "Ucapan selamat, doa, atau pesan khusus...",
     },
     confirmation: {
-      title: 'Terima Kasih!',
-      message: 'Konfirmasi kehadiran Anda telah berhasil dikirim',
-      emailSent: 'Email konfirmasi telah dikirim ke alamat email Anda',
-      thankYou: 'Kami sangat menantikan kehadiran Anda dalam acara bahagia ini',
+      title: "Terima Kasih!",
+      message: "Konfirmasi kehadiran Anda telah berhasil dikirim",
+      emailSent: "Email konfirmasi telah dikirim ke alamat email Anda",
+      thankYou: "Kami sangat menantikan kehadiran Anda dalam acara bahagia ini",
     },
     errors: {
-      nameRequired: 'Nama lengkap wajib diisi',
-      emailRequired: 'Alamat email wajib diisi',
-      emailInvalid: 'Format email tidak valid',
-      phoneRequired: 'Nomor telepon wajib diisi',
-      phoneInvalid: 'Format nomor telepon tidak valid',
-      attendanceRequired: 'Mohon pilih status kehadiran',
-      guestCountRequired: 'Jumlah tamu wajib diisi',
-      guestCountMin: 'Minimal 1 orang',
-      guestCountMax: 'Maksimal 10 orang per undangan',
-      submissionFailed: 'Gagal mengirim konfirmasi. Silakan coba lagi.',
-      networkError: 'Tidak ada koneksi internet. Data akan tersimpan dan dikirim otomatis saat terhubung.',
+      nameRequired: "Nama lengkap wajib diisi",
+      emailRequired: "Alamat email wajib diisi",
+      emailInvalid: "Format email tidak valid",
+      phoneRequired: "Nomor telepon wajib diisi",
+      phoneInvalid: "Format nomor telepon tidak valid",
+      attendanceRequired: "Mohon pilih status kehadiran",
+      guestCountRequired: "Jumlah tamu wajib diisi",
+      guestCountMin: "Minimal 1 orang",
+      guestCountMax: "Maksimal 10 orang per undangan",
+      submissionFailed: "Gagal mengirim konfirmasi. Silakan coba lagi.",
+      networkError:
+        "Tidak ada koneksi internet. Data akan tersimpan dan dikirim otomatis saat terhubung.",
     },
   },
 
   gallery: {
-    title: 'Galeri Foto',
-    subtitle: 'Berbagi momen indah bersama kami',
+    title: "Galeri Foto",
+    subtitle: "Berbagi momen indah bersama kami",
     upload: {
-      title: 'Upload Foto',
-      subtitle: 'Bagikan foto-foto indah dari acara kami',
-      dragAndDrop: 'Klik atau seret foto ke sini',
-      selectFiles: 'Pilih dari Galeri',
-      takePhoto: 'Ambil Foto',
-      maxFiles: 'Maksimal 10 foto',
-      maxSize: '10MB per foto',
-      supportedFormats: 'Format: JPEG, PNG, WebP, HEIC',
-      uploading: 'Mengunggah foto...',
-      uploaded: 'Foto berhasil diunggah!',
-      failed: 'Gagal mengunggah foto',
-      retry: 'Coba lagi',
+      title: "Upload Foto",
+      subtitle: "Bagikan foto-foto indah dari acara kami",
+      dragAndDrop: "Klik atau seret foto ke sini",
+      selectFiles: "Pilih dari Galeri",
+      takePhoto: "Ambil Foto",
+      maxFiles: "Maksimal 10 foto",
+      maxSize: "10MB per foto",
+      supportedFormats: "Format: JPEG, PNG, WebP, HEIC",
+      uploading: "Mengunggah foto...",
+      uploaded: "Foto berhasil diunggah!",
+      failed: "Gagal mengunggah foto",
+      retry: "Coba lagi",
     },
     categories: {
-      ceremony: 'Akad Nikah',
-      reception: 'Resepsi',
-      prewedding: 'Prewedding',
-      family: 'Keluarga',
-      friends: 'Teman-teman',
-      candid: 'Candid',
-      traditional: 'Adat Tradisional',
+      ceremony: "Akad Nikah",
+      reception: "Resepsi",
+      prewedding: "Prewedding",
+      family: "Keluarga",
+      friends: "Teman-teman",
+      candid: "Candid",
+      traditional: "Adat Tradisional",
     },
   },
 
   contact: {
-    title: 'Kontak',
-    subtitle: 'Hubungi kami untuk informasi lebih lanjut',
+    title: "Kontak",
+    subtitle: "Hubungi kami untuk informasi lebih lanjut",
     bride: {
-      title: 'Pengantin Wanita',
-      name: 'Alfina',
-      family: 'Keluarga Besar Alfina',
-      phone: 'Telepon',
-      whatsapp: 'WhatsApp',
+      title: "Pengantin Wanita",
+      name: "Alfina",
+      family: "Keluarga Besar Alfina",
+      phone: "Telepon",
+      whatsapp: "WhatsApp",
     },
     groom: {
-      title: 'Pengantin Pria',
-      name: 'Mugni',
-      family: 'Keluarga Besar Mugni',
-      phone: 'Telepon',
-      whatsapp: 'WhatsApp',
+      title: "Pengantin Pria",
+      name: "Mugni",
+      family: "Keluarga Besar Mugni",
+      phone: "Telepon",
+      whatsapp: "WhatsApp",
     },
     families: {
-      title: 'Keluarga Besar',
-      brideFamily: 'Keluarga Mempelai Wanita',
-      groomFamily: 'Keluarga Mempelai Pria',
+      title: "Keluarga Besar",
+      brideFamily: "Keluarga Mempelai Wanita",
+      groomFamily: "Keluarga Mempelai Pria",
     },
   },
 
   details: {
-    title: 'Detail Acara',
-    subtitle: 'Informasi lengkap mengenai rangkaian acara pernikahan',
+    title: "Detail Acara",
+    subtitle: "Informasi lengkap mengenai rangkaian acara pernikahan",
     ceremony: {
-      title: 'Akad Nikah',
-      date: '29 November 2025',
-      time: '08:00 WIB',
-      location: 'Masjid Istiqlal',
-      address: 'Jl. Taman Wijaya Kusuma, Jakarta Pusat',
-      description: 'Upacara pernikahan religius yang mengikat kedua mempelai dalam ikatan suci pernikahan',
+      title: "Akad Nikah",
+      date: "29 November 2025",
+      time: "08:00 WIB",
+      location: "Masjid Istiqlal",
+      address: "Jl. Taman Wijaya Kusuma, Jakarta Pusat",
+      description:
+        "Upacara pernikahan religius yang mengikat kedua mempelai dalam ikatan suci pernikahan",
     },
     reception: {
-      title: 'Resepsi Pernikahan',
-      date: '29 November 2025',
-      time: '18:00 - 21:00 WIB',
-      location: 'Jakarta Convention Center',
-      address: 'Jl. Gatot Subroto, Jakarta Pusat',
-      description: 'Perayaan kebahagiaan bersama keluarga, sahabat, dan orang-orang terkasih',
+      title: "Resepsi Pernikahan",
+      date: "29 November 2025",
+      time: "18:00 - 21:00 WIB",
+      location: "Jakarta Convention Center",
+      address: "Jl. Gatot Subroto, Jakarta Pusat",
+      description:
+        "Perayaan kebahagiaan bersama keluarga, sahabat, dan orang-orang terkasih",
     },
     dressCode: {
-      title: 'Dress Code',
-      description: 'Kami sangat menghargai jika Anda berkenan mengenakan pakaian dengan nuansa warna berikut:',
-      colors: 'Warna yang Disarankan',
+      title: "Dress Code",
+      description:
+        "Kami sangat menghargai jika Anda berkenan mengenakan pakaian dengan nuansa warna berikut:",
+      colors: "Warna yang Disarankan",
       suggestions: [
-        'Coklat Muda (Cream/Beige)',
-        'Hijau Sage',
-        'Lavender',
-        'Abu-abu Muda',
-        'Putih Gading',
+        "Coklat Muda (Cream/Beige)",
+        "Hijau Sage",
+        "Lavender",
+        "Abu-abu Muda",
+        "Putih Gading",
       ],
       avoid: [
-        'Putih murni (reserved untuk pengantin)',
-        'Hitam total',
-        'Warna neon yang terlalu mencolok',
+        "Putih murni (reserved untuk pengantin)",
+        "Hitam total",
+        "Warna neon yang terlalu mencolok",
       ],
     },
     schedule: {
-      title: 'Jadwal Acara',
+      title: "Jadwal Acara",
       events: {
-        arrival: 'Kedatangan Tamu',
-        ceremony: 'Akad Nikah',
-        photos: 'Sesi Foto Bersama',
-        dinner: 'Makan Malam',
-        entertainment: 'Hiburan',
-        closing: 'Penutupan',
+        arrival: "Kedatangan Tamu",
+        ceremony: "Akad Nikah",
+        photos: "Sesi Foto Bersama",
+        dinner: "Makan Malam",
+        entertainment: "Hiburan",
+        closing: "Penutupan",
       },
     },
   },
 
   gifts: {
-    title: 'Kado & Hadiah',
-    subtitle: 'Doa dan restu Anda adalah hadiah terindah bagi kami',
-    description: 'Kehadiran Anda dalam acara bahagia kami sudah merupakan hadiah yang sangat berharga. Namun jika Anda berkenan memberikan hadiah, berikut adalah beberapa cara:',
+    title: "Kado & Hadiah",
+    subtitle: "Doa dan restu Anda adalah hadiah terindah bagi kami",
+    description:
+      "Kehadiran Anda dalam acara bahagia kami sudah merupakan hadiah yang sangat berharga. Namun jika Anda berkenan memberikan hadiah, berikut adalah beberapa cara:",
     bankAccounts: {
-      title: 'Transfer Bank',
-      bride: 'Rekening Mempelai Wanita',
-      groom: 'Rekening Mempelai Pria',
+      title: "Transfer Bank",
+      bride: "Rekening Mempelai Wanita",
+      groom: "Rekening Mempelai Pria",
     },
     physicalGifts: {
-      title: 'Hadiah Fisik',
-      description: 'Hadiah fisik dapat dikirim ke alamat berikut:',
-      address: 'Alamat Pengiriman Hadiah',
+      title: "Hadiah Fisik",
+      description: "Hadiah fisik dapat dikirim ke alamat berikut:",
+      address: "Alamat Pengiriman Hadiah",
     },
-    gratitude: 'Terima kasih atas segala bentuk doa, restu, dan hadiah yang Anda berikan. Semoga Allah SWT membalas kebaikan Anda.',
+    gratitude:
+      "Terima kasih atas segala bentuk doa, restu, dan hadiah yang Anda berikan. Semoga Allah SWT membalas kebaikan Anda.",
   },
 
   story: {
-    title: 'Kisah Cinta Kami',
-    subtitle: 'Perjalanan indah menuju pelaminan',
+    title: "Kisah Cinta Kami",
+    subtitle: "Perjalanan indah menuju pelaminan",
     chapters: {
       meeting: {
-        title: 'Pertemuan Pertama',
-        content: 'Takdir mempertemukan kami di tempat yang tak pernah kami sangka. Dalam kesederhanaan pertemuan itu, Allah telah menuliskan permulaan kisah cinta yang indah.',
+        title: "Pertemuan Pertama",
+        content:
+          "Takdir mempertemukan kami di tempat yang tak pernah kami sangka. Dalam kesederhanaan pertemuan itu, Allah telah menuliskan permulaan kisah cinta yang indah.",
       },
       dating: {
-        title: 'Masa Taaruf',
-        content: 'Dalam proses saling mengenal, kami belajar memahami satu sama lain. Setiap percakapan memperkuat keyakinan bahwa kami diciptakan untuk saling melengkapi.',
+        title: "Masa Taaruf",
+        content:
+          "Dalam proses saling mengenal, kami belajar memahami satu sama lain. Setiap percakapan memperkuat keyakinan bahwa kami diciptakan untuk saling melengkapi.",
       },
       proposal: {
-        title: 'Lamaran',
-        content: 'Dengan restu kedua orang tua dan doa yang tulus, momen sakral lamaran menjadi langkah awal menuju kehidupan baru yang penuh berkah.',
+        title: "Lamaran",
+        content:
+          "Dengan restu kedua orang tua dan doa yang tulus, momen sakral lamaran menjadi langkah awal menuju kehidupan baru yang penuh berkah.",
       },
       planning: {
-        title: 'Persiapan Pernikahan',
-        content: 'Bersama keluarga dan orang-orang terkasih, kami mempersiapkan hari bahagia yang akan menjadi awal dari perjalanan hidup baru sebagai suami istri.',
+        title: "Persiapan Pernikahan",
+        content:
+          "Bersama keluarga dan orang-orang terkasih, kami mempersiapkan hari bahagia yang akan menjadi awal dari perjalanan hidup baru sebagai suami istri.",
       },
     },
   },
 
   wishes: {
-    title: 'Ucapan & Doa',
-    subtitle: 'Tinggalkan ucapan selamat dan doa terbaik untuk kami',
+    title: "Ucapan & Doa",
+    subtitle: "Tinggalkan ucapan selamat dan doa terbaik untuk kami",
     form: {
-      name: 'Nama Anda',
-      message: 'Ucapan & Doa',
-      messagePlaceholder: 'Tuliskan ucapan selamat, doa, atau pesan indah untuk kami...',
-      submit: 'Kirim Ucapan',
+      name: "Nama Anda",
+      message: "Ucapan & Doa",
+      messagePlaceholder:
+        "Tuliskan ucapan selamat, doa, atau pesan indah untuk kami...",
+      submit: "Kirim Ucapan",
     },
     responses: {
-      thankYou: 'Terima kasih atas ucapan dan doa yang indah!',
-      pending: 'Ucapan Anda sedang dalam proses moderasi',
-      approved: 'Ucapan Anda telah dipublikasikan',
+      thankYou: "Terima kasih atas ucapan dan doa yang indah!",
+      pending: "Ucapan Anda sedang dalam proses moderasi",
+      approved: "Ucapan Anda telah dipublikasikan",
     },
     display: {
-      from: 'dari',
-      anonymous: 'Anonim',
-      showMore: 'Lihat lebih banyak',
-      showLess: 'Lihat lebih sedikit',
+      from: "dari",
+      anonymous: "Anonim",
+      showMore: "Lihat lebih banyak",
+      showLess: "Lihat lebih sedikit",
     },
   },
 
   mobile: {
     install: {
-      title: 'Pasang Aplikasi Wedding',
-      subtitle: 'Dapatkan akses cepat ke semua informasi pernikahan',
+      title: "Pasang Aplikasi Wedding",
+      subtitle: "Dapatkan akses cepat ke semua informasi pernikahan",
       benefits: [
-        'Akses langsung dari layar utama',
-        'Loading lebih cepat dan hemat data',
-        'RSVP tetap tersimpan saat offline',
-        'Upload foto langsung dari kamera',
-        'Notifikasi update acara pernikahan',
+        "Akses langsung dari layar utama",
+        "Loading lebih cepat dan hemat data",
+        "RSVP tetap tersimpan saat offline",
+        "Upload foto langsung dari kamera",
+        "Notifikasi update acara pernikahan",
       ],
-      install: 'Pasang Aplikasi',
-      later: 'Nanti saja',
-      never: 'Jangan tampilkan lagi',
+      install: "Pasang Aplikasi",
+      later: "Nanti saja",
+      never: "Jangan tampilkan lagi",
     },
     offline: {
-      title: 'Mode Offline',
-      message: 'Anda sedang offline. Data akan tersimpan dan dikirim otomatis saat terhubung kembali.',
-      queue: 'pesan dalam antrian',
-      retry: 'Coba sambung kembali',
+      title: "Mode Offline",
+      message:
+        "Anda sedang offline. Data akan tersimpan dan dikirim otomatis saat terhubung kembali.",
+      queue: "pesan dalam antrian",
+      retry: "Coba sambung kembali",
     },
     network: {
-      slow: 'Koneksi lambat - Mengoptimalkan untuk jaringan',
-      fast: 'Koneksi baik',
-      offline: 'Offline',
-      optimizing: 'Mengoptimalkan untuk jaringan Indonesia...',
-      dataSaver: 'Mode hemat data aktif',
+      slow: "Koneksi lambat - Mengoptimalkan untuk jaringan",
+      fast: "Koneksi baik",
+      offline: "Offline",
+      optimizing: "Mengoptimalkan untuk jaringan Indonesia...",
+      dataSaver: "Mode hemat data aktif",
     },
   },
 
   cultural: {
     greetings: {
-      morning: 'Selamat pagi',
-      afternoon: 'Selamat siang',
-      evening: 'Selamat malam',
-      formal: 'Assalamu\'alaikum warahmatullahi wabarakatuh',
+      morning: "Selamat pagi",
+      afternoon: "Selamat siang",
+      evening: "Selamat malam",
+      formal: "Assalamu'alaikum warahmatullahi wabarakatuh",
     },
     blessings: {
       wedding: [
-        'Barakallahu lakuma wa baraka \'alaikuma wa jama\'a bainakuma fi khair',
-        'Semoga Allah memberikan berkah bagi kalian berdua dan menyatukan kalian dalam kebaikan',
-        'Semoga menjadi keluarga yang sakinah, mawaddah, warahmah',
+        "Barakallahu lakuma wa baraka 'alaikuma wa jama'a bainakuma fi khair",
+        "Semoga Allah memberikan berkah bagi kalian berdua dan menyatukan kalian dalam kebaikan",
+        "Semoga menjadi keluarga yang sakinah, mawaddah, warahmah",
       ],
       happiness: [
-        'Semoga bahagia dunia akhirat',
-        'Semoga langgeng hingga kakek nenek',
-        'Semoga cepat diberi momongan',
+        "Semoga bahagia dunia akhirat",
+        "Semoga langgeng hingga kakek nenek",
+        "Semoga cepat diberi momongan",
       ],
       prosperity: [
-        'Semoga diberkahi rezeki yang halal dan melimpah',
-        'Semoga dimudahkan segala urusan',
-        'Semoga menjadi keluarga yang penuh berkah',
+        "Semoga diberkahi rezeki yang halal dan melimpah",
+        "Semoga dimudahkan segala urusan",
+        "Semoga menjadi keluarga yang penuh berkah",
       ],
     },
     traditions: {
-      siraman: 'Siraman - Ritual mandi pengantin sebagai simbol penyucian diri',
-      midodareni: 'Midodareni - Malam sebelum akad nikah, pengantin wanita berdoa dan mempersiapkan diri',
-      ijabKabul: 'Ijab Kabul - Akad nikah yang mengikat kedua mempelai secara sah',
-      sungkeman: 'Sungkeman - Penghormatan dan meminta restu kepada orang tua',
-      reception: 'Resepsi - Perayaan kebahagiaan bersama keluarga dan kerabat',
+      siraman: "Siraman - Ritual mandi pengantin sebagai simbol penyucian diri",
+      midodareni:
+        "Midodareni - Malam sebelum akad nikah, pengantin wanita berdoa dan mempersiapkan diri",
+      ijabKabul:
+        "Ijab Kabul - Akad nikah yang mengikat kedua mempelai secara sah",
+      sungkeman: "Sungkeman - Penghormatan dan meminta restu kepada orang tua",
+      reception: "Resepsi - Perayaan kebahagiaan bersama keluarga dan kerabat",
     },
     islamicTerms: {
-      bismillah: 'Bismillahirrahmanirrahim - Dengan nama Allah Yang Maha Pengasih lagi Maha Penyayang',
-      inshaAllah: 'Insya Allah - Jika Allah berkehendak',
-      mashaAllah: 'Masha Allah - Apa yang Allah kehendaki',
-      barakallahu: 'Barakallahu - Semoga Allah memberkahi',
-      ameen: 'Aamiin - Kabulkanlah (doa)',
+      bismillah:
+        "Bismillahirrahmanirrahim - Dengan nama Allah Yang Maha Pengasih lagi Maha Penyayang",
+      inshaAllah: "Insya Allah - Jika Allah berkehendak",
+      mashaAllah: "Masha Allah - Apa yang Allah kehendaki",
+      barakallahu: "Barakallahu - Semoga Allah memberkahi",
+      ameen: "Aamiin - Kabulkanlah (doa)",
     },
   },
 
   jakarta: {
     areas: {
-      title: 'Wilayah Jakarta',
-      centralJakarta: 'Jakarta Pusat',
-      southJakarta: 'Jakarta Selatan',
-      northJakarta: 'Jakarta Utara',
-      eastJakarta: 'Jakarta Timur',
-      westJakarta: 'Jakarta Barat',
+      title: "Wilayah Jakarta",
+      centralJakarta: "Jakarta Pusat",
+      southJakarta: "Jakarta Selatan",
+      northJakarta: "Jakarta Utara",
+      eastJakarta: "Jakarta Timur",
+      westJakarta: "Jakarta Barat",
     },
     transportation: {
-      title: 'Transportasi',
-      mrt: 'MRT Jakarta',
-      transjakarta: 'TransJakarta',
-      taxi: 'Taksi',
-      motorcycle: 'Ojek Online',
-      car: 'Mobil Pribadi',
-      walking: 'Jalan Kaki',
+      title: "Transportasi",
+      mrt: "MRT Jakarta",
+      transjakarta: "TransJakarta",
+      taxi: "Taksi",
+      motorcycle: "Ojek Online",
+      car: "Mobil Pribadi",
+      walking: "Jalan Kaki",
     },
     traffic: {
-      peakHours: 'Jam Sibuk (07:00-09:00 & 17:00-19:00)',
-      normalHours: 'Jam Normal',
+      peakHours: "Jam Sibuk (07:00-09:00 & 17:00-19:00)",
+      normalHours: "Jam Normal",
       suggestions: [
-        'Gunakan transportasi umum saat jam sibuk',
-        'Berangkat lebih awal untuk menghindari kemacetan',
-        'Gunakan aplikasi navigasi untuk rute terbaik',
-        'Pertimbangkan menginap di hotel terdekat',
+        "Gunakan transportasi umum saat jam sibuk",
+        "Berangkat lebih awal untuk menghindari kemacetan",
+        "Gunakan aplikasi navigasi untuk rute terbaik",
+        "Pertimbangkan menginap di hotel terdekat",
       ],
     },
   },
 
   time: {
     months: [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
     ],
-    days: [
-      'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
-    ],
-    timeFormat: 'HH:mm',
-    dateFormat: 'DD MMMM YYYY',
-    wib: 'WIB (Waktu Indonesia Barat)',
-    wita: 'WITA (Waktu Indonesia Tengah)',
-    wit: 'WIT (Waktu Indonesia Timur)',
+    days: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"],
+    timeFormat: "HH:mm",
+    dateFormat: "DD MMMM YYYY",
+    wib: "WIB (Waktu Indonesia Barat)",
+    wita: "WITA (Waktu Indonesia Tengah)",
+    wit: "WIT (Waktu Indonesia Timur)",
   },
 
   notifications: {
     success: {
-      rsvpSubmitted: 'Konfirmasi kehadiran berhasil dikirim!',
-      photoUploaded: 'Foto berhasil diunggah!',
-      messagePosted: 'Ucapan berhasil dipublikasikan!',
+      rsvpSubmitted: "Konfirmasi kehadiran berhasil dikirim!",
+      photoUploaded: "Foto berhasil diunggah!",
+      messagePosted: "Ucapan berhasil dipublikasikan!",
     },
     errors: {
-      networkError: 'Tidak ada koneksi internet. Silakan coba lagi.',
-      serverError: 'Terjadi kesalahan pada server. Silakan coba beberapa saat lagi.',
-      validationError: 'Mohon periksa kembali data yang Anda masukkan.',
-      uploadError: 'Gagal mengunggah file. Silakan coba lagi.',
+      networkError: "Tidak ada koneksi internet. Silakan coba lagi.",
+      serverError:
+        "Terjadi kesalahan pada server. Silakan coba beberapa saat lagi.",
+      validationError: "Mohon periksa kembali data yang Anda masukkan.",
+      uploadError: "Gagal mengunggah file. Silakan coba lagi.",
     },
     warnings: {
-      slowConnection: 'Koneksi internet lambat. Gambar akan dioptimalkan.',
-      offlineMode: 'Anda sedang offline. Data akan tersimpan secara lokal.',
-      dataUsage: 'Penggunaan data sudah mencapai 80% dari limit harian.',
-      batteryLow: 'Baterai rendah. Mode hemat daya telah diaktifkan.',
+      slowConnection: "Koneksi internet lambat. Gambar akan dioptimalkan.",
+      offlineMode: "Anda sedang offline. Data akan tersimpan secara lokal.",
+      dataUsage: "Penggunaan data sudah mencapai 80% dari limit harian.",
+      batteryLow: "Baterai rendah. Mode hemat daya telah diaktifkan.",
     },
   },
 
   accessibility: {
-    skipToContent: 'Langsung ke konten',
-    openMenu: 'Buka menu',
-    closeMenu: 'Tutup menu',
-    playVideo: 'Putar video',
-    pauseVideo: 'Jeda video',
-    nextImage: 'Gambar selanjutnya',
-    previousImage: 'Gambar sebelumnya',
-    zoomIn: 'Perbesar',
-    zoomOut: 'Perkecil',
+    skipToContent: "Langsung ke konten",
+    openMenu: "Buka menu",
+    closeMenu: "Tutup menu",
+    playVideo: "Putar video",
+    pauseVideo: "Jeda video",
+    nextImage: "Gambar selanjutnya",
+    previousImage: "Gambar sebelumnya",
+    zoomIn: "Perbesar",
+    zoomOut: "Perkecil",
   },
 };
 
 // Utility function to get translation by key path
 export function getTranslation(keyPath: string, fallback?: string): string {
-  const keys = keyPath.split('.');
-  let current: any = indonesianTranslations;
+  const keys = keyPath.split(".");
+  let current: WeddingTranslations | Record<string, unknown> | string =
+    indonesianTranslations;
 
   for (const key of keys) {
-    if (current && typeof current === 'object' && key in current) {
-      current = current[key];
+    if (current && typeof current === "object" && key in current) {
+      current = current[key as keyof typeof current] as
+        | WeddingTranslations
+        | Record<string, unknown>
+        | string;
     } else {
       console.warn(`Translation key not found: ${keyPath}`);
       return fallback || keyPath;
     }
   }
 
-  return typeof current === 'string' ? current : fallback || keyPath;
+  return typeof current === "string" ? current : fallback || keyPath;
+}
+
+// Type-safe translation getter that validates key paths
+export function getTranslationSafe<T extends keyof WeddingTranslations>(
+  section: T,
+): WeddingTranslations[T];
+export function getTranslationSafe<
+  T extends keyof WeddingTranslations,
+  U extends keyof WeddingTranslations[T],
+>(section: T, subsection: U): WeddingTranslations[T][U];
+export function getTranslationSafe<
+  T extends keyof WeddingTranslations,
+  U extends keyof WeddingTranslations[T],
+  V extends keyof WeddingTranslations[T][U],
+>(
+  section: T,
+  subsection: U,
+  subsubsection: V,
+): WeddingTranslations[T][U][V];
+export function getTranslationSafe(
+  section: keyof WeddingTranslations,
+  subsection?: string,
+  subsubsection?: string,
+): unknown {
+  if (subsection === undefined) {
+    return indonesianTranslations[section];
+  }
+  if (subsubsection === undefined) {
+    return (indonesianTranslations[section] as Record<string, unknown>)[
+      subsection
+    ];
+  }
+  return (
+    (indonesianTranslations[section] as Record<string, unknown>)[
+      subsection
+    ] as Record<string, unknown>
+  )[subsubsection];
 }
 
 // Hook for easy translation access in components
@@ -867,8 +932,8 @@ export function formatIndonesianDate(date: Date, includeTime = false): string {
   let formatted = `${day}, ${dateNum} ${month} ${year}`;
 
   if (includeTime) {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
     formatted += ` ${hours}:${minutes} WIB`;
   }
 
@@ -877,9 +942,9 @@ export function formatIndonesianDate(date: Date, includeTime = false): string {
 
 // Format Indonesian currency (Rupiah)
 export function formatIndonesianCurrency(amount: number): string {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);

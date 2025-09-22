@@ -61,14 +61,14 @@ export const MobilePhotoUpload = component$<MobilePhotoUploadProps>((props) => {
   const supportsCamera = useSignal(false);
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(() => {
+  useVisibleTask$(async () => {
     // Check camera support
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
       supportsCamera.value = true;
     }
 
     // Update network info
-    const networkInfo = getNetworkInfo();
+    const networkInfo = await getNetworkInfo();
     uploadState.networkType = networkInfo.effectiveType || '4g';
     uploadState.compressionLevel = getCompressionLevel(networkInfo.effectiveType || '4g');
   });

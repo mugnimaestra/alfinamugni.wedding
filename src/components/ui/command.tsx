@@ -1,9 +1,11 @@
 import {
   component$,
   type QwikIntrinsicElements,
+  type JSXOutput,
   Slot,
   useSignal,
-  useVisibleTask$,
+  useTask$,
+  useOnDocument,
   $,
 } from "@builder.io/qwik";
 import { cn } from "~/lib/utils";
@@ -17,7 +19,7 @@ export const Command = component$<CommandProps>(
   ({ class: className, value, ...props }) => {
     const searchValue = useSignal(value || "");
 
-    useVisibleTask$(({ track }) => {
+    useTask$(({ track }) => {
       track(() => value);
       if (value !== undefined) {
         searchValue.value = value;
@@ -214,7 +216,7 @@ export const CommandShortcut = component$<CommandShortcutProps>(
 type CommandDialogProps = {
   open?: boolean;
   onOpenChange$?: (open: boolean) => void;
-  children: any; // Qwik children can be any
+  children: JSXOutput; // Qwik JSX output type
   class?: string;
 };
 
@@ -222,7 +224,7 @@ export const CommandDialog = component$<CommandDialogProps>(
   ({ open = false, onOpenChange$, children, class: className }) => {
     const isOpen = useSignal(open);
 
-    useVisibleTask$(({ track }) => {
+    useTask$(({ track }) => {
       track(() => open);
       isOpen.value = open;
     });
@@ -233,8 +235,9 @@ export const CommandDialog = component$<CommandDialogProps>(
     });
 
     // Handle keyboard shortcuts
-    useVisibleTask$(({ cleanup }) => {
-      const handleKeyDown = (event: KeyboardEvent) => {
+    useOnDocument(
+      "keydown",
+      $((event: KeyboardEvent) => {
         if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
           event.preventDefault();
           isOpen.value = !isOpen.value;
@@ -244,11 +247,8 @@ export const CommandDialog = component$<CommandDialogProps>(
         if (event.key === "Escape" && isOpen.value) {
           closeDialog();
         }
-      };
-
-      document.addEventListener("keydown", handleKeyDown);
-      cleanup(() => document.removeEventListener("keydown", handleKeyDown));
-    });
+      })
+    );
 
     if (!isOpen.value) return null;
 

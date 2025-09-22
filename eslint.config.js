@@ -38,7 +38,6 @@ const ignores = [
   "**/vite.config.ts",
   "**/*.spec.tsx",
   "**/*.spec.ts",
-  "src/components/ui/**",
   "src/routes/components-test/**",
   "**/.netlify",
   "**/pnpm-lock.yaml",
@@ -69,7 +68,7 @@ export default tseslint.config(
   },
   {
     rules: {
-      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-explicit-any": "error",
       // Temporarily disable due to plugin bug
       "qwik/valid-lexical-scope": "off",
     },

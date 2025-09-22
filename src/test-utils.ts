@@ -10,7 +10,9 @@ type ExtendedDOM = DOMFixture & {
   cleanup: () => void;
 };
 
-export const createDOM = async (options: CreateDOMOptions = {}): Promise<ExtendedDOM> => {
+export const createDOM = async (
+  options: CreateDOMOptions = {},
+): Promise<ExtendedDOM> => {
   const fixture = await qwikCreateDOM(options);
 
   const cleanup = () => {
@@ -32,7 +34,8 @@ export const qwikUserEvent = {
   async click(target: string | Element, userEvent: DOMFixture["userEvent"]) {
     if (typeof target === "string") {
       const element = document.querySelector(target);
-      if (!element) throw new Error(`Element not found for selector: ${target}`);
+      if (!element)
+        throw new Error(`Element not found for selector: ${target}`);
       await userEvent(element, "click");
       return;
     }
@@ -45,7 +48,8 @@ export const qwikUserEvent = {
     text: string,
     userEvent: DOMFixture["userEvent"],
   ) {
-    const element = typeof target === "string" ? document.querySelector(target) : target;
+    const element =
+      typeof target === "string" ? document.querySelector(target) : target;
     if (!element) throw new Error(`Element not found for selector: ${target}`);
 
     const input = element as HTMLInputElement | HTMLTextAreaElement;
@@ -89,7 +93,11 @@ export const qwikMatchers = {
     };
   },
 
-  toHaveAttribute(element: Element | null, name: string, value?: string): MatcherResult {
+  toHaveAttribute(
+    element: Element | null,
+    name: string,
+    value?: string,
+  ): MatcherResult {
     if (!element) return nullElementResult(`attribute "${name}"`);
     const attr = element.getAttribute(name);
     const hasAttr = attr !== null;
@@ -105,7 +113,10 @@ export const qwikMatchers = {
 };
 
 export const qwikTestHelpers = {
-  waitForComponent: async (selector: string, timeout = 1_000): Promise<Element> => {
+  waitForComponent: async (
+    selector: string,
+    timeout = 1_000,
+  ): Promise<Element> => {
     const start = Date.now();
 
     while (Date.now() - start < timeout) {
@@ -114,7 +125,9 @@ export const qwikTestHelpers = {
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
 
-    throw new Error(`Component with selector "${selector}" not found within ${timeout}ms`);
+    throw new Error(
+      `Component with selector "${selector}" not found within ${timeout}ms`,
+    );
   },
 
   getByComponentName: (name: string): Element | null => {
@@ -142,7 +155,7 @@ export const qrlTestUtils = {
     });
   },
 
-  createTestQRL<T extends (...args: any[]) => any>(fn: T) {
+  createTestQRL<T extends (...args: unknown[]) => unknown>(fn: T) {
     const qrl = (...args: Parameters<T>) => fn(...args);
     return Object.assign(qrl, {
       $: fn,

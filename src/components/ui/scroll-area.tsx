@@ -101,7 +101,7 @@ export const ScrollArea = component$<ScrollAreaProps>(
   }
 );
 
-export interface ScrollViewportProps extends PropsOf<"div"> {}
+export type ScrollViewportProps = PropsOf<"div">
 
 export const ScrollViewport = component$<ScrollViewportProps>(
   ({ class: className, ...props }) => {
@@ -282,7 +282,7 @@ export const ScrollCorner = component$<ScrollCornerProps>(
 
 // Utility components for common scroll area patterns
 
-export interface AutoScrollAreaProps extends Omit<ScrollAreaProps, "type"> {}
+export type AutoScrollAreaProps = Omit<ScrollAreaProps, "type">
 
 export const AutoScrollArea = component$<AutoScrollAreaProps>((props) => (
   <ScrollArea type="auto" {...props}>
@@ -290,7 +290,7 @@ export const AutoScrollArea = component$<AutoScrollAreaProps>((props) => (
   </ScrollArea>
 ));
 
-export interface AlwaysScrollAreaProps extends Omit<ScrollAreaProps, "type"> {}
+export type AlwaysScrollAreaProps = Omit<ScrollAreaProps, "type">
 
 export const AlwaysScrollArea = component$<AlwaysScrollAreaProps>((props) => (
   <ScrollArea type="always" {...props}>
@@ -298,7 +298,7 @@ export const AlwaysScrollArea = component$<AlwaysScrollAreaProps>((props) => (
   </ScrollArea>
 ));
 
-export interface HoverScrollAreaProps extends Omit<ScrollAreaProps, "type"> {}
+export type HoverScrollAreaProps = Omit<ScrollAreaProps, "type">
 
 export const HoverScrollArea = component$<HoverScrollAreaProps>((props) => (
   <ScrollArea type="hover" {...props}>
@@ -307,8 +307,7 @@ export const HoverScrollArea = component$<HoverScrollAreaProps>((props) => (
 ));
 
 // Vertical scroll area (most common)
-export interface VerticalScrollAreaProps
-  extends Omit<ScrollAreaProps, "orientation"> {}
+export type VerticalScrollAreaProps = Omit<ScrollAreaProps, "orientation">
 
 export const VerticalScrollArea = component$<VerticalScrollAreaProps>(
   (props) => (
@@ -319,8 +318,7 @@ export const VerticalScrollArea = component$<VerticalScrollAreaProps>(
 );
 
 // Horizontal scroll area
-export interface HorizontalScrollAreaProps
-  extends Omit<ScrollAreaProps, "orientation"> {}
+export type HorizontalScrollAreaProps = Omit<ScrollAreaProps, "orientation">
 
 export const HorizontalScrollArea = component$<HorizontalScrollAreaProps>(
   (props) => (
@@ -331,8 +329,7 @@ export const HorizontalScrollArea = component$<HorizontalScrollAreaProps>(
 );
 
 // Both directions scroll area
-export interface BothScrollAreaProps
-  extends Omit<ScrollAreaProps, "orientation"> {}
+export type BothScrollAreaProps = Omit<ScrollAreaProps, "orientation">
 
 export const BothScrollArea = component$<BothScrollAreaProps>((props) => (
   <ScrollArea orientation="both" {...props}>

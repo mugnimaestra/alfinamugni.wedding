@@ -5,6 +5,11 @@
 
 import { getNetworkInfo, type NetworkInfo } from './network-utils';
 
+// Define TypeScript interfaces for experimental browser APIs
+interface DeviceMemoryAPI extends Navigator {
+  deviceMemory: number;
+}
+
 export interface CompressionStage {
   name: string;
   quality: number;
@@ -57,7 +62,7 @@ export class AdvancedImageCompressor {
   }
 
   private detectDeviceCapabilities(): DeviceCapabilities {
-    const navigator = window.navigator as any;
+    const navigator = window.navigator as DeviceMemoryAPI;
 
     // Estimate device memory (fallback for unsupported browsers)
     const deviceMemory = navigator.deviceMemory || this.estimateMemoryFromUserAgent();
@@ -152,9 +157,9 @@ export class AdvancedImageCompressor {
     const originalSize = file.size;
 
     // Create compression pipeline based on network and device conditions
-    const pipeline = this.createOptimalPipeline(file, targetSizeKB, customPipeline);
+    const pipeline = await this.createOptimalPipeline(file, targetSizeKB, customPipeline);
 
-    let currentBlob = file;
+    let currentBlob: Blob | File = file;
     const stageResults: CompressionResult['stages'] = [];
     let memoryUsed = 0;
 
@@ -242,12 +247,12 @@ export class AdvancedImageCompressor {
     }
   }
 
-  private createOptimalPipeline(
+  private async createOptimalPipeline(
     file: File,
     targetSizeKB?: number,
     customPipeline?: Partial<CompressionPipeline>
-  ): CompressionPipeline {
-    const networkInfo = getNetworkInfo();
+  ): Promise<CompressionPipeline> {
+    const networkInfo = await getNetworkInfo();
     const isSlowNetwork = this.isSlowNetwork(networkInfo);
     const isLowEndDevice = this.deviceCapabilities.isLowEndDevice;
 
@@ -385,7 +390,7 @@ export class AdvancedImageCompressor {
   }
 
   private isSlowNetwork(networkInfo: NetworkInfo): boolean {
-    return (
+    return !!(
       networkInfo.saveData ||
       networkInfo.effectiveType === '2g' ||
       networkInfo.effectiveType === 'slow-2g' ||

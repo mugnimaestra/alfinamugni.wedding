@@ -1,9 +1,10 @@
-import { 
-  component$, 
-  useSignal, 
-  useOnDocument, 
-  Slot, 
+import {
+  component$,
+  useSignal,
+  useOnDocument,
+  Slot,
   type QwikIntrinsicElements,
+  type JSXOutput,
   $,
   type PropFunction
 } from '@builder.io/qwik'
@@ -13,7 +14,7 @@ import { cn } from '~/lib/utils'
 export interface DialogProps {
   open?: boolean
   onOpenChange$?: PropFunction<(open: boolean) => void>
-  children: any
+  children: JSXOutput
 }
 
 export const Dialog = component$<DialogProps>(({ open, children }) => {

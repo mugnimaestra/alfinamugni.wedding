@@ -1,6 +1,5 @@
 import {
   component$,
-  type QwikIntrinsicElements,
   useSignal,
   $,
 } from "@builder.io/qwik";
@@ -43,7 +42,7 @@ export const Pagination = component$<PaginationProps>(
       const half = Math.floor(maxPageNumbers / 2);
 
       let startPage = Math.max(1, currentPageSignal.value - half);
-      let endPage = Math.min(totalPages, startPage + maxPageNumbers - 1);
+      const endPage = Math.min(totalPages, startPage + maxPageNumbers - 1);
 
       // Adjust start page if we're near the end
       if (endPage - startPage + 1 < maxPageNumbers) {

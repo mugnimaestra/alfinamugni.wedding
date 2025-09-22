@@ -22,9 +22,6 @@ const menubarVariants = cva(
   "flex h-10 items-center space-x-1 rounded-md border bg-background p-1",
 );
 
-const menubarMenuVariants = cva(
-  "relative"
-);
 
 const menubarTriggerVariants = cva(
   "flex cursor-default select-none items-center rounded-sm px-3 py-1.5 text-sm font-medium outline-none focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
@@ -422,7 +419,6 @@ export interface MenubarRadioItemProps extends PropsOf<"div"> {
 
 export const MenubarRadioItem = component$<MenubarRadioItemProps>(({
   class: className,
-  value,
   disabled,
   ...props
 }) => {

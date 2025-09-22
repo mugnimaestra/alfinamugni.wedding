@@ -1,4 +1,4 @@
-import { component$, type PropsOf, Slot } from "@builder.io/qwik";
+import { component$, type PropsOf, type JSXOutput, Slot } from "@builder.io/qwik";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "~/lib/utils";
 import { ChevronRight, MoreHorizontal } from "lucide-react";
@@ -157,7 +157,7 @@ export const BreadcrumbPage = component$<BreadcrumbPageProps>(
 export interface BreadcrumbSeparatorProps
   extends PropsOf<"li">,
     VariantProps<typeof breadcrumbSeparatorVariants> {
-  children?: any; // Qwik uses JSXOutput instead of React.ReactNode
+  children?: JSXOutput; // Qwik JSX output type
 }
 
 export const BreadcrumbSeparator = component$<BreadcrumbSeparatorProps>(
@@ -200,7 +200,7 @@ export interface SimpleBreadcrumbProps {
     href?: string;
     isCurrentPage?: boolean;
   }>;
-  separator?: any; // Qwik uses JSXOutput instead of React.ReactNode
+  separator?: JSXOutput; // Qwik JSX output type
   maxItems?: number;
   variant?: "default" | "ghost";
 }

@@ -4,6 +4,7 @@ import {
   useStore,
   useTask$,
   type PropsOf,
+  type JSXOutput,
   Slot,
   $,
   useOnDocument,
@@ -37,7 +38,7 @@ const tooltipVariants = cva(
 );
 
 export interface TooltipProps {
-  children: any;
+  children: JSXOutput;
   delayDuration?: number;
   defaultOpen?: boolean;
   open?: boolean;
@@ -45,7 +46,7 @@ export interface TooltipProps {
 }
 
 export const Tooltip = component$<TooltipProps>(
-  ({ children, delayDuration = 700, defaultOpen, open, onOpenChange }) => {
+  ({ children, delayDuration = 700, defaultOpen, open }) => {
     const store = useStore<TooltipStore>({
       isOpen: open ?? defaultOpen ?? false,
       content: "",

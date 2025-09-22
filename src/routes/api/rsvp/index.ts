@@ -65,7 +65,7 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
     }
 
     // Parse request body with size limit
-    let formData: any;
+    let formData: unknown;
     try {
       const rawBody = await request.text();
       if (rawBody.length > 10000) { // 10KB limit
@@ -81,12 +81,12 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
     }
 
     // Sanitize input data
-    const sanitizedData = sanitizeRsvpData(formData);
+    const sanitizedData = sanitizeRsvpData(formData as Record<string, unknown>);
 
     // Validate with Zod schema
     const validation = validateRsvpData(sanitizedData);
     if (!validation.success) {
-      const errors = validation.error.issues.map((err: any) => ({
+      const errors = validation.error.issues.map((err: { path: (string | number | symbol)[]; message: string }) => ({
         field: err.path.join('.'),
         message: err.message
       }));

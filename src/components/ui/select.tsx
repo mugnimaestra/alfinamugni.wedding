@@ -1,4 +1,3 @@
-/* eslint-disable qwik/use-method-usage */
 import {
   component$,
   type QwikIntrinsicElements,
@@ -10,7 +9,7 @@ import {
 } from "@builder.io/qwik";
 import { cn } from "~/lib/utils";
 
-type SelectProps = QwikIntrinsicElements["div"] & {
+type SelectProps = Omit<QwikIntrinsicElements["div"], "onValueChange$"> & {
   value?: string;
   onValueChange$?: (value: string) => void;
   placeholder?: string;
@@ -20,7 +19,9 @@ type SelectProps = QwikIntrinsicElements["div"] & {
 export const Select = component$<SelectProps>(
   ({
     value,
-    onValueChange$,
+    // onValueChange$ is defined in props but not implemented yet
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onValueChange$: _onValueChange$,
     placeholder = "Select an option",
     disabled = false,
     class: className,
@@ -164,7 +165,7 @@ type SelectTriggerProps = QwikIntrinsicElements["button"] & {
 };
 
 export const SelectTrigger = component$<SelectTriggerProps>(
-  ({ placeholder, class: className, ...props }) => {
+  ({ class: className, ...props }) => {
     return (
       <button
         type="button"
@@ -218,7 +219,7 @@ type SelectValueProps = QwikIntrinsicElements["span"] & {
 };
 
 export const SelectValue = component$<SelectValueProps>(
-  ({ placeholder, ...props }) => {
+  ({ ...props }) => {
     return (
       <span {...props}>
         <Slot />

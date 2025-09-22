@@ -1,6 +1,7 @@
 import {
   component$,
   type QwikIntrinsicElements,
+  type JSXOutput,
   Slot,
   useSignal,
   $,
@@ -190,13 +191,13 @@ type DataTableProps<T> = {
     key: keyof T;
     header: string;
     sortable?: boolean;
-    render?: (value: any, row: T) => any;
+    render?: (value: T[keyof T], row: T) => JSXOutput;
   }[];
   class?: string;
   emptyMessage?: string;
 };
 
-export const DataTable = component$<DataTableProps<any>>(
+export const DataTable = component$<DataTableProps<Record<string, string | number | boolean | Date>>>(
   ({ data, columns, class: className, emptyMessage = "No data available" }) => {
     const sortConfig = useSignal<{
       key: string;

@@ -7,6 +7,7 @@ import {
   type PropsOf,
   Slot,
   $,
+  type JSXChildren,
 } from "@builder.io/qwik";
 import { cva } from "class-variance-authority";
 import { cn } from "~/lib/utils";
@@ -56,7 +57,7 @@ const dropdownMenuSeparatorVariants = cva("-mx-1 my-1 h-px bg-muted");
 export interface DropdownMenuProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  children: any;
+  children: JSXChildren;
 }
 
 export const DropdownMenu = component$<DropdownMenuProps>(
@@ -351,7 +352,7 @@ export const DropdownMenuSeparator = component$<DropdownMenuSeparatorProps>(
 );
 
 export interface DropdownMenuSubProps {
-  children: any;
+  children: JSXChildren;
 }
 
 export const DropdownMenuSub = component$<DropdownMenuSubProps>(

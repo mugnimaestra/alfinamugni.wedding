@@ -5,7 +5,7 @@ import {
   useContextProvider,
   useSignal,
   useStore,
-  useVisibleTask$,
+  useTask$,
   $,
   Slot,
 } from "@builder.io/qwik";
@@ -25,6 +25,9 @@ type ToastProps = {
 
 type ToastState = {
   toasts: ToastProps[];
+  addToast: (toast: Omit<ToastProps, "id">) => string;
+  removeToast: (id: string) => void;
+  clearToasts: () => void;
 };
 
 const ToastContext = createContextId<ToastState>("toast-context");
@@ -40,9 +43,23 @@ export const useToast = () => {
 export const ToastProvider = component$(() => {
   const toastState = useStore<ToastState>({
     toasts: [],
+    addToast: (props: Omit<ToastProps, "id">) => {
+      const id = Math.random().toString(36).substring(2, 9);
+      toastState.toasts = [...toastState.toasts, { ...props, id }];
+      return id;
+    },
+    removeToast: (id: string) => {
+      toastState.toasts = toastState.toasts.filter((toast) => toast.id !== id);
+    },
+    clearToasts: () => {
+      toastState.toasts = [];
+    },
   });
 
   useContextProvider(ToastContext, toastState);
+  
+  // Set global state for backward compatibility
+  setGlobalToastState(toastState);
 
   return (
     <>
@@ -52,30 +69,13 @@ export const ToastProvider = component$(() => {
   );
 });
 
-export const toast = (props: Omit<ToastProps, "id">) => {
-  const id = Math.random().toString(36).substring(2, 9);
-  const context = useContext(ToastContext);
-
-  if (context) {
-    context.toasts = [...context.toasts, { ...props, id }];
-  }
-
-  return id;
-};
-
-export const dismissToast = (id: string) => {
-  const context = useContext(ToastContext);
-  if (context) {
-    context.toasts = context.toasts.filter((toast) => toast.id !== id);
-  }
-};
-
-export const dismissAllToasts = () => {
-  const context = useContext(ToastContext);
-  if (context) {
-    context.toasts = [];
-  }
-};
+// These functions now need to be used within components that have access to the context
+// They are kept for backward compatibility but should be used through the context
+export const createToastHelpers = (toastState: ToastState) => ({
+  toast: (props: Omit<ToastProps, "id">) => toastState.addToast(props),
+  dismissToast: (id: string) => toastState.removeToast(id),
+  dismissAllToasts: () => toastState.clearToasts(),
+});
 
 const Toast = component$<ToastProps>(
   ({
@@ -89,11 +89,17 @@ const Toast = component$<ToastProps>(
     const isVisible = useSignal(true);
     const timeoutId = useSignal<NodeJS.Timeout>();
 
-    useVisibleTask$(() => {
+    const toastState = useContext(ToastContext);
+
+    useTask$(() => {
       if (duration > 0) {
         timeoutId.value = setTimeout(() => {
           isVisible.value = false;
-          setTimeout(() => dismissToast(id), 300); // Allow animation to complete
+          setTimeout(() => {
+            if (toastState) {
+              toastState.removeToast(id);
+            }
+          }, 300); // Allow animation to complete
         }, duration);
       }
 
@@ -109,7 +115,11 @@ const Toast = component$<ToastProps>(
       if (timeoutId.value) {
         clearTimeout(timeoutId.value);
       }
-      setTimeout(() => dismissToast(id), 300);
+      setTimeout(() => {
+        if (toastState) {
+          toastState.removeToast(id);
+        }
+      }, 300);
     });
 
     const getVariantStyles = () => {
@@ -238,12 +248,120 @@ export const Toaster = component$(() => {
   );
 });
 
-// Convenience functions for different toast types
+// Hook to get toast helpers within components
+export const useToastHelpers = () => {
+  const toastState = useToast();
+  return createToastHelpers(toastState);
+};
+
+// Global helper functions that work with window-level toast state
+// These are backward-compatible functions for existing usage
+let globalToastState: ToastState | null = null;
+
+// Function to set global toast state (called by ToastProvider)
+export const setGlobalToastState = (state: ToastState) => {
+  globalToastState = state;
+};
+
+export const toast = (props: Omit<ToastProps, "id">): string => {
+  if (globalToastState) {
+    return globalToastState.addToast(props);
+  }
+  console.warn('Toast called before ToastProvider is mounted');
+  return '';
+};
+
+export const dismissToast = (id: string) => {
+  if (globalToastState) {
+    globalToastState.removeToast(id);
+  }
+};
+
+export const dismissAllToasts = () => {
+  if (globalToastState) {
+    globalToastState.clearToasts();
+  }
+};
+
+// Convenience functions that return toast configuration objects
+// These should be used with the toast helpers from useToastHelpers()
+export const getToastSuccessConfig = (
+  title: string,
+  description?: string,
+  action?: ToastProps["action"]
+): Omit<ToastProps, "id"> => ({
+  title,
+  description,
+  variant: "success",
+  action,
+});
+
+export const getToastErrorConfig = (
+  title: string,
+  description?: string,
+  action?: ToastProps["action"]
+): Omit<ToastProps, "id"> => ({
+  title,
+  description,
+  variant: "destructive",
+  action,
+});
+
+export const getToastInfoConfig = (
+  title: string,
+  description?: string,
+  action?: ToastProps["action"]
+): Omit<ToastProps, "id"> => ({
+  title,
+  description,
+  variant: "default",
+  action,
+});
+
+// Wedding-specific toast configurations
+export const getToastRSVPConfirmedConfig = (guestName: string): Omit<ToastProps, "id"> =>
+  getToastSuccessConfig(
+    "RSVP Confirmed!",
+    `${guestName} has confirmed their attendance.`,
+    {
+      label: "View Details",
+      onClick: () => console.log("View RSVP details"),
+    }
+  );
+
+export const getToastRSVPReminderConfig = (daysLeft: number): Omit<ToastProps, "id"> => ({
+  title: "RSVP Reminder",
+  description: `Only ${daysLeft} days left until RSVP deadline.`,
+  variant: "default",
+  action: {
+    label: "Send Reminders",
+    onClick: () => console.log("Send reminders"),
+  },
+});
+
+export const getToastVendorBookedConfig = (vendorName: string): Omit<ToastProps, "id"> =>
+  getToastSuccessConfig(
+    "Vendor Booked!",
+    `${vendorName} has been successfully booked.`,
+    {
+      label: "View Contract",
+      onClick: () => console.log("View vendor contract"),
+    }
+  );
+
+export const getToastBudgetAlertConfig = (category: string, amount: number): Omit<ToastProps, "id"> => ({
+  title: "Budget Alert",
+  description: `${category} expense of $${amount.toLocaleString()} recorded.`,
+  variant: "destructive",
+  duration: 7000,
+});
+
+// Convenience functions that use the global toast state (backward compatible)
 export const toastSuccess = (
   title: string,
   description?: string,
   action?: ToastProps["action"]
-) => {
+): string => {
   return toast({
     title,
     description,
@@ -256,7 +374,7 @@ export const toastError = (
   title: string,
   description?: string,
   action?: ToastProps["action"]
-) => {
+): string => {
   return toast({
     title,
     description,
@@ -269,7 +387,7 @@ export const toastInfo = (
   title: string,
   description?: string,
   action?: ToastProps["action"]
-) => {
+): string => {
   return toast({
     title,
     description,
@@ -278,8 +396,8 @@ export const toastInfo = (
   });
 };
 
-// Wedding-specific toast functions
-export const toastRSVPConfirmed = (guestName: string) => {
+// Wedding-specific toast functions (backward compatible)
+export const toastRSVPConfirmed = (guestName: string): string => {
   return toastSuccess(
     "RSVP Confirmed!",
     `${guestName} has confirmed their attendance.`,
@@ -290,7 +408,7 @@ export const toastRSVPConfirmed = (guestName: string) => {
   );
 };
 
-export const toastRSVPReminder = (daysLeft: number) => {
+export const toastRSVPReminder = (daysLeft: number): string => {
   return toast({
     title: "RSVP Reminder",
     description: `Only ${daysLeft} days left until RSVP deadline.`,
@@ -302,7 +420,7 @@ export const toastRSVPReminder = (daysLeft: number) => {
   });
 };
 
-export const toastVendorBooked = (vendorName: string) => {
+export const toastVendorBooked = (vendorName: string): string => {
   return toastSuccess(
     "Vendor Booked!",
     `${vendorName} has been successfully booked.`,
@@ -313,7 +431,7 @@ export const toastVendorBooked = (vendorName: string) => {
   );
 };
 
-export const toastBudgetAlert = (category: string, amount: number) => {
+export const toastBudgetAlert = (category: string, amount: number): string => {
   return toast({
     title: "Budget Alert",
     description: `${category} expense of $${amount.toLocaleString()} recorded.`,

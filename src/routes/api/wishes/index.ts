@@ -47,14 +47,18 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
     // Check rate limiting
     const rateCheck = checkRateLimit(clientIP);
     if (!rateCheck.allowed) {
-      const response = json(429, {
+      throw new Response(JSON.stringify({
         error: 'Too many wish submissions',
         success: false,
         message: `Rate limit exceeded. Please try again in ${rateCheck.retryAfter} seconds.`,
         retryAfter: rateCheck.retryAfter
+      }), {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Retry-After': rateCheck.retryAfter!.toString()
+        }
       });
-      response.headers.set('Retry-After', rateCheck.retryAfter!.toString());
-      throw response;
     }
 
     // Parse and validate content-type
@@ -68,7 +72,7 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
     }
 
     // Parse request body with size limit
-    let formData: any;
+    let formData: unknown;
     try {
       const rawBody = await request.text();
       if (rawBody.length > 5000) { // 5KB limit for wishes
@@ -84,12 +88,12 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
     }
 
     // Sanitize and moderate input data
-    const sanitizedData = sanitizeWishData(formData);
+    const sanitizedData = sanitizeWishData(formData as Record<string, unknown>);
 
     // Validate with Zod schema
     const validation = validateGuestWish(sanitizedData);
     if (!validation.success) {
-      const errors = validation.error.errors.map(err => ({
+      const errors = validation.error.issues.map((err: { path: (string | number | symbol)[]; message: string }) => ({
         field: err.path.join('.'),
         message: err.message
       }));
@@ -234,7 +238,7 @@ export const onGet: RequestHandler = async ({ request, json, platform }) => {
     const db = getDatabase(platform.env as Env);
 
     // Get only approved wishes for public display
-    const wishes = await db.getApprovedWishes(limit, offset);
+    const wishes = await db.getApprovedWishes();
 
     // Return public wish data (no sensitive info)
     const publicWishes = wishes.map(wish => ({

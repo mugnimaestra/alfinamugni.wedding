@@ -4,9 +4,9 @@ import {
   useStore,
   useTask$,
   type PropsOf,
+  type Component,
   Slot,
   $,
-  type PropFunction,
 } from "@builder.io/qwik";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "~/lib/utils";
@@ -265,7 +265,7 @@ export const ToggleGroupItem = component$<ToggleGroupItemProps>(
 // Pre-styled toggle variants for common use cases
 
 export interface IconToggleProps extends Omit<ToggleProps, "children"> {
-  icon: any;
+  icon: Component<Record<string, unknown>>;
   label?: string;
 }
 
@@ -348,7 +348,7 @@ export interface SettingsToggleGroupProps
   options: Array<{
     value: string;
     label: string;
-    icon?: any;
+    icon?: Component<Record<string, unknown>>;
   }>;
 }
 

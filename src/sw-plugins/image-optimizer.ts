@@ -59,7 +59,7 @@ export class ImageOptimizer {
     const startTime = performance.now();
     const originalSize = imageBlob.size;
 
-    const networkInfo = getNetworkInfo();
+    const networkInfo = await getNetworkInfo();
     const settings = targetSettings || getOptimalCompressionSettings(networkInfo);
 
     try {
@@ -128,7 +128,7 @@ export class ImageOptimizer {
     try {
       // Check if already cached with current network conditions
       const cached = await this.getCachedImage(url);
-      if (cached && this.isCacheValid(cached)) {
+      if (cached && await this.isCacheValid(cached)) {
         console.log(`[ImageOptimizer] Using cached optimized image: ${url}`);
         return cached.compressedBlob;
       }
@@ -155,7 +155,7 @@ export class ImageOptimizer {
   }
 
   private async createCompressedBlob(originalBlob: Blob): Promise<Blob> {
-    const networkInfo = getNetworkInfo();
+    const networkInfo = await getNetworkInfo();
     const settings = getOptimalCompressionSettings(networkInfo);
 
     const imageUrl = URL.createObjectURL(originalBlob);
@@ -224,7 +224,7 @@ export class ImageOptimizer {
   }
 
   private isSlowConnection(networkInfo: NetworkInfo): boolean {
-    return (
+    return !!(
       networkInfo.saveData ||
       networkInfo.effectiveType === '2g' ||
       networkInfo.effectiveType === 'slow-2g' ||
@@ -257,7 +257,7 @@ export class ImageOptimizer {
       compressedBlob,
       metadata,
       timestamp: Date.now(),
-      networkConditions: getNetworkInfo(),
+      networkConditions: await getNetworkInfo(),
     };
 
     const transaction = this.db.transaction([this.storeName], 'readwrite');
@@ -270,14 +270,14 @@ export class ImageOptimizer {
     });
   }
 
-  private isCacheValid(cached: ImageCacheEntry): boolean {
+  private async isCacheValid(cached: ImageCacheEntry): Promise<boolean> {
     const maxAge = 24 * 60 * 60 * 1000; // 24 hours
     const isExpired = Date.now() - cached.timestamp > maxAge;
 
     if (isExpired) return false;
 
     // Check if network conditions are similar
-    const currentNetwork = getNetworkInfo();
+    const currentNetwork = await getNetworkInfo();
     const cachedNetwork = cached.networkConditions;
 
     // Allow cached version if network conditions are similar or better

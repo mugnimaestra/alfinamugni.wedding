@@ -28,7 +28,7 @@ export interface ThemeProviderProps {
   attribute?: string;
   enableSystem?: boolean;
   disableTransitionOnChange?: boolean;
-  children: any;
+  children?: import('@builder.io/qwik').JSXNode;
 }
 
 export const ThemeProvider = component$<ThemeProviderProps>(

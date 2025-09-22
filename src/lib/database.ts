@@ -1,4 +1,22 @@
 import type { D1Database, R2Bucket } from '@cloudflare/workers-types';
+import { z } from 'zod';
+import { RsvpSchema, GuestWishSchema, PhotoUploadSchema } from './validators.js';
+
+// Define D1PreparedStatement interface since it might not be available in workers-types
+export interface D1PreparedStatement {
+  bind(...values: (string | number | boolean | null | ArrayBuffer)[]): D1PreparedStatement;
+  first<T = Record<string, unknown>>(): Promise<T | null>;
+  all<T = Record<string, unknown>>(): Promise<{ results: T[] }>;
+  run(): Promise<D1Result>;
+}
+
+export interface D1Result {
+  results?: Record<string, unknown>[];
+  changes?: number;
+  success?: boolean;
+  error?: string;
+  meta?: Record<string, unknown>;
+}
 
 // Database interface for the wedding website
 export interface Env {
@@ -32,6 +50,91 @@ export class RateLimitError extends Error {
     super(message);
     this.name = 'RateLimitError';
   }
+}
+
+// Extended Zod schemas that include database fields
+const DatabaseRsvpSchema = RsvpSchema.extend({
+  id: z.number().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
+  ip_address: z.string().optional(),
+  user_agent: z.string().optional(),
+});
+
+const DatabaseGuestWishSchema = GuestWishSchema.extend({
+  id: z.number().optional(),
+  approved: z.boolean().default(false),
+  created_at: z.string().optional(),
+  ip_address: z.string().optional(),
+  user_agent: z.string().optional(),
+});
+
+const DatabasePhotoUploadSchema = PhotoUploadSchema.extend({
+  id: z.number().optional(),
+  approved: z.boolean().default(false),
+  featured: z.boolean().default(false),
+  upload_date: z.string().optional(),
+  approved_at: z.string().optional(),
+  approved_by: z.string().optional(),
+  ip_address: z.string().optional(),
+});
+
+// Generic typed helper functions
+async function getTypedResult<T>(
+  stmt: D1PreparedStatement,
+  schema: z.ZodSchema<T>
+): Promise<T | null> {
+  const result = await stmt.first();
+  if (!result) return null;
+  
+  const parsed = schema.safeParse(result);
+  if (!parsed.success) {
+    console.warn('Database result validation failed:', parsed.error);
+    throw new ValidationError(
+      `Database result validation failed: ${parsed.error.message}`,
+      'database_result'
+    );
+  }
+  
+  return parsed.data;
+}
+
+async function getTypedResults<T>(
+  stmt: D1PreparedStatement,
+  schema: z.ZodSchema<T>
+): Promise<T[]> {
+  const result = await stmt.all();
+  if (!result.results || result.results.length === 0) return [];
+  
+  const validResults: T[] = [];
+  const errors: string[] = [];
+  
+  for (const row of result.results) {
+    const parsed = schema.safeParse(row);
+    if (parsed.success) {
+      validResults.push(parsed.data);
+    } else {
+      errors.push(`Row validation failed: ${parsed.error.message}`);
+    }
+  }
+  
+  if (errors.length > 0) {
+    console.warn('Some database rows failed validation:', errors);
+  }
+  
+  return validResults;
+}
+
+async function getTypedSingleResult<T>(
+  stmt: D1PreparedStatement,
+  schema: z.ZodSchema<T>,
+  errorMessage: string
+): Promise<T> {
+  const result = await getTypedResult(stmt, schema);
+  if (!result) {
+    throw new Error(errorMessage);
+  }
+  return result;
 }
 
 // Connection pool and retry utilities
@@ -88,7 +191,8 @@ class DatabaseConnectionManager {
       const statements = operations.map(op => op(database.prepare('')));
 
       try {
-        const results = await database.batch(statements as any);
+        // @ts-expect-error: D1 interface version compatibility issue
+        const results = await database.batch(statements);
         return results as T;
       } catch (error) {
         throw new Error(`Transaction failed for ${operationName}: ${(error as Error).message}`);
@@ -126,6 +230,7 @@ export interface GuestWish {
   approved: boolean;
   created_at?: string;
   ip_address?: string;
+  user_agent?: string;
 }
 
 // Photo upload data types
@@ -205,28 +310,21 @@ export class WeddingDatabase {
   async getRsvpById(id: number): Promise<RsvpData> {
     return this.connectionManager.withRetry(async () => {
       const stmt = this.db.prepare('SELECT * FROM rsvps WHERE id = ?');
-      const result = await stmt.bind(id).first();
-
-      if (!result) {
-        throw new Error('RSVP not found');
-      }
-
-      return result as unknown as RsvpData;
+      return await getTypedSingleResult(stmt.bind(id), DatabaseRsvpSchema, 'RSVP not found');
     }, 'getRsvpById');
   }
 
   async getRsvpByEmail(email: string): Promise<RsvpData | null> {
     return this.connectionManager.withRetry(async () => {
       const stmt = this.db.prepare('SELECT * FROM rsvps WHERE email = ?');
-      const result = await stmt.bind(email).first();
-      return result as unknown as RsvpData | null;
+      return await getTypedResult(stmt.bind(email), DatabaseRsvpSchema);
     }, 'getRsvpByEmail');
   }
 
   async getAllRsvps(limit?: number, offset?: number): Promise<RsvpData[]> {
     return this.connectionManager.withRetry(async () => {
       let query = 'SELECT * FROM rsvps ORDER BY created_at DESC';
-      const params: any[] = [];
+      const params: (string | number | boolean | null | ArrayBuffer)[] = [];
 
       if (limit) {
         query += ' LIMIT ?';
@@ -239,8 +337,7 @@ export class WeddingDatabase {
       }
 
       const stmt = this.db.prepare(query);
-      const result = await stmt.bind(...params).all();
-      return result.results as unknown as RsvpData[];
+      return await getTypedResults(stmt.bind(...params), DatabaseRsvpSchema);
     }, 'getAllRsvps');
   }
 
@@ -300,25 +397,17 @@ export class WeddingDatabase {
 
   async getGuestWishById(id: number): Promise<GuestWish> {
     const stmt = this.db.prepare('SELECT * FROM guest_wishes WHERE id = ?');
-    const result = await stmt.bind(id).first();
-
-    if (!result) {
-      throw new Error('Guest wish not found');
-    }
-
-    return result as unknown as GuestWish;
+    return await getTypedSingleResult(stmt.bind(id), DatabaseGuestWishSchema, 'Guest wish not found');
   }
 
   async getApprovedWishes(): Promise<GuestWish[]> {
     const stmt = this.db.prepare('SELECT * FROM guest_wishes WHERE approved = true ORDER BY created_at DESC');
-    const result = await stmt.all();
-    return result.results as unknown as GuestWish[];
+    return await getTypedResults(stmt, DatabaseGuestWishSchema);
   }
 
   async getAllWishes(): Promise<GuestWish[]> {
     const stmt = this.db.prepare('SELECT * FROM guest_wishes ORDER BY created_at DESC');
-    const result = await stmt.all();
-    return result.results as unknown as GuestWish[];
+    return await getTypedResults(stmt, DatabaseGuestWishSchema);
   }
 
   async approveWish(id: number): Promise<GuestWish> {
@@ -374,18 +463,12 @@ export class WeddingDatabase {
 
   async getPhotoUploadById(id: number): Promise<PhotoUpload> {
     const stmt = this.db.prepare('SELECT * FROM photo_uploads WHERE id = ?');
-    const result = await stmt.bind(id).first();
-
-    if (!result) {
-      throw new Error('Photo upload not found');
-    }
-
-    return result as unknown as PhotoUpload;
+    return await getTypedSingleResult(stmt.bind(id), DatabasePhotoUploadSchema, 'Photo upload not found');
   }
 
   async getApprovedPhotos(category?: string): Promise<PhotoUpload[]> {
     let query = 'SELECT * FROM photo_uploads WHERE approved = true';
-    const params: any[] = [];
+    const params: (string | number | boolean | null | ArrayBuffer)[] = [];
 
     if (category) {
       query += ' AND category = ?';
@@ -395,14 +478,12 @@ export class WeddingDatabase {
     query += ' ORDER BY upload_date DESC';
 
     const stmt = this.db.prepare(query);
-    const result = await stmt.bind(...params).all();
-    return result.results as unknown as PhotoUpload[];
+    return await getTypedResults(stmt.bind(...params), DatabasePhotoUploadSchema);
   }
 
   async getAllPhotos(): Promise<PhotoUpload[]> {
     const stmt = this.db.prepare('SELECT * FROM photo_uploads ORDER BY upload_date DESC');
-    const result = await stmt.all();
-    return result.results as unknown as PhotoUpload[];
+    return await getTypedResults(stmt, DatabasePhotoUploadSchema);
   }
 
   async approvePhoto(id: number, approvedBy?: string): Promise<PhotoUpload> {
@@ -451,7 +532,7 @@ export class WeddingDatabase {
   async getSetting(key: string): Promise<string | null> {
     const stmt = this.db.prepare('SELECT setting_value FROM wedding_settings WHERE setting_key = ?');
     const result = await stmt.bind(key).first();
-    return result ? (result as any).setting_value : null;
+    return result ? (result as Record<string, unknown>).setting_value as string : null;
   }
 
   async setSetting(key: string, value: string, updatedBy?: string): Promise<void> {
@@ -484,15 +565,21 @@ export class WeddingDatabase {
     `);
 
     const result = await stmt.first();
-    return result as any;
+    return result as {
+      total: number;
+      attending_both: number;
+      attending_akad: number;
+      attending_reception: number;
+      not_attending: number;
+      total_guests: number;
+    };
   }
 
   // Additional Wish Management Methods
   async getWishById(id: number): Promise<GuestWish | null> {
     try {
       const stmt = this.db.prepare('SELECT * FROM guest_wishes WHERE id = ?');
-      const result = await stmt.bind(id).first();
-      return result as GuestWish | null;
+      return await getTypedResult(stmt.bind(id), DatabaseGuestWishSchema);
     } catch (error) {
       throw new DatabaseError(
         `Failed to retrieve wish with ID ${id}`,
@@ -505,7 +592,7 @@ export class WeddingDatabase {
   async deleteWish(id: number): Promise<void> {
     try {
       const stmt = this.db.prepare('DELETE FROM guest_wishes WHERE id = ?');
-      const result = await stmt.bind(id).run();
+      const result = await stmt.bind(id).run() as D1Result;
 
       if (result.changes === 0) {
         throw new DatabaseError(`Wish with ID ${id} not found`, 'deleteWish');

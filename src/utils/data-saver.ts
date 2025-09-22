@@ -5,6 +5,31 @@
 
 import { getNetworkInfo, type NetworkInfo } from './network-utils';
 
+// Define TypeScript interfaces for experimental browser APIs
+interface NetworkConnectionAPI extends Navigator {
+  connection: NetworkConnectionInformation;
+}
+
+interface NetworkConnectionInformation {
+  downlink?: number;
+  effectiveType?: '2g' | '3g' | '4g' | 'slow-2g';
+  rtt?: number;
+  saveData?: boolean;
+  addEventListener: (type: string, listener: EventListener) => void;
+}
+
+interface BatteryAPI extends Navigator {
+  getBattery(): Promise<BatteryManager>;
+}
+
+interface BatteryManager {
+  level: number;
+  charging: boolean;
+  chargingTime: number;
+  dischargingTime: number;
+  addEventListener: (type: string, listener: EventListener) => void;
+}
+
 export interface DataSaverSettings {
   enabled: boolean;
   level: 'light' | 'medium' | 'aggressive';
@@ -202,12 +227,12 @@ export class DataSaverManager {
     window.addEventListener('offline', handleNetworkChange);
 
     if ('connection' in navigator) {
-      (navigator as any).connection.addEventListener('change', handleNetworkChange);
+      (navigator as NetworkConnectionAPI).connection.addEventListener('change', handleNetworkChange);
     }
 
     // Monitor battery changes
     if ('getBattery' in navigator) {
-      (navigator as any).getBattery().then((battery: any) => {
+      (navigator as BatteryAPI).getBattery().then((battery: BatteryManager) => {
         battery.addEventListener('levelchange', () => {
           if (this.settings.autoEnable && battery.level * 100 < this.settings.thresholds.lowBattery) {
             this.enableDataSaver('aggressive');

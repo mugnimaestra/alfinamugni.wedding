@@ -87,7 +87,7 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
         r2_key: r2Key,
         approved: (platform.env as Env).ENVIRONMENT === 'development', // Auto-approve in dev
         featured: false,
-        category: category as any,
+        category: category as 'ceremony' | 'reception' | 'guests' | 'professional',
         description: description || undefined,
         ip_address: clientIP
       };

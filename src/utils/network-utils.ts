@@ -37,6 +37,26 @@ export interface CompressionSettings {
   format: 'webp' | 'jpeg';
 }
 
+export interface UploadResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+  data?: {
+    id?: number;
+    filename?: string;
+    original_name?: string;
+    file_size?: number;
+    category?: string;
+    approved?: boolean;
+    upload_date?: string;
+    preview_url?: string;
+    signed_url?: string;
+    expires_at?: string;
+    content_type?: string;
+    size?: number;
+  };
+}
+
 // Indonesian carrier database
 const INDONESIAN_CARRIERS: Record<string, IndonesianCarrier> = {
   telkomsel: {
@@ -230,13 +250,39 @@ export function getIndonesianTimeOfDay(): 'peak' | 'normal' | 'off-peak' {
   return 'normal';
 }
 
+// Define TypeScript interfaces for experimental browser APIs
+export interface BatteryAPI extends Navigator {
+  getBattery(): Promise<BatteryManager>;
+}
+
+export interface BatteryManager {
+  level: number;
+  charging: boolean;
+  chargingTime: number;
+  dischargingTime: number;
+  addEventListener: (type: string, listener: EventListener) => void;
+}
+
+export interface NetworkConnectionAPI extends Navigator {
+  connection: NetworkConnectionInformation;
+}
+
+export interface NetworkConnectionInformation {
+  downlink?: number;
+  effectiveType?: '2g' | '3g' | '4g' | 'slow-2g';
+  rtt?: number;
+  saveData?: boolean;
+  addEventListener: (type: string, listener: EventListener) => void;
+  removeEventListener?: (type: string, listener: EventListener) => void;
+}
+
 /**
  * Get battery level if available
  */
 export function getBatteryLevel(): Promise<number | undefined> {
   return new Promise((resolve) => {
     if ('getBattery' in navigator) {
-      (navigator as any).getBattery().then((battery: any) => {
+      (navigator as BatteryAPI).getBattery().then((battery: BatteryManager) => {
         resolve(battery.level * 100);
       }).catch(() => resolve(undefined));
     } else {
@@ -265,6 +311,24 @@ export async function getNetworkInfo(): Promise<NetworkInfo> {
 }
 
 /**
+ * Synchronous version for immediate use when network info is not critical
+ */
+export function getNetworkInfoSync(): NetworkInfo {
+  const baseInfo = getBasicNetworkInfo();
+  const carrier = detectIndonesianCarrier(baseInfo.downlink || 26.1, baseInfo.rtt || 50);
+  const region = detectIndonesianRegion();
+  const timeOfDay = getIndonesianTimeOfDay();
+
+  return {
+    ...baseInfo,
+    carrier,
+    region,
+    timeOfDay,
+    batteryLevel: undefined,
+  };
+}
+
+/**
  * Get basic network information using Navigator Connection API
  */
 export function getBasicNetworkInfo(): Omit<NetworkInfo, 'carrier' | 'region' | 'timeOfDay' | 'batteryLevel'> {
@@ -277,7 +341,7 @@ export function getBasicNetworkInfo(): Omit<NetworkInfo, 'carrier' | 'region' | 
     };
   }
 
-  const connection = (navigator as any).connection;
+  const connection = (navigator as NetworkConnectionAPI).connection;
   return {
     downlink: connection?.downlink || 26.1,
     effectiveType: connection?.effectiveType || '4g',
@@ -433,20 +497,24 @@ export async function compressImage(file: File, compressionSettings?: Compressio
  */
 export async function uploadWithRetry(
   file: File,
-  uploadFn: (file: File) => Promise<any>,
+  uploadFn: (file: File) => Promise<UploadResponse>,
   maxRetries: number = 3
-): Promise<any> {
-  const networkInfo = getNetworkInfo();
+): Promise<UploadResponse> {
+  const networkInfo = await getNetworkInfo();
   let retries = 0;
 
-  const attempt = async (): Promise<any> => {
+  const attempt = async (): Promise<UploadResponse> => {
     try {
       return await uploadFn(file);
     } catch (error) {
       retries++;
 
       if (retries >= maxRetries) {
-        throw error;
+        // Return a proper error response instead of throwing
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Upload failed after maximum retries'
+        };
       }
 
       // Exponential backoff with network-aware delays
@@ -464,11 +532,11 @@ export async function uploadWithRetry(
 /**
  * Check if device is likely on mobile data (heuristic)
  */
-export function isLikelyMobileConnection(): boolean {
-  const networkInfo = getNetworkInfo();
+export async function isLikelyMobileConnection(): Promise<boolean> {
+  const networkInfo = await getNetworkInfo();
 
   // Heuristics for mobile connection
-  return (
+  return !!(
     networkInfo.saveData ||
     (networkInfo.effectiveType && ['2g', '3g'].includes(networkInfo.effectiveType)) ||
     (networkInfo.downlink && networkInfo.downlink < 15) ||
@@ -479,10 +547,10 @@ export function isLikelyMobileConnection(): boolean {
 /**
  * Get recommended chunk size for uploads based on network
  */
-export function getUploadChunkSize(): number {
-  const networkInfo = getNetworkInfo();
+export async function getUploadChunkSize(): Promise<number> {
+  const networkInfo = await getNetworkInfo();
 
-  if (isLikelyMobileConnection()) {
+  if (await isLikelyMobileConnection()) {
     return 64 * 1024; // 64KB chunks for mobile
   }
 
@@ -496,11 +564,16 @@ export function getUploadChunkSize(): number {
 /**
  * Create network-aware image loading strategy
  */
-export function getImageLoadingStrategy() {
-  const networkInfo = getNetworkInfo();
+export async function getImageLoadingStrategy(): Promise<{
+  loading: 'lazy' | 'eager';
+  quality: 'low' | 'high';
+  format: string;
+  sizes: string;
+}> {
+  const networkInfo = await getNetworkInfo();
 
   return {
-    loading: isLikelyMobileConnection() ? 'lazy' as const : 'eager' as const,
+    loading: (await isLikelyMobileConnection()) ? 'lazy' : 'eager',
     quality: networkInfo.saveData ? 'low' : 'high',
     format: 'webp',
     sizes: networkInfo.saveData ? '(max-width: 768px) 400px, 800px' : '(max-width: 768px) 600px, 1200px'

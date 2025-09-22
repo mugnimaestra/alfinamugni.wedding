@@ -3,7 +3,6 @@ import {
   type QwikIntrinsicElements,
   useSignal,
   useTask$,
-  useVisibleTask$,
 } from "@builder.io/qwik";
 import { cn } from "~/lib/utils";
 
@@ -33,7 +32,7 @@ export const Textarea = component$<TextareaProps>(
       }
     });
 
-    useVisibleTask$(({ track }) => {
+    useTask$(({ track }) => {
       track(() => currentValue.value);
       if (autoResize && textareaRef.value) {
         adjustHeight();

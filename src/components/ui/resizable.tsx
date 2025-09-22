@@ -113,8 +113,6 @@ export interface ResizablePanelProps extends PropsOf<"div"> {
 export const ResizablePanel = component$<ResizablePanelProps>(
   ({
     defaultSize,
-    minSize = 10,
-    maxSize = 90,
     class: className,
     style,
     ...props
@@ -252,7 +250,6 @@ export const ResizableHandle = component$<ResizableHandleProps>(
     const handleMouseMove = $((event: MouseEvent) => {
       if (!isDragging.value || !store.value || !handleRef.value) return;
 
-      const rect = handleRef.value.getBoundingClientRect();
       const parentRect = handleRef.value.parentElement?.getBoundingClientRect();
 
       if (!parentRect) return;

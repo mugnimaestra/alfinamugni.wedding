@@ -1,4 +1,4 @@
-import { component$, useSignal, useVisibleTask$, $, type QwikIntrinsicElements, Slot } from "@builder.io/qwik";
+import { component$, type QwikIntrinsicElements, Slot } from "@builder.io/qwik";
 import { cn } from "~/lib/utils";
 
 type CarouselProps = QwikIntrinsicElements["div"];

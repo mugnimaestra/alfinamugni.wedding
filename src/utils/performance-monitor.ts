@@ -5,6 +5,28 @@
 
 import { getNetworkInfo, type NetworkInfo } from './network-utils';
 
+// Define TypeScript interfaces for experimental browser APIs
+interface DeviceMemoryAPI extends Navigator {
+  deviceMemory: number;
+}
+
+interface LargestContentfulPaintEntry extends PerformanceEntry {
+  startTime: number;
+  element: Element;
+}
+
+interface FirstInputEntry extends PerformanceEntry {
+  name: string;
+  processingStart: number;
+  startTime: number;
+  duration: number;
+}
+
+interface LayoutShiftEntry extends PerformanceEntry {
+  value: number;
+  hadRecentInput: boolean;
+}
+
 export interface CoreWebVitals {
   lcp: number | null; // Largest Contentful Paint
   fid: number | null; // First Input Delay
@@ -102,7 +124,7 @@ export class PerformanceMonitor {
 
     // Get device memory if available
     if ('deviceMemory' in navigator) {
-      this.metrics.deviceMemory = (navigator as any).deviceMemory;
+      this.metrics.deviceMemory = (navigator as DeviceMemoryAPI).deviceMemory;
     }
 
     // Get network information
@@ -166,7 +188,7 @@ export class PerformanceMonitor {
       try {
         const lcpObserver = new PerformanceObserver((list) => {
           const entries = list.getEntries();
-          const lastEntry = entries[entries.length - 1] as any;
+          const lastEntry = entries[entries.length - 1] as LargestContentfulPaintEntry;
           this.metrics.lcp = Math.round(lastEntry.startTime);
           this.reportMetric('lcp', this.metrics.lcp);
         });
@@ -179,15 +201,16 @@ export class PerformanceMonitor {
       // First Input Delay (FID) and Interaction to Next Paint (INP)
       try {
         const fidObserver = new PerformanceObserver((list) => {
-          list.getEntries().forEach((entry: any) => {
-            if (entry.name === 'first-input') {
-              this.metrics.fid = Math.round(entry.processingStart - entry.startTime);
+          list.getEntries().forEach((entry) => {
+            const firstInputEntry = entry as FirstInputEntry;
+            if (firstInputEntry.name === 'first-input') {
+              this.metrics.fid = Math.round(firstInputEntry.processingStart - firstInputEntry.startTime);
               this.reportMetric('fid', this.metrics.fid);
             }
 
             // INP (simplified approximation)
-            if (entry.duration) {
-              this.metrics.inp = Math.round(entry.duration);
+            if (firstInputEntry.duration) {
+              this.metrics.inp = Math.round(firstInputEntry.duration);
               this.reportMetric('inp', this.metrics.inp);
             }
           });
@@ -202,9 +225,10 @@ export class PerformanceMonitor {
       try {
         let clsValue = 0;
         const clsObserver = new PerformanceObserver((list) => {
-          for (const entry of list.getEntries() as any[]) {
-            if (!entry.hadRecentInput) {
-              clsValue += entry.value;
+          for (const entry of list.getEntries()) {
+            const layoutShiftEntry = entry as LayoutShiftEntry;
+            if (!layoutShiftEntry.hadRecentInput) {
+              clsValue += layoutShiftEntry.value;
             }
           }
           this.metrics.cls = Math.round(clsValue * 10000) / 10000; // Round to 4 decimal places
@@ -251,8 +275,8 @@ export class PerformanceMonitor {
 
     if (navigation) {
       this.metrics.ttfb = Math.round(navigation.responseStart - navigation.requestStart);
-      this.metrics.domContentLoaded = Math.round(navigation.domContentLoadedEventEnd - navigation.navigationStart);
-      this.metrics.loadComplete = Math.round(navigation.loadEventEnd - navigation.navigationStart);
+      this.metrics.domContentLoaded = Math.round(navigation.domContentLoadedEventEnd - navigation.fetchStart);
+      this.metrics.loadComplete = Math.round(navigation.loadEventEnd - navigation.fetchStart);
 
       this.reportMetric('ttfb', this.metrics.ttfb);
       this.reportMetric('domContentLoaded', this.metrics.domContentLoaded);
@@ -480,11 +504,11 @@ export class PerformanceMonitor {
   }
 
   // Method to track custom wedding app events
-  trackCustomEvent(name: string, value: number, metadata?: Record<string, any>): void {
+  trackCustomEvent(name: string, value: number, metadata?: Record<string, unknown>): void {
     console.log(`[PerformanceMonitor] Custom event: ${name} = ${value}`, metadata);
 
     // Store custom metrics
-    (this.metrics as any)[name] = value;
+    (this.metrics as Record<string, unknown>)[name] = value;
 
     this.sendToAnalytics(name, value);
   }
@@ -558,7 +582,7 @@ export function getPerformanceMonitor(): PerformanceMonitor | null {
   return performanceMonitor || null;
 }
 
-export function trackCustomEvent(name: string, value: number, metadata?: Record<string, any>): void {
+export function trackCustomEvent(name: string, value: number, metadata?: Record<string, unknown>): void {
   if (performanceMonitor) {
     performanceMonitor.trackCustomEvent(name, value, metadata);
   }

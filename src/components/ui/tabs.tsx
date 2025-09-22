@@ -45,7 +45,7 @@ export const Tabs = component$<TabsProps>(({
   useContextProvider(TabsContext, contextValue)
 
   // Filter out custom props before spreading
-  const { ...divProps } = props as any
+  const { ...divProps } = props as QwikIntrinsicElements['div']
 
   return (
     <div class={className} {...divProps}>
