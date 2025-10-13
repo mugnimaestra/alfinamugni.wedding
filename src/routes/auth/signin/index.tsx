@@ -66,9 +66,12 @@ export const useSignInAction = routeAction$(
       }
 
       // Set secure session cookie
+      // Use secure: false for localhost development
+      const isProduction = platform?.env?.ENVIRONMENT === 'production';
+      
       cookie.set('admin_session', authResult.session.id, {
         httpOnly: true,
-        secure: true,
+        secure: isProduction,
         sameSite: 'Strict',
         path: '/',
         maxAge: 24 * 60 * 60, // 24 hours
@@ -81,7 +84,7 @@ export const useSignInAction = routeAction$(
 
       // Set CSRF token cookie
       cookie.set('csrf_token', csrfToken, {
-        secure: true,
+        secure: isProduction,
         sameSite: 'Strict',
         path: '/',
         maxAge: 60 * 60, // 1 hour
@@ -89,7 +92,7 @@ export const useSignInAction = routeAction$(
       });
 
       // Redirect to admin dashboard
-      throw redirect(302, '/admin');
+      throw redirect(302, '/admin/');
 
     } catch (error) {
       // If redirect is thrown, it will be handled by the framework

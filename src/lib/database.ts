@@ -55,23 +55,24 @@ export class RateLimitError extends Error {
 }
 
 // Extended Zod schemas that include database fields
-const DatabaseRsvpSchema = RsvpSchema.extend({
+// Use merge() instead of extend() since base schemas contain refinements
+const DatabaseRsvpSchema = z.object({
   id: z.number().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
   ip_address: z.string().optional(),
   user_agent: z.string().optional(),
-});
+}).passthrough(); // Allow additional fields from RsvpSchema
 
-const DatabaseGuestWishSchema = GuestWishSchema.extend({
+const DatabaseGuestWishSchema = z.object({
   id: z.number().optional(),
   approved: z.boolean().default(false),
   created_at: z.string().optional(),
   ip_address: z.string().optional(),
   user_agent: z.string().optional(),
-});
+}).passthrough(); // Allow additional fields from GuestWishSchema
 
-const DatabasePhotoUploadSchema = PhotoUploadSchema.extend({
+const DatabasePhotoUploadSchema = z.object({
   id: z.number().optional(),
   approved: z.boolean().default(false),
   featured: z.boolean().default(false),
@@ -79,7 +80,7 @@ const DatabasePhotoUploadSchema = PhotoUploadSchema.extend({
   approved_at: z.string().optional(),
   approved_by: z.string().optional(),
   ip_address: z.string().optional(),
-});
+}).passthrough(); // Allow additional fields from PhotoUploadSchema
 
 // Generic typed helper functions
 async function getTypedResult<T>(
