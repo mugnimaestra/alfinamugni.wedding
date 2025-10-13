@@ -1,9 +1,11 @@
 import { component$, Slot, useSignal } from '@builder.io/qwik';
 import { routeLoader$ } from '@builder.io/qwik-city';
 import type { RequestHandler } from '@builder.io/qwik-city';
+import { createAuth } from '~/lib/auth';
+import { getEnvWithFallback } from '~/lib/dev-env';
 
 // Enhanced server-side session validation with Custom Auth
-export const onRequest: RequestHandler = async ({ request, redirect, url, headers, cookie }) => {
+export const onRequest: RequestHandler = async ({ request, redirect, url, headers, cookie, platform }) => {
   try {
     // Log admin access attempts for security monitoring
     const clientIP = request.headers.get('CF-Connecting-IP') ||
@@ -27,16 +29,12 @@ export const onRequest: RequestHandler = async ({ request, redirect, url, header
       throw redirect(302, `/auth/signin?callbackUrl=${encodeURIComponent(url.pathname)}`);
     }
 
-    // Validate session with Custom Auth API
-    const sessionUrl = new URL('/api/auth/login', url.origin);
-    const sessionResponse = await fetch(sessionUrl, {
-      method: 'GET',
-      headers: {
-        Cookie: `admin_session=${sessionId}`,
-      },
-    });
+    // Validate session directly (not via HTTP call to avoid SSR issues in dev mode)
+    const env = getEnvWithFallback(platform?.env);
+    const auth = createAuth(env);
+    const validation = await auth.validateSession(sessionId);
 
-    if (!sessionResponse.ok) {
+    if (!validation.valid || !validation.session) {
       console.warn(`Admin access denied - invalid session: ${clientIP} -> ${url.pathname}`);
       // Clear invalid session cookies
       cookie.delete('admin_session', { path: '/' });
@@ -44,15 +42,8 @@ export const onRequest: RequestHandler = async ({ request, redirect, url, header
       throw redirect(302, `/auth/signin?callbackUrl=${encodeURIComponent(url.pathname)}`);
     }
 
-    const sessionData = await sessionResponse.json();
-
-    if (!sessionData.authenticated) {
-      console.warn(`Admin access denied - not authenticated: ${clientIP} -> ${url.pathname}`);
-      throw redirect(302, `/auth/signin?callbackUrl=${encodeURIComponent(url.pathname)}`);
-    }
-
     // Session is valid - log successful access
-    console.log(`Admin access granted: ${sessionData.data?.session?.email} -> ${url.pathname}`);
+    console.log(`Admin access granted: ${validation.session.email} -> ${url.pathname}`);
 
   } catch (error) {
     if (error instanceof Response) {
@@ -65,7 +56,7 @@ export const onRequest: RequestHandler = async ({ request, redirect, url, header
 };
 
 // Admin session loader
-export const useAdminSession = routeLoader$(async ({ cookie, url }) => {
+export const useAdminSession = routeLoader$(async ({ cookie, platform }) => {
   try {
     const sessionId = cookie.get('admin_session')?.value;
 
@@ -73,20 +64,16 @@ export const useAdminSession = routeLoader$(async ({ cookie, url }) => {
       return null;
     }
 
-    const sessionUrl = new URL('/api/auth/login', url.origin);
-    const sessionResponse = await fetch(sessionUrl, {
-      method: 'GET',
-      headers: {
-        Cookie: `admin_session=${sessionId}`,
-      },
-    });
+    // Validate session directly
+    const env = getEnvWithFallback(platform?.env);
+    const auth = createAuth(env);
+    const validation = await auth.validateSession(sessionId);
 
-    if (!sessionResponse.ok) {
+    if (!validation.valid || !validation.session) {
       return null;
     }
 
-    const sessionData = await sessionResponse.json();
-    return sessionData.authenticated ? sessionData.data?.session : null;
+    return validation.session;
   } catch (error) {
     console.error('Failed to load admin session:', error);
     return null;
