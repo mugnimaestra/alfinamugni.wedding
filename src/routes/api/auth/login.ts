@@ -1,6 +1,7 @@
 import type { RequestHandler } from '@builder.io/qwik-city';
 import { type Env } from '../../../lib/database';
 import { createAuth } from '../../../lib/auth';
+import { getEnvWithFallback } from '../../../lib/dev-env';
 
 // Admin login API endpoint
 export const onPost: RequestHandler = async ({ request, json, cookie, platform }) => {
@@ -43,7 +44,8 @@ export const onPost: RequestHandler = async ({ request, json, cookie, platform }
     }
 
     // Create auth instance
-    const auth = createAuth(platform.env as Env);
+    const env = getEnvWithFallback(platform?.env);
+    const auth = createAuth(env);
 
     // Authenticate user
     const authResult = await auth.authenticate(email, password);
@@ -133,7 +135,8 @@ export const onGet: RequestHandler = async ({ cookie, json, platform }) => {
       });
     }
 
-    const auth = createAuth(platform.env as Env);
+    const env = getEnvWithFallback(platform?.env);
+    const auth = createAuth(env);
     const validation = await auth.validateSession(sessionId);
 
     if (!validation.valid) {
