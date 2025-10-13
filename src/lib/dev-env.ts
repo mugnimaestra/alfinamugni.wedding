@@ -126,10 +126,25 @@ export function getDevEnv(): Env {
   // Load environment variables from .dev.vars or process.env
   const envVars = loadDevVars();
   
+  // Create a minimal mock DB for development
+  const mockDB: any = {
+    prepare: (sql: string) => ({
+      bind: (...args: any[]) => mockDB.prepare(sql),
+      first: async () => null,
+      all: async () => ({ results: [] }),
+      run: async () => ({ success: true, meta: {} }),
+    }),
+    batch: async (statements: any[]) => {
+      return statements.map(() => ({ success: true, meta: {} }));
+    },
+    dump: async () => new ArrayBuffer(0),
+    exec: async () => ({ count: 0, duration: 0 }),
+  };
+
   const env: Env = {
     ADMIN_KV: mockAdminKV as any,
     SESSIONS: mockSessionsKV as any,
-    DB: null as any, // Will be mocked or use local D1
+    DB: mockDB,
     WEDDING_PHOTOS: null as any, // Will be mocked or use local R2
     WEDDING_PHOTOS_PREVIEW: null as any,
     ADMIN_EMAIL: envVars.ADMIN_EMAIL || process.env.ADMIN_EMAIL || 'admin@alfinamugni.wedding',
