@@ -7,15 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/com
 import { Alert, AlertDescription } from '~/components/ui/alert';
 import { createAuth } from '~/lib/auth';
 import type { Env } from '~/lib/database';
+import { getEnvWithFallback } from '~/lib/dev-env';
 
 // Check if user is already authenticated
 export const useCheckSession = routeLoader$(async ({ cookie, redirect, platform }) => {
   const sessionId = cookie.get('admin_session')?.value;
 
-  if (sessionId && platform?.env) {
+  if (sessionId) {
     // Validate session directly using auth library
     try {
-      const auth = createAuth(platform.env as Env);
+      const env = getEnvWithFallback(platform?.env);
+      const auth = createAuth(env);
       const validation = await auth.validateSession(sessionId);
 
       if (validation.valid) {
@@ -38,15 +40,11 @@ export const useCheckSession = routeLoader$(async ({ cookie, redirect, platform 
 export const useSignInAction = routeAction$(
   async (values, { fail, platform, cookie, redirect }) => {
     try {
-      // Check if platform.env is available
-      if (!platform?.env) {
-        return fail(500, {
-          error: 'Server configuration error. Please try again.',
-        });
-      }
+      // Get environment with fallback to dev mock
+      const env = getEnvWithFallback(platform?.env);
 
       // Create auth instance
-      const auth = createAuth(platform.env as Env);
+      const auth = createAuth(env);
 
       // Authenticate user
       const authResult = await auth.authenticate(values.email, values.password);
