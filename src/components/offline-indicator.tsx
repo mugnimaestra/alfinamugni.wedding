@@ -4,7 +4,7 @@
  */
 
 import { component$, useSignal, useVisibleTask$, useStore } from '@builder.io/qwik';
-import { getOfflineQueueStatus } from '../sw-plugins/offline-queue';
+import { getOfflineQueueStats } from '../sw-plugins/offline-queue';
 import { type NetworkConnectionAPI } from '../utils/network-utils';
 
 interface NetworkStatus {
@@ -65,9 +65,9 @@ export const OfflineIndicator = component$(() => {
 
     const updateQueueStatus = async () => {
       try {
-        const status = await getOfflineQueueStatus();
-        queueStatus.count = status.count;
-        queueStatus.oldestTimestamp = status.oldestTimestamp;
+        const status = await getOfflineQueueStats();
+        queueStatus.count = status.totalItems;
+        queueStatus.oldestTimestamp = status.oldestItem ? status.oldestItem.getTime() : null;
       } catch (error) {
         console.warn('[OfflineIndicator] Failed to get queue status:', error);
       }

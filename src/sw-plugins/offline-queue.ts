@@ -1,42 +1,35 @@
 /**
  * Offline Queue Service Worker Plugin
- * Handles RSVP submissions when offline for Indonesian mobile users
+ * Manages offline form submissions and data synchronization
  */
 
-export interface QueuedRequest {
+export interface OfflineQueueItem {
   id: string;
+  type: 'rsvp' | 'wish' | 'photo' | 'contact';
+  data: unknown;
+  timestamp: number;
+  retryCount: number;
+  maxRetries: number;
   url: string;
   method: string;
   headers: Record<string, string>;
-  body: string;
-  timestamp: number;
-  retryCount: number;
-  priority: 'high' | 'medium' | 'low';
 }
 
-export interface QueueConfig {
-  maxRetries: number;
-  retryDelay: number;
-  maxAge: number; // milliseconds
-  maxQueueSize: number;
+export interface OfflineQueueStats {
+  totalItems: number;
+  itemsByType: Record<string, number>;
+  oldestItem: Date | null;
+  retryAttempts: number;
 }
-
-const DEFAULT_CONFIG: QueueConfig = {
-  maxRetries: 5,
-  retryDelay: 2000, // 2 seconds initial delay
-  maxAge: 24 * 60 * 60 * 1000, // 24 hours
-  maxQueueSize: 50,
-};
 
 export class OfflineQueue {
   private dbName = 'wedding-offline-queue';
   private dbVersion = 1;
-  private storeName = 'requests';
+  private storeName = 'queue';
   private db: IDBDatabase | null = null;
-  private config: QueueConfig;
+  private syncInProgress = false;
 
-  constructor(config: Partial<QueueConfig> = {}) {
-    this.config = { ...DEFAULT_CONFIG, ...config };
+  constructor() {
     this.initDB();
   }
 
@@ -55,133 +48,106 @@ export class OfflineQueue {
 
         if (!db.objectStoreNames.contains(this.storeName)) {
           const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
+          store.createIndex('type', 'type', { unique: false });
           store.createIndex('timestamp', 'timestamp', { unique: false });
-          store.createIndex('priority', 'priority', { unique: false });
-          store.createIndex('url', 'url', { unique: false });
+          store.createIndex('retryCount', 'retryCount', { unique: false });
         }
       };
     });
   }
 
-  async addToQueue(request: Omit<QueuedRequest, 'id' | 'timestamp' | 'retryCount'>): Promise<void> {
+  async addItem(item: Omit<OfflineQueueItem, 'id' | 'timestamp' | 'retryCount'>): Promise<void> {
     if (!this.db) await this.initDB();
 
-    const queuedRequest: QueuedRequest = {
-      ...request,
+    const queueItem: OfflineQueueItem = {
+      ...item,
       id: this.generateId(),
       timestamp: Date.now(),
       retryCount: 0,
     };
 
-    // Clean old entries and check queue size
-    await this.cleanQueue();
+    const transaction = this.db!.transaction([this.storeName], 'readwrite');
+    const store = transaction.objectStore(this.storeName);
+
+    return new Promise<void>((resolve, reject) => {
+      const request = store.put(queueItem);
+      request.onsuccess = () => {
+        console.log(`[OfflineQueue] Added ${item.type} item to queue`);
+        resolve();
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async getItems(type?: string): Promise<OfflineQueueItem[]> {
+    if (!this.db) await this.initDB();
+
+    const transaction = this.db!.transaction([this.storeName], 'readonly');
+    const store = transaction.objectStore(this.storeName);
+
+    return new Promise((resolve, reject) => {
+      let request: IDBRequest;
+
+      if (type) {
+        const index = store.index('type');
+        request = index.getAll(type);
+      } else {
+        request = store.getAll();
+      }
+
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async getNextItem(): Promise<OfflineQueueItem | null> {
+    if (!this.db) await this.initDB();
+
+    const transaction = this.db!.transaction([this.storeName], 'readonly');
+    const store = transaction.objectStore(this.storeName);
+    const index = store.index('timestamp');
+
+    return new Promise((resolve, reject) => {
+      const request = index.openCursor();
+      request.onsuccess = (event) => {
+        const cursor = (event.target as IDBRequest).result;
+        if (cursor) {
+          resolve(cursor.value);
+        } else {
+          resolve(null);
+        }
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async updateItem(id: string, updates: Partial<OfflineQueueItem>): Promise<void> {
+    if (!this.db) await this.initDB();
 
     const transaction = this.db!.transaction([this.storeName], 'readwrite');
     const store = transaction.objectStore(this.storeName);
 
-    await new Promise<void>((resolve, reject) => {
-      const request = store.add(queuedRequest);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
-
-    console.log(`[OfflineQueue] Added request to queue: ${queuedRequest.url}`);
-  }
-
-  async processQueue(): Promise<void> {
-    if (!this.db) await this.initDB();
-
-    const requests = await this.getQueuedRequests();
-
-    for (const request of requests) {
-      try {
-        await this.processRequest(request);
-        await this.removeFromQueue(request.id);
-        console.log(`[OfflineQueue] Successfully processed: ${request.url}`);
-      } catch (error) {
-        console.warn(`[OfflineQueue] Failed to process: ${request.url}`, error);
-
-        if (request.retryCount < this.config.maxRetries) {
-          await this.updateRetryCount(request.id, request.retryCount + 1);
-          // Exponential backoff for Indonesian networks
-          setTimeout(() => {
-            this.processQueue();
-          }, this.config.retryDelay * Math.pow(2, request.retryCount));
+    return new Promise<void>((resolve, reject) => {
+      const getRequest = store.get(id);
+      getRequest.onsuccess = () => {
+        const item = getRequest.result;
+        if (item) {
+          const updatedItem = { ...item, ...updates };
+          const updateRequest = store.put(updatedItem);
+          updateRequest.onsuccess = () => resolve();
+          updateRequest.onerror = () => reject(updateRequest.error);
         } else {
-          console.error(`[OfflineQueue] Max retries reached for: ${request.url}`);
-          await this.removeFromQueue(request.id);
-        }
-      }
-    }
-  }
-
-  private async processRequest(request: QueuedRequest): Promise<Response> {
-    const fetchOptions: RequestInit = {
-      method: request.method,
-      headers: request.headers,
-      body: request.body,
-    };
-
-    // Indonesian network optimization
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
-
-    try {
-      fetchOptions.signal = controller.signal;
-      const response = await fetch(request.url, fetchOptions);
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      return response;
-    } catch (error) {
-      clearTimeout(timeoutId);
-      throw error;
-    }
-  }
-
-  private async getQueuedRequests(): Promise<QueuedRequest[]> {
-    if (!this.db) return [];
-
-    const transaction = this.db.transaction([this.storeName], 'readonly');
-    const store = transaction.objectStore(this.storeName);
-    const index = store.index('priority');
-
-    return new Promise((resolve, reject) => {
-      const requests: QueuedRequest[] = [];
-      const cursorRequest = index.openCursor();
-
-      cursorRequest.onsuccess = (event) => {
-        const cursor = (event.target as IDBRequest).result;
-        if (cursor) {
-          requests.push(cursor.value);
-          cursor.continue();
-        } else {
-          // Sort by priority and timestamp
-          requests.sort((a, b) => {
-            const priorityOrder = { high: 3, medium: 2, low: 1 };
-            const aPriority = priorityOrder[a.priority];
-            const bPriority = priorityOrder[b.priority];
-
-            if (aPriority !== bPriority) {
-              return bPriority - aPriority; // Higher priority first
-            }
-            return a.timestamp - b.timestamp; // Older first for same priority
-          });
-          resolve(requests);
+          reject(new Error('Item not found'));
         }
       };
-
-      cursorRequest.onerror = () => reject(cursorRequest.error);
+      getRequest.onerror = () => reject(getRequest.error);
     });
   }
 
-  private async removeFromQueue(id: string): Promise<void> {
-    if (!this.db) return;
+  async removeItem(id: string): Promise<void> {
+    if (!this.db) await this.initDB();
 
-    const transaction = this.db.transaction([this.storeName], 'readwrite');
+    const transaction = this.db!.transaction([this.storeName], 'readwrite');
     const store = transaction.objectStore(this.storeName);
 
     return new Promise<void>((resolve, reject) => {
@@ -191,66 +157,116 @@ export class OfflineQueue {
     });
   }
 
-  private async updateRetryCount(id: string, retryCount: number): Promise<void> {
-    if (!this.db) return;
+  async syncItems(): Promise<{ success: number; failed: number }> {
+    if (this.syncInProgress) {
+      console.log('[OfflineQueue] Sync already in progress');
+      return { success: 0, failed: 0 };
+    }
 
-    const transaction = this.db.transaction([this.storeName], 'readwrite');
-    const store = transaction.objectStore(this.storeName);
+    this.syncInProgress = true;
+    let successCount = 0;
+    let failedCount = 0;
 
-    return new Promise<void>((resolve, reject) => {
-      const getRequest = store.get(id);
+    try {
+      while (true) {
+        const item = await this.getNextItem();
+        if (!item) break;
 
-      getRequest.onsuccess = () => {
-        const request = getRequest.result;
-        if (request) {
-          request.retryCount = retryCount;
-          const updateRequest = store.put(request);
-          updateRequest.onsuccess = () => resolve();
-          updateRequest.onerror = () => reject(updateRequest.error);
-        } else {
-          resolve();
+        try {
+          const success = await this.syncItem(item);
+          if (success) {
+            await this.removeItem(item.id);
+            successCount++;
+            console.log(`[OfflineQueue] Successfully synced ${item.type} item`);
+          } else {
+            // Update retry count
+            const updatedItem = {
+              ...item,
+              retryCount: item.retryCount + 1,
+            };
+
+            if (updatedItem.retryCount >= updatedItem.maxRetries) {
+              await this.removeItem(item.id);
+              console.warn(`[OfflineQueue] Max retries exceeded for ${item.type} item`);
+              failedCount++;
+            } else {
+              await this.updateItem(item.id, { retryCount: updatedItem.retryCount });
+              console.log(`[OfflineQueue] Retry ${updatedItem.retryCount}/${updatedItem.maxRetries} for ${item.type} item`);
+            }
+          }
+        } catch (error) {
+          console.error(`[OfflineQueue] Failed to sync ${item.type} item:`, error);
+          failedCount++;
         }
-      };
+      }
+    } finally {
+      this.syncInProgress = false;
+    }
 
-      getRequest.onerror = () => reject(getRequest.error);
-    });
+    return { success: successCount, failed: failedCount };
   }
 
-  private async cleanQueue(): Promise<void> {
-    if (!this.db) return;
+  private async syncItem(item: OfflineQueueItem): Promise<boolean> {
+    try {
+      const response = await fetch(item.url, {
+        method: item.method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...item.headers,
+        },
+        body: JSON.stringify(item.data),
+      });
 
-    const transaction = this.db.transaction([this.storeName], 'readwrite');
+      return response.ok;
+    } catch (error) {
+      console.error(`[OfflineQueue] Network error syncing ${item.type}:`, error);
+      return false;
+    }
+  }
+
+  async getStats(): Promise<OfflineQueueStats> {
+    if (!this.db) await this.initDB();
+
+    const transaction = this.db!.transaction([this.storeName], 'readonly');
     const store = transaction.objectStore(this.storeName);
-    const index = store.index('timestamp');
 
-    const cutoffTime = Date.now() - this.config.maxAge;
-    const range = IDBKeyRange.upperBound(cutoffTime);
+    return new Promise((resolve, reject) => {
+      const request = store.getAll();
+      request.onsuccess = () => {
+        const items: OfflineQueueItem[] = request.result || [];
 
-    return new Promise<void>((resolve, reject) => {
-      const request = index.openCursor(range);
+        const stats: OfflineQueueStats = {
+          totalItems: items.length,
+          itemsByType: {},
+          oldestItem: items.length > 0 ? new Date(Math.min(...items.map(item => item.timestamp))) : null,
+          retryAttempts: items.reduce((sum, item) => sum + item.retryCount, 0),
+        };
 
-      request.onsuccess = (event) => {
-        const cursor = (event.target as IDBRequest).result;
-        if (cursor) {
-          cursor.delete();
-          cursor.continue();
-        } else {
-          resolve();
-        }
+        // Count items by type
+        items.forEach(item => {
+          stats.itemsByType[item.type] = (stats.itemsByType[item.type] || 0) + 1;
+        });
+
+        resolve(stats);
       };
-
       request.onerror = () => reject(request.error);
     });
   }
 
-  async getQueueStatus(): Promise<{count: number, oldestTimestamp: number | null}> {
-    if (!this.db) return { count: 0, oldestTimestamp: null };
+  async clearQueue(): Promise<void> {
+    if (!this.db) await this.initDB();
 
-    const requests = await this.getQueuedRequests();
-    return {
-      count: requests.length,
-      oldestTimestamp: requests.length > 0 ? Math.min(...requests.map(r => r.timestamp)) : null,
-    };
+    const transaction = this.db!.transaction([this.storeName], 'readwrite');
+    const store = transaction.objectStore(this.storeName);
+
+    return new Promise<void>((resolve, reject) => {
+      const request = store.clear();
+      request.onsuccess = () => {
+        console.log('[OfflineQueue] Queue cleared');
+        resolve();
+      };
+      request.onerror = () => reject(request.error);
+    });
   }
 
   private generateId(): string {
@@ -258,34 +274,52 @@ export class OfflineQueue {
   }
 }
 
-// Service Worker integration
+// Global instance
 let offlineQueue: OfflineQueue;
 
-export function initOfflineQueue(config?: Partial<QueueConfig>): void {
-  offlineQueue = new OfflineQueue(config);
-
-  // Listen for online events to process queue
-  self.addEventListener('online', () => {
-    console.log('[OfflineQueue] Device is online, processing queue...');
-    offlineQueue.processQueue();
-  });
+export function initOfflineQueue(): void {
+  offlineQueue = new OfflineQueue();
+  
+  // Try to sync when coming back online
+  if ('addEventListener' in self) {
+    self.addEventListener('online', () => {
+      console.log('[OfflineQueue] Back online, attempting sync');
+      offlineQueue.syncItems().catch(console.error);
+    });
+  }
 }
 
-export function queueRequest(
-  url: string,
-  options: RequestInit & { priority?: 'high' | 'medium' | 'low' }
-): Promise<void> {
-  const { priority = 'medium', ...fetchOptions } = options;
-
-  return offlineQueue.addToQueue({
-    url,
-    method: fetchOptions.method || 'GET',
-    headers: fetchOptions.headers as Record<string, string> || {},
-    body: fetchOptions.body as string || '',
-    priority,
-  });
+export function addToOfflineQueue(item: Omit<OfflineQueueItem, 'id' | 'timestamp' | 'retryCount'>): Promise<void> {
+  if (!offlineQueue) {
+    initOfflineQueue();
+  }
+  return offlineQueue.addItem(item);
 }
 
-export function getOfflineQueueStatus() {
-  return offlineQueue?.getQueueStatus() || Promise.resolve({ count: 0, oldestTimestamp: null });
+export function getOfflineQueueItems(type?: string): Promise<OfflineQueueItem[]> {
+  if (!offlineQueue) {
+    initOfflineQueue();
+  }
+  return offlineQueue.getItems(type);
+}
+
+export function syncOfflineQueue(): Promise<{ success: number; failed: number }> {
+  if (!offlineQueue) {
+    initOfflineQueue();
+  }
+  return offlineQueue.syncItems();
+}
+
+export function getOfflineQueueStats(): Promise<OfflineQueueStats> {
+  if (!offlineQueue) {
+    initOfflineQueue();
+  }
+  return offlineQueue.getStats();
+}
+
+export function clearOfflineQueue(): Promise<void> {
+  if (!offlineQueue) {
+    initOfflineQueue();
+  }
+  return offlineQueue.clearQueue();
 }

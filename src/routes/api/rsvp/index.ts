@@ -1,39 +1,9 @@
 import type { RequestHandler } from '@builder.io/qwik-city';
-import { getDatabase, type Env, type RsvpData, DatabaseError, ValidationError } from '../../../lib/database';
-import { validateRsvpData, sanitizeRsvpData, validateIndonesianPhone } from '../../../lib/validators';
+import { type Env } from '../../../lib/database';
+import { createRsvpService } from '../../../services/rsvp-service';
+import { createEmailService } from '../../../lib/email';
 
-// Rate limiting store (in-memory for development, use KV storage in production)
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-
-// Rate limiting configuration
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
-const RATE_LIMIT_MAX_ATTEMPTS = 3; // 3 RSVP submissions per hour per IP
-
-function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
-  const now = Date.now();
-  const key = `rsvp:${ip}`;
-  const current = rateLimitStore.get(key);
-
-  if (!current) {
-    rateLimitStore.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return { allowed: true };
-  }
-
-  if (now > current.resetTime) {
-    rateLimitStore.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return { allowed: true };
-  }
-
-  if (current.count >= RATE_LIMIT_MAX_ATTEMPTS) {
-    const retryAfter = Math.ceil((current.resetTime - now) / 1000);
-    return { allowed: false, retryAfter };
-  }
-
-  rateLimitStore.set(key, { count: current.count + 1, resetTime: current.resetTime });
-  return { allowed: true };
-}
-
-// RSVP API endpoint with enhanced validation
+// RSVP API endpoint with enhanced validation, rate limiting, and spam detection
 export const onPost: RequestHandler = async ({ request, json, platform }) => {
   try {
     // Get client information
@@ -43,25 +13,15 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
                     'unknown';
     const userAgent = request.headers.get('User-Agent') || 'unknown';
 
-    // Check rate limiting
-    const rateCheck = checkRateLimit(clientIP);
-    if (!rateCheck.allowed) {
-      throw json(429, {
-        error: 'Too many RSVP attempts',
-        success: false,
-        message: `Rate limit exceeded. Please try again in ${rateCheck.retryAfter} seconds.`,
-        retryAfter: rateCheck.retryAfter
-      });
-    }
-
     // Parse and validate content-type
     const contentType = request.headers.get('content-type');
     if (!contentType?.includes('application/json')) {
-      throw json(400, {
+      const response = json(400, {
         error: 'Invalid content-type',
         success: false,
         message: 'Request must be application/json'
       });
+      throw response;
     }
 
     // Parse request body with size limit
@@ -73,170 +33,139 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
       }
       formData = JSON.parse(rawBody);
     } catch {
-      throw json(400, {
+      const response = json(400, {
         error: 'Invalid JSON',
         success: false,
         message: 'Request body must be valid JSON'
       });
+      throw response;
     }
 
-    // Sanitize input data
-    const sanitizedData = sanitizeRsvpData(formData as Record<string, unknown>);
+    // Create RSVP service
+    const rsvpService = createRsvpService(platform.env as Env);
 
-    // Validate with Zod schema
-    const validation = validateRsvpData(sanitizedData);
-    if (!validation.success) {
-      const errors = validation.error.issues.map((err: { path: (string | number | symbol)[]; message: string }) => ({
-        field: err.path.join('.'),
-        message: err.message
-      }));
+    // Submit RSVP
+    const result = await rsvpService.submitRsvp(formData as {
+      guest_name: string;
+      email: string;
+      phone?: string;
+      attending: 'both' | 'akad' | 'reception' | 'unable';
+      plus_one_count: number;
+      plus_one_name?: string;
+      meal_preference?: 'chicken' | 'beef' | 'fish' | 'vegetarian' | 'vegan';
+      plus_one_meal?: 'chicken' | 'beef' | 'fish' | 'vegetarian' | 'vegan';
+      accommodation_needed: boolean;
+      special_requests?: string;
+      dietary_restrictions?: string;
+    }, {
+      ipAddress: clientIP,
+      userAgent: userAgent
+    });
 
-      throw json(400, {
-        error: 'Validation failed',
-        success: false,
-        message: 'Please check the form data and try again',
-        details: errors
-      });
+    // Send emails if RSVP was successful
+    const emailInfo: { confirmationSent?: boolean; adminNotificationSent?: boolean; emailErrors?: string[] } = {};
+    
+    if (result.success && result.rsvp) {
+      try {
+        // Create email service
+        const emailService = createEmailService(platform.env.RESEND_API_KEY);
+        
+        const emailErrors: string[] = [];
+        
+        // Send confirmation email to guest
+        try {
+          const confirmationResult = await emailService.sendRsvpConfirmation(result.rsvp);
+          emailInfo.confirmationSent = confirmationResult.success;
+          if (!confirmationResult.success) {
+            emailErrors.push(`Confirmation email failed: ${confirmationResult.error}`);
+          }
+        } catch (error) {
+          emailErrors.push(`Confirmation email error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+        
+        // Send admin notification
+        try {
+          const adminEmail = platform.env.ADMIN_EMAIL || 'admin@alfinamugni.wedding';
+          const adminResult = await emailService.sendAdminNotification(result.rsvp, adminEmail);
+          emailInfo.adminNotificationSent = adminResult.success;
+          if (!adminResult.success) {
+            emailErrors.push(`Admin notification failed: ${adminResult.error}`);
+          }
+        } catch (error) {
+          emailErrors.push(`Admin notification error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+        
+        // Schedule reminder emails if attending
+        if (result.rsvp.attending !== 'unable') {
+          try {
+            // Schedule 1-week reminder
+            await emailService.sendRsvpReminder(result.rsvp, 'one_week');
+            
+            // Schedule day-before reminder
+            await emailService.sendRsvpReminder(result.rsvp, 'day_before');
+          } catch (error) {
+            emailErrors.push(`Reminder scheduling error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          }
+        }
+        
+        if (emailErrors.length > 0) {
+          emailInfo.emailErrors = emailErrors;
+          console.warn('Email sending warnings:', emailErrors);
+        }
+        
+      } catch (error) {
+        console.error('Email service error:', error);
+        emailInfo.emailErrors = [`Email service error: ${error instanceof Error ? error.message : 'Unknown error'}`];
+      }
     }
 
-    const validData = validation.data;
-
-    // Additional Indonesian-specific validation
-    if (validData.phone && !validateIndonesianPhone(validData.phone)) {
-      throw json(400, {
-        error: 'Invalid phone number',
-        success: false,
-        message: 'Please enter a valid Indonesian phone number'
-      });
-    }
-
-    // Validate plus one requirements
-    if (validData.plus_one_count > 0 && !validData.plus_one_name) {
-      throw json(400, {
-        error: 'Plus one name required',
-        success: false,
-        message: 'Please provide the name of your plus one'
-      });
-    }
-
-    // Validate meal preferences for plus ones
-    if (validData.plus_one_count > 0 && validData.plus_one_meal && !validData.plus_one_name) {
-      throw json(400, {
-        error: 'Invalid plus one data',
-        success: false,
-        message: 'Plus one meal preference requires plus one name'
-      });
-    }
-
-    // Get database instance
-    const db = getDatabase(platform.env as Env);
-
-    // Prepare RSVP data with metadata
-    const rsvpData: Omit<RsvpData, 'id' | 'created_at' | 'updated_at'> = {
-      ...validData,
-      ip_address: clientIP,
-      user_agent: userAgent
+    // Create response with rate limit headers if available
+    const statusCode = result.success ? 200 : (result.rateLimitInfo ? 429 : 400);
+    const responseData = {
+      success: result.success,
+      message: result.message,
+      data: result.rsvp ? {
+        id: result.rsvp.id,
+        guest_name: result.rsvp.guest_name,
+        email: result.rsvp.email,
+        attending: result.rsvp.attending,
+        plus_one_count: result.rsvp.plus_one_count,
+        created_at: result.rsvp.created_at,
+        updated_at: result.rsvp.updated_at
+      } : undefined,
+      isUpdate: result.isUpdate,
+      spamInfo: result.spamInfo,
+      emailInfo: emailInfo.confirmationSent !== undefined || emailInfo.adminNotificationSent !== undefined ? {
+        confirmationSent: emailInfo.confirmationSent,
+        adminNotificationSent: emailInfo.adminNotificationSent,
+        emailErrors: emailInfo.emailErrors
+      } : undefined
     };
 
-    // Check if RSVP already exists
-    const existingRsvp = await db.getRsvpByEmail(rsvpData.email);
-    let result: RsvpData;
-    let isUpdate = false;
-
-    if (existingRsvp) {
-      // Update existing RSVP
-      result = await db.updateRsvp(existingRsvp.id!, rsvpData);
-      isUpdate = true;
-    } else {
-      // Create new RSVP
-      result = await db.createRsvp(rsvpData);
+    if (result.rateLimitInfo) {
+      const response = new Response(JSON.stringify(responseData), {
+        status: statusCode,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-RateLimit-Limit': result.rateLimitInfo.limit.toString(),
+          'X-RateLimit-Remaining': result.rateLimitInfo.remaining.toString(),
+          'X-RateLimit-Reset': result.rateLimitInfo.resetTime.toString()
+        }
+      });
+      throw response;
     }
 
-    // Send confirmation email via Resend
-    if ((platform.env as Env).RESEND_API_KEY) {
-      try {
-        const { createEmailService } = await import('../../../lib/email');
-        const emailService = createEmailService((platform.env as Env).RESEND_API_KEY);
-
-        // Send confirmation email to guest
-        const confirmationResult = await emailService.sendRsvpConfirmation(result);
-        if (!confirmationResult.success) {
-          console.error('Failed to send confirmation email:', confirmationResult.error);
-        }
-
-        // Send admin notification (if admin email is configured)
-        const adminEmail = (platform.env as Env).ADMIN_EMAIL || 'admin@alfinamugni.wedding';
-        const adminResult = await emailService.sendAdminNotification(result, adminEmail);
-        if (!adminResult.success) {
-          console.error('Failed to send admin notification:', adminResult.error);
-        }
-
-        // Log email notifications
-        console.log('Email notifications:', {
-          rsvpId: result.id,
-          confirmation: confirmationResult.success,
-          admin: adminResult.success,
-          isUpdate
-        });
-
-      } catch (emailError) {
-        console.error('Email service error:', emailError);
-        // Continue without failing the RSVP submission
-      }
-    }
-
-    // Log successful submission
-    console.log('RSVP submission successful:', {
-      id: result.id,
-      email: result.email,
-      attending: result.attending,
-      isUpdate,
-      ip: clientIP
-    });
-
-    throw json(200, {
-      success: true,
-      message: isUpdate
-        ? 'RSVP berhasil diperbarui! Email konfirmasi telah dikirim.'
-        : 'RSVP berhasil dikirim! Email konfirmasi telah dikirim.',
-      data: {
-        id: result.id,
-        guest_name: result.guest_name,
-        email: result.email,
-        attending: result.attending,
-        plus_one_count: result.plus_one_count,
-        created_at: result.created_at,
-        updated_at: result.updated_at
-      }
-    });
+    throw json(statusCode, responseData);
 
   } catch (error) {
     console.error('RSVP submission error:', error);
 
-    // If error is already a JSON response, re-throw it
+    // If error is already a Response, re-throw it
     if (error instanceof Response) {
       throw error;
     }
 
-    // Handle specific error types
-    if (error instanceof ValidationError) {
-      throw json(400, {
-        error: 'Validation error',
-        success: false,
-        message: error.message,
-        field: error.field
-      });
-    }
-
-    if (error instanceof DatabaseError) {
-      throw json(500, {
-        error: 'Database error',
-        success: false,
-        message: 'Unable to process your RSVP at this time. Please try again later.',
-        operation: error.operation
-      });
-    }
-
+    // Handle unexpected errors
     throw json(500, {
       error: 'Internal server error',
       success: false,
@@ -258,8 +187,8 @@ export const onGet: RequestHandler = async ({ request, json, platform }) => {
       });
     }
 
-    const db = getDatabase(platform.env as Env);
-    const rsvp = await db.getRsvpByEmail(email);
+    const rsvpService = createRsvpService(platform.env as Env);
+    const rsvp = await rsvpService.getRsvpByEmail(email);
 
     if (!rsvp) {
       throw json(404, {

@@ -1,3 +1,30 @@
+/**
+ * ⚠️ DEPRECATED: QwikAuth System
+ *
+ * This file is NO LONGER USED in the application.
+ *
+ * The project now uses a Custom Auth system instead:
+ * - Auth Logic: src/lib/auth.ts (AdminAuth class)
+ * - Login API: src/routes/api/auth/login.ts
+ * - Logout API: src/routes/api/auth/logout.ts
+ * - Session Storage: Cloudflare KV (ADMIN_KV)
+ * - Cookie Name: admin_session
+ *
+ * The Custom Auth system provides:
+ * - Cloudflare KV-based session storage
+ * - Rate limiting and account lockout
+ * - CSRF protection
+ * - Bcrypt password hashing
+ * - 24-hour session duration
+ *
+ * This QwikAuth plugin was causing conflicts with the Custom Auth system,
+ * resulting in redirect loops when accessing /admin routes.
+ *
+ * DO NOT import from this file. Use the Custom Auth system instead.
+ *
+ * This file is kept for reference only and may be removed in a future cleanup.
+ */
+
 import { QwikAuth$ } from '@auth/qwik';
 import Credentials from '@auth/core/providers/credentials';
 import type { Provider } from '@auth/core/providers';

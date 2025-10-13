@@ -1,41 +1,214 @@
 import { z } from 'zod';
 
-// Validation schemas for form inputs
+// Enhanced validation schemas for form inputs with Indonesian context
+
+// Base schemas for common fields
+const NameSchema = z.string()
+  .min(2, 'Nama harus minimal 2 karakter')
+  .max(100, 'Nama terlalu panjang')
+  .regex(/^[a-zA-Z\s\u00C0-\u017F]+$/, 'Nama hanya boleh mengandung huruf dan spasi');
+
+const EmailSchema = z.string()
+  .email('Silakan masukkan alamat email yang valid')
+  .max(254, 'Email terlalu panjang')
+  .transform(email => email.toLowerCase().trim());
+
+const PhoneSchema = z.string()
+  .optional()
+  .transform(phone => phone ? phone.replace(/[^\d+]/g, '') : undefined);
+
+// RSVP validation schema with enhanced validation
 export const RsvpSchema = z.object({
-  guest_name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name too long'),
-  email: z.string().email('Please enter a valid email address'),
-  phone: z.string().optional(),
+  guest_name: NameSchema,
+  email: EmailSchema,
+  phone: PhoneSchema,
   attending: z.enum(['both', 'akad', 'reception', 'unable'], {
-    message: 'Please select your attendance option'
+    message: 'Silakan pilih opsi kehadiran Anda'
   }),
-  plus_one_count: z.number().int().min(0).max(5, 'Maximum 5 plus ones allowed'),
-  plus_one_name: z.string().max(100, 'Name too long').optional(),
-  meal_preference: z.enum(['chicken', 'beef', 'fish', 'vegetarian', 'vegan']).optional(),
-  plus_one_meal: z.enum(['chicken', 'beef', 'fish', 'vegetarian', 'vegan']).optional(),
+  plus_one_count: z.number()
+    .int('Jumlah plus one harus bilangan bulat')
+    .min(0, 'Jumlah plus one tidak boleh negatif')
+    .max(5, 'Maksimal 5 plus one yang diizinkan'),
+  plus_one_name: z.string()
+    .max(100, 'Nama plus one terlalu panjang')
+    .optional(),
+  meal_preference: z.enum(['chicken', 'beef', 'fish', 'vegetarian', 'vegan'], {
+    message: 'Silakan pilih preferensi makanan'
+  }).optional(),
+  plus_one_meal: z.enum(['chicken', 'beef', 'fish', 'vegetarian', 'vegan'], {
+    message: 'Silakan pilih preferensi makanan plus one'
+  }).optional(),
   accommodation_needed: z.boolean().default(false),
-  special_requests: z.string().max(500, 'Special requests too long').optional(),
-  dietary_restrictions: z.string().max(300, 'Dietary restrictions too long').optional(),
+  special_requests: z.string()
+    .max(500, 'Permintaan khusus terlalu panjang')
+    .optional(),
+  dietary_restrictions: z.string()
+    .max(300, 'Restriksi diet terlalu panjang')
+    .optional(),
+}).refine((data) => {
+  // Custom validation: if attending is 'unable', other fields should be minimal
+  if (data.attending === 'unable') {
+    return data.plus_one_count === 0 && !data.plus_one_name && !data.meal_preference && !data.plus_one_meal;
+  }
+  return true;
+}, {
+  message: 'Jika tidak bisa hadir, tidak perlu mengisi data plus one dan makanan',
+  path: ['attending']
+}).refine((data) => {
+  // Custom validation: plus one name required if plus one count > 0
+  if (data.plus_one_count > 0 && !data.plus_one_name) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Nama plus one wajib diisi jika membawa tamu',
+  path: ['plus_one_name']
+}).refine((data) => {
+  // Custom validation: plus one meal required if plus one count > 0 and meal preference is set
+  if (data.plus_one_count > 0 && data.meal_preference && !data.plus_one_meal) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Preferensi makanan plus one wajib diisi jika ada plus one',
+  path: ['plus_one_meal']
 });
 
+// Guest wish validation schema with enhanced validation
 export const GuestWishSchema = z.object({
-  guest_name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name too long'),
-  email: z.string().email('Please enter a valid email address').optional(),
-  message: z.string().min(10, 'Message must be at least 10 characters').max(1000, 'Message too long'),
+  guest_name: NameSchema,
+  email: EmailSchema.optional(),
+  message: z.string()
+    .min(10, 'Pesan harus minimal 10 karakter')
+    .max(1000, 'Pesan terlalu panjang (maksimal 1000 karakter)')
+    .refine(message => {
+      // Check for excessive whitespace
+      const trimmed = message.trim();
+      return trimmed.length > 0 && trimmed.split(/\s+/).length >= 2;
+    }, {
+      message: 'Pesan harus mengandung setidaknya 2 kata'
+    }),
 });
 
+// Photo upload validation schema
 export const PhotoUploadSchema = z.object({
-  filename: z.string().min(1, 'Filename required'),
-  original_name: z.string().min(1, 'Original name required'),
-  file_size: z.number().int().positive('File size must be positive').max(10 * 1024 * 1024, 'File too large (max 10MB)'),
-  content_type: z.string().regex(/^image\/(jpeg|jpg|png|webp|gif)$/, 'Invalid image format'),
+  filename: z.string().min(1, 'Nama file wajib diisi'),
+  original_name: z.string().min(1, 'Nama asli file wajib diisi'),
+  file_size: z.number()
+    .int('Ukuran file harus bilangan bulat')
+    .positive('Ukuran file harus positif')
+    .max(10 * 1024 * 1024, 'File terlalu besar (maksimal 10MB)'),
+  content_type: z.string()
+    .regex(/^image\/(jpeg|jpg|png|webp|gif)$/, 'Format gambar tidak valid'),
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
-  uploader_name: z.string().max(100, 'Name too long').optional(),
-  uploader_email: z.string().email('Invalid email').optional(),
-  bucket_path: z.string().min(1, 'Bucket path required'),
-  r2_key: z.string().min(1, 'R2 key required'),
-  category: z.enum(['ceremony', 'reception', 'guests', 'professional']),
-  description: z.string().max(300, 'Description too long').optional(),
+  uploader_name: NameSchema.optional(),
+  uploader_email: EmailSchema.optional(),
+  bucket_path: z.string().min(1, 'Path bucket wajib diisi'),
+  r2_key: z.string().min(1, 'R2 key wajib diisi'),
+  category: z.enum(['ceremony', 'reception', 'guests', 'professional'], {
+    message: 'Silakan pilih kategori foto'
+  }),
+  description: z.string()
+    .max(300, 'Deskripsi terlalu panjang')
+    .optional(),
+});
+
+// Admin user validation schema
+export const AdminUserSchema = z.object({
+  username: z.string()
+    .min(3, 'Username minimal 3 karakter')
+    .max(50, 'Username terlalu panjang')
+    .regex(/^[a-zA-Z0-9_-]+$/, 'Username hanya boleh mengandung huruf, angka, underscore, dan dash'),
+  email: EmailSchema,
+  role: z.enum(['admin', 'moderator', 'viewer'], {
+    message: 'Silakan pilih role yang valid'
+  }),
+  active: z.boolean().default(true),
+});
+
+// Settings validation schema
+export const SettingsSchema = z.object({
+  key: z.string()
+    .min(1, 'Key setting wajib diisi')
+    .max(100, 'Key setting terlalu panjang')
+    .regex(/^[a-zA-Z0-9_-]+$/, 'Key hanya boleh mengandung huruf, angka, underscore, dan dash'),
+  value: z.string()
+    .min(1, 'Value setting wajib diisi')
+    .max(1000, 'Value setting terlalu panjang'),
+  description: z.string()
+    .max(500, 'Deskripsi terlalu panjang')
+    .optional(),
+});
+
+// API request/response schemas
+export const ApiResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+  data: z.any().optional(),
+  error: z.string().optional(),
+  timestamp: z.string().datetime().optional(),
+});
+
+// Pagination schema
+export const PaginationSchema = z.object({
+  limit: z.number()
+    .int('Limit harus bilangan bulat')
+    .min(1, 'Limit minimal 1')
+    .max(100, 'Limit maksimal 100'),
+  offset: z.number()
+    .int('Offset harus bilangan bulat')
+    .min(0, 'Offset tidak boleh negatif'),
+  total: z.number().int().nonnegative(),
+  hasMore: z.boolean(),
+});
+
+// Search query schema
+export const SearchQuerySchema = z.object({
+  query: z.string()
+    .min(1, 'Query pencarian minimal 1 karakter')
+    .max(100, 'Query pencarian terlalu panjang'),
+  limit: z.number().int().min(1).max(100).default(10),
+  offset: z.number().int().min(0).default(0),
+  filters: z.record(z.string(), z.any()).optional(),
+});
+
+// RSVP statistics schema
+export const RsvpStatsSchema = z.object({
+  total: z.number().nonnegative(),
+  confirmed: z.number().nonnegative(),
+  declined: z.number().nonnegative(),
+  pending: z.number().nonnegative(),
+  attendingBoth: z.number().nonnegative(),
+  attendingAkad: z.number().nonnegative(),
+  attendingReception: z.number().nonnegative(),
+  plusOnes: z.number().nonnegative(),
+  accommodationNeeded: z.number().nonnegative(),
+  mealPreferences: z.record(z.string(), z.number().nonnegative()),
+});
+
+// Wish statistics schema
+export const WishStatsSchema = z.object({
+  total: z.number().nonnegative(),
+  approved: z.number().nonnegative(),
+  pending: z.number().nonnegative(),
+  rejected: z.number().nonnegative(),
+  recentActivity: z.number().nonnegative(),
+});
+
+// Export validation schema
+export const ExportRequestSchema = z.object({
+  format: z.enum(['csv', 'json'], {
+    message: 'Format export harus csv atau json'
+  }),
+  type: z.enum(['rsvps', 'wishes', 'photos'], {
+    message: 'Tipe export harus rsvps, wishes, atau photos'
+  }),
+  filters: z.record(z.string(), z.any()).optional(),
+  dateRange: z.object({
+    start: z.string().datetime().optional(),
+    end: z.string().datetime().optional(),
+  }).optional(),
 });
 
 // Input sanitization utilities

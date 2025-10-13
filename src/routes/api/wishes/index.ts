@@ -1,40 +1,9 @@
 import type { RequestHandler } from '@builder.io/qwik-city';
-import { getDatabase, type Env, type GuestWish, DatabaseError, ValidationError } from '../../../lib/database';
-import { validateGuestWish, sanitizeWishData, moderateContent } from '../../../lib/validators';
+import { type Env } from '../../../lib/database';
+import { createWishesService } from '../../../services/wishes-service';
 import { createEmailService } from '../../../lib/email';
 
-// Rate limiting store (in-memory for development, use KV storage in production)
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-
-// Rate limiting configuration for wishes (more lenient than RSVP)
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
-const RATE_LIMIT_MAX_ATTEMPTS = 5; // 5 wishes submissions per hour per IP
-
-function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
-  const now = Date.now();
-  const key = `wishes:${ip}`;
-  const current = rateLimitStore.get(key);
-
-  if (!current) {
-    rateLimitStore.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return { allowed: true };
-  }
-
-  if (now > current.resetTime) {
-    rateLimitStore.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return { allowed: true };
-  }
-
-  if (current.count >= RATE_LIMIT_MAX_ATTEMPTS) {
-    const retryAfter = Math.ceil((current.resetTime - now) / 1000);
-    return { allowed: false, retryAfter };
-  }
-
-  rateLimitStore.set(key, { count: current.count + 1, resetTime: current.resetTime });
-  return { allowed: true };
-}
-
-// Submit guest wish
+// Submit guest wish with enhanced validation, rate limiting, and spam detection
 export const onPost: RequestHandler = async ({ request, json, platform }) => {
   try {
     // Get client information
@@ -43,23 +12,6 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
                     request.headers.get('X-Real-IP') ||
                     'unknown';
     const userAgent = request.headers.get('User-Agent') || 'unknown';
-
-    // Check rate limiting
-    const rateCheck = checkRateLimit(clientIP);
-    if (!rateCheck.allowed) {
-      throw new Response(JSON.stringify({
-        error: 'Too many wish submissions',
-        success: false,
-        message: `Rate limit exceeded. Please try again in ${rateCheck.retryAfter} seconds.`,
-        retryAfter: rateCheck.retryAfter
-      }), {
-        status: 429,
-        headers: {
-          'Content-Type': 'application/json',
-          'Retry-After': rateCheck.retryAfter!.toString()
-        }
-      });
-    }
 
     // Parse and validate content-type
     const contentType = request.headers.get('content-type');
@@ -87,120 +39,94 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
       });
     }
 
-    // Sanitize and moderate input data
-    const sanitizedData = sanitizeWishData(formData as Record<string, unknown>);
+    // Create wishes service
+    const wishesService = createWishesService(platform.env as Env);
 
-    // Validate with Zod schema
-    const validation = validateGuestWish(sanitizedData);
-    if (!validation.success) {
-      const errors = validation.error.issues.map((err: { path: (string | number | symbol)[]; message: string }) => ({
-        field: err.path.join('.'),
-        message: err.message
-      }));
+    // Submit wish
+    const result = await wishesService.submitWish(formData as {
+      guest_name: string;
+      email?: string;
+      message: string;
+    }, {
+      ipAddress: clientIP,
+      userAgent: userAgent
+    });
 
-      throw json(400, {
-        error: 'Validation failed',
-        success: false,
-        message: 'Please check your input and try again',
-        details: errors
-      });
+    // Send admin notification if wish requires moderation
+    const emailInfo: { adminNotificationSent?: boolean; emailErrors?: string[] } = {};
+    
+    if (result.success && result.wish && result.requiresModeration) {
+      try {
+        // Create email service
+        const emailService = createEmailService(platform.env.RESEND_API_KEY);
+        
+        const emailErrors: string[] = [];
+        
+        // Send admin notification for wish moderation
+        try {
+          const adminEmail = platform.env.ADMIN_EMAIL || 'admin@alfinamugni.wedding';
+          const adminResult = await emailService.sendWishModerationNotification(result.wish, adminEmail);
+          emailInfo.adminNotificationSent = adminResult.success;
+          if (!adminResult.success) {
+            emailErrors.push(`Admin notification failed: ${adminResult.error}`);
+          }
+        } catch (error) {
+          emailErrors.push(`Admin notification error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+        
+        if (emailErrors.length > 0) {
+          emailInfo.emailErrors = emailErrors;
+          console.warn('Email sending warnings:', emailErrors);
+        }
+        
+      } catch (error) {
+        console.error('Email service error:', error);
+        emailInfo.emailErrors = [`Email service error: ${error instanceof Error ? error.message : 'Unknown error'}`];
+      }
     }
 
-    const validData = validation.data;
-
-    // Additional content moderation
-    const moderation = moderateContent(validData.message);
-    if (!moderation.isAppropriate) {
-      throw json(400, {
-        error: 'Content flagged',
-        success: false,
-        message: 'Your message contains inappropriate content. Please revise and try again.',
-        reasons: moderation.reasons
-      });
-    }
-
-    // Get database instance
-    const db = getDatabase(platform.env as Env);
-
-    // Check auto-approval settings
-    const autoApproveWishes = await db.getSetting('auto_approve_wishes') === 'true';
-    const shouldAutoApprove = autoApproveWishes && moderation.isAppropriate && !moderation.containsSpam;
-
-    // Prepare wish data with metadata
-    const wishData: Omit<GuestWish, 'id' | 'created_at' | 'updated_at'> = {
-      guest_name: validData.guest_name,
-      email: validData.email,
-      message: moderation.moderatedText,
-      approved: shouldAutoApprove,
-      ip_address: clientIP,
-      user_agent: userAgent
+    // Create response with rate limit headers if available
+    const statusCode = result.success ? 200 : (result.rateLimitInfo ? 429 : 400);
+    const responseData = {
+      success: result.success,
+      message: result.message,
+      data: result.wish ? {
+        id: result.wish.id,
+        guest_name: result.wish.guest_name,
+        message: result.wish.message,
+        approved: result.wish.approved,
+        created_at: result.wish.created_at
+      } : undefined,
+      autoApproved: result.autoApproved,
+      requiresModeration: result.requiresModeration,
+      spamInfo: result.spamInfo,
+      emailInfo: emailInfo.adminNotificationSent !== undefined ? {
+        adminNotificationSent: emailInfo.adminNotificationSent,
+        emailErrors: emailInfo.emailErrors
+      } : undefined
     };
 
-    // Create new wish
-    const result = await db.createGuestWish(wishData);
-
-    // Send admin notification if not auto-approved and email is configured
-    if ((platform.env as Env).RESEND_API_KEY && !shouldAutoApprove) {
-      try {
-        const emailService = createEmailService((platform.env as Env).RESEND_API_KEY);
-        const adminEmail = (platform.env as Env).ADMIN_EMAIL || 'admin@alfinamugni.wedding';
-
-        // Send moderation notification for manual review
-        await emailService.sendWishModerationNotification(result, adminEmail);
-
-      } catch (emailError) {
-        console.error('Failed to send wish moderation email:', emailError);
-        // Continue without failing the wish submission
-      }
+    if (result.rateLimitInfo) {
+      const response = new Response(JSON.stringify(responseData), {
+        status: statusCode,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-RateLimit-Limit': result.rateLimitInfo.limit.toString(),
+          'X-RateLimit-Remaining': result.rateLimitInfo.remaining.toString(),
+          'X-RateLimit-Reset': result.rateLimitInfo.resetTime.toString()
+        }
+      });
+      throw response;
     }
 
-    // Log successful submission
-    console.log('Guest wish submission:', {
-      id: result.id,
-      guest: result.guest_name,
-      approved: result.approved,
-      ip: clientIP
-    });
-
-    throw json(200, {
-      success: true,
-      message: shouldAutoApprove
-        ? 'Terima kasih atas ucapan baik Anda! Pesan akan tampil di website.'
-        : 'Terima kasih atas ucapan baik Anda! Pesan sedang direview dan akan tampil setelah disetujui.',
-      data: {
-        id: result.id,
-        guest_name: result.guest_name,
-        message: result.message,
-        approved: result.approved,
-        created_at: result.created_at
-      }
-    });
+    throw json(statusCode, responseData);
 
   } catch (error) {
     console.error('Guest wish submission error:', error);
 
-    // If error is already a JSON response, re-throw it
+    // If error is already a Response, re-throw it
     if (error instanceof Response) {
       throw error;
-    }
-
-    // Handle specific error types
-    if (error instanceof ValidationError) {
-      throw json(400, {
-        error: 'Validation error',
-        success: false,
-        message: error.message,
-        field: error.field
-      });
-    }
-
-    if (error instanceof DatabaseError) {
-      throw json(500, {
-        error: 'Database error',
-        success: false,
-        message: 'Unable to process your wish at this time. Please try again later.',
-        operation: error.operation
-      });
     }
 
     throw json(500, {
@@ -211,51 +137,28 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
   }
 };
 
-// Get approved wishes (public endpoint)
+// Get approved wishes (public endpoint) with pagination
 export const onGet: RequestHandler = async ({ request, json, platform }) => {
   try {
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '50');
     const offset = parseInt(url.searchParams.get('offset') || '0');
+    const featured = url.searchParams.get('featured') === 'true';
 
-    // Validate parameters
-    if (limit < 1 || limit > 100) {
-      throw json(400, {
-        error: 'Invalid limit',
-        success: false,
-        message: 'Limit must be between 1 and 100'
-      });
-    }
+    // Create wishes service
+    const wishesService = createWishesService(platform.env as Env);
 
-    if (offset < 0) {
-      throw json(400, {
-        error: 'Invalid offset',
-        success: false,
-        message: 'Offset must be non-negative'
-      });
-    }
-
-    const db = getDatabase(platform.env as Env);
-
-    // Get only approved wishes for public display
-    const wishes = await db.getApprovedWishes();
-
-    // Return public wish data (no sensitive info)
-    const publicWishes = wishes.map(wish => ({
-      id: wish.id,
-      guest_name: wish.guest_name,
-      message: wish.message,
-      created_at: wish.created_at
-    }));
+    // Get approved wishes
+    const result = await wishesService.getApprovedWishes({
+      limit,
+      offset,
+      featured
+    });
 
     throw json(200, {
       success: true,
-      data: publicWishes,
-      pagination: {
-        limit,
-        offset,
-        count: publicWishes.length
-      }
+      data: result.wishes,
+      pagination: result.pagination
     });
 
   } catch (error) {

@@ -1,4 +1,4 @@
-import type { D1Database, R2Bucket } from '@cloudflare/workers-types';
+import type { D1Database, R2Bucket, KVNamespace } from '@cloudflare/workers-types';
 import { z } from 'zod';
 import { RsvpSchema, GuestWishSchema, PhotoUploadSchema } from './validators.js';
 
@@ -23,6 +23,8 @@ export interface Env {
   DB: D1Database;
   WEDDING_PHOTOS: R2Bucket;
   WEDDING_ASSETS: R2Bucket;
+  KV_RATE_LIMIT: KVNamespace;
+  ADMIN_KV: KVNamespace;
   RESEND_API_KEY: string;
   ENVIRONMENT: string;
   AUTH_SECRET: string;

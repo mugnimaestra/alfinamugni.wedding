@@ -1,5 +1,4 @@
 name = "alfinamugni-wedding"
-main = "src/entry.cloudflare-pages.tsx"
 compatibility_date = "2024-09-21"
 compatibility_flags = ["nodejs_compat"]
 
@@ -10,49 +9,53 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "wedding-database"
-database_id = "" # Will be set after database creation
+database_id = "b09507db-7dbb-4fb9-bad6-ab4b3bb3d064"
+
+[[d1_databases]]
+binding = "DB_PREVIEW"
+database_name = "wedding-database-preview"
+database_id = "a2cc2db7-740c-4532-ac34-cb7956aac5d4"
 
 # R2 Storage bindings
 [[r2_buckets]]
 binding = "WEDDING_PHOTOS"
 bucket_name = "wedding-photos-bucket"
-preview_bucket_name = "wedding-photos-bucket-preview"
 
 [[r2_buckets]]
-binding = "WEDDING_ASSETS"
-bucket_name = "wedding-assets-bucket"
-preview_bucket_name = "wedding-assets-bucket-preview"
+binding = "WEDDING_PHOTOS_PREVIEW"
+bucket_name = "wedding-photos-bucket-preview"
+
+# KV Namespaces
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "7a1d563e050844cc82717f57e1de5e5a"
+preview_id = "b228f0fb185347ffa13d54d0aac24ab8"
+
+[[kv_namespaces]]
+binding = "ADMIN_KV"
+id = "admin-sessions-kv"
+preview_id = "admin-sessions-kv-preview"
 
 # Environment variables
 [vars]
 ENVIRONMENT = "development"
 WEDDING_DATE = "2025-11-29"
 TIMEZONE = "Asia/Jakarta"
+WEDDING_LOCATION = "Jakarta, Indonesia"
+EXPECTED_GUESTS = "200"
+BRIDE_NAME = "Alfina"
+GROOM_NAME = "Mugni"
 
-# Environment-specific configuration
+# Environment-specific configuration for Pages
 [env.production]
-name = "alfinamugni-wedding-prod"
 [env.production.vars]
 ENVIRONMENT = "production"
+ADMIN_EMAIL = "admin@alfinamugni.wedding"
+# ADMIN_PASSWORD_HASH will be set via secret
 
-[env.staging]
-name = "alfinamugni-wedding-staging"
-[env.staging.vars]
-ENVIRONMENT = "staging"
+[env.preview]
+[env.preview.vars]
+ENVIRONMENT = "preview"
+ADMIN_EMAIL = "admin@alfinamugni.wedding"
+# ADMIN_PASSWORD_HASH will be set via secret
 
-# Development configuration
-[env.development]
-name = "alfinamugni-wedding-dev"
-[env.development.vars]
-ENVIRONMENT = "development"
-
-# Build configuration
-[build]
-command = "bun run build"
-cwd = "."
-watch_dir = ["src", "public"]
-
-# Asset configuration for Cloudflare Pages
-[site]
-bucket = "./dist"
-entry-point = "workers-site"

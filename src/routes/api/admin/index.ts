@@ -1,5 +1,36 @@
 import type { RequestHandler } from '@builder.io/qwik-city';
 import { getDatabase, type Env } from '../../../lib/database';
+import { createAuth } from '../../../lib/auth';
+
+// Helper function to validate admin session
+async function validateAdminAuth(request: Request, env: Env): Promise<{ valid: boolean; session?: import('../../../lib/auth').AdminSession }> {
+  try {
+    const auth = createAuth(env);
+    
+    // Get session cookie
+    const cookieHeader = request.headers.get('cookie');
+    if (!cookieHeader) {
+      return { valid: false };
+    }
+
+    const cookies = Object.fromEntries(
+      cookieHeader.split(';').map(cookie => {
+        const [name, value] = cookie.trim().split('=');
+        return [name, value];
+      })
+    );
+
+    const sessionId = cookies['admin-session'];
+    if (!sessionId) {
+      return { valid: false };
+    }
+
+    return await auth.validateSession(sessionId);
+  } catch (error) {
+    console.error('Auth validation error:', error);
+    return { valid: false };
+  }
+}
 
 // Admin dashboard statistics and management
 export const onGet: RequestHandler = async ({ request, json, platform }) => {
@@ -7,11 +38,11 @@ export const onGet: RequestHandler = async ({ request, json, platform }) => {
     const url = new URL(request.url);
     const action = url.searchParams.get('action');
 
-    // TODO: Add proper authentication check in Phase 2
-    // For now, simple environment check
-    if ((platform.env as Env).ENVIRONMENT !== 'development') {
+    // Validate admin authentication
+    const authResult = await validateAdminAuth(request, platform.env as Env);
+    if (!authResult.valid) {
       throw json(401, {
-        error: 'Unauthorized',
+        error: 'Unauthorized - Admin access required',
         success: false
       });
     }
@@ -114,10 +145,11 @@ export const onGet: RequestHandler = async ({ request, json, platform }) => {
 // Admin actions (approve/reject content)
 export const onPost: RequestHandler = async ({ request, json, platform }) => {
   try {
-    // TODO: Add proper authentication check in Phase 2
-    if ((platform.env as Env).ENVIRONMENT !== 'development') {
+    // Validate admin authentication
+    const authResult = await validateAdminAuth(request, platform.env as Env);
+    if (!authResult.valid) {
       throw json(401, {
-        error: 'Unauthorized',
+        error: 'Unauthorized - Admin access required',
         success: false
       });
     }

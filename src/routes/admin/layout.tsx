@@ -1,25 +1,9 @@
 import { component$, Slot, useSignal } from '@builder.io/qwik';
-import { useSession, useSignIn, useSignOut } from '../plugin@auth';
 import { routeLoader$ } from '@builder.io/qwik-city';
 import type { RequestHandler } from '@builder.io/qwik-city';
 
-type WeddingUser = {
-  id?: string;
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
-  role?: string;
-};
-
-type WeddinSession = {
-  user?: WeddingUser;
-  expires: string;
-};
-
-// Enhanced server-side session validation with security measures
-export const onRequest: RequestHandler = async ({ request, redirect, url, headers }) => {
-  const sessionUrl = new URL('/api/auth/session', url.origin);
-
+// Enhanced server-side session validation with Custom Auth
+export const onRequest: RequestHandler = async ({ request, redirect, url, headers, cookie }) => {
   try {
     // Log admin access attempts for security monitoring
     const clientIP = request.headers.get('CF-Connecting-IP') ||
@@ -35,32 +19,40 @@ export const onRequest: RequestHandler = async ({ request, redirect, url, header
     headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
+    // Check for admin session cookie
+    const sessionId = cookie.get('admin_session')?.value;
+
+    if (!sessionId) {
+      console.warn(`Admin access denied - no session cookie: ${clientIP} -> ${url.pathname}`);
+      throw redirect(302, `/auth/signin?callbackUrl=${encodeURIComponent(url.pathname)}`);
+    }
+
+    // Validate session with Custom Auth API
+    const sessionUrl = new URL('/api/auth/login', url.origin);
     const sessionResponse = await fetch(sessionUrl, {
+      method: 'GET',
       headers: {
-        Cookie: request.headers.get('Cookie') || '',
-        'User-Agent': request.headers.get('User-Agent') || '',
+        Cookie: `admin_session=${sessionId}`,
       },
     });
 
     if (!sessionResponse.ok) {
-      throw new Error(`Session validation failed: ${sessionResponse.status}`);
+      console.warn(`Admin access denied - invalid session: ${clientIP} -> ${url.pathname}`);
+      // Clear invalid session cookies
+      cookie.delete('admin_session', { path: '/' });
+      cookie.delete('csrf_token', { path: '/' });
+      throw redirect(302, `/auth/signin?callbackUrl=${encodeURIComponent(url.pathname)}`);
     }
 
-    const session = await sessionResponse.json();
+    const sessionData = await sessionResponse.json();
 
-    // Enhanced session validation
-    if (!session?.user) {
-      console.warn(`Admin access denied - no session: ${clientIP} -> ${url.pathname}`);
-      throw redirect(302, `/auth/signin?callbackUrl=${encodeURIComponent(url.pathname)}&error=session_required`);
-    }
-
-    if (session.user.role !== 'admin') {
-      console.warn(`Admin access denied - insufficient role: ${session.user.email} (${session.user.role}) from ${clientIP}`);
-      throw redirect(302, `/auth/signin?callbackUrl=${encodeURIComponent(url.pathname)}&error=access_denied`);
+    if (!sessionData.authenticated) {
+      console.warn(`Admin access denied - not authenticated: ${clientIP} -> ${url.pathname}`);
+      throw redirect(302, `/auth/signin?callbackUrl=${encodeURIComponent(url.pathname)}`);
     }
 
     // Session is valid - log successful access
-    console.log(`Admin access granted: ${session.user.email} -> ${url.pathname}`);
+    console.log(`Admin access granted: ${sessionData.data?.session?.email} -> ${url.pathname}`);
 
   } catch (error) {
     if (error instanceof Response) {
@@ -68,23 +60,33 @@ export const onRequest: RequestHandler = async ({ request, redirect, url, header
     }
 
     console.error('Session validation error:', error);
-    throw redirect(302, `/auth/signin?callbackUrl=${encodeURIComponent(url.pathname)}&error=validation_failed`);
+    throw redirect(302, `/auth/signin?callbackUrl=${encodeURIComponent(url.pathname)}`);
   }
 };
 
 // Admin session loader
-export const useAdminSession = routeLoader$(async ({ request, url }) => {
-  const sessionUrl = new URL('/api/auth/session', url.origin);
-
+export const useAdminSession = routeLoader$(async ({ cookie, url }) => {
   try {
+    const sessionId = cookie.get('admin_session')?.value;
+
+    if (!sessionId) {
+      return null;
+    }
+
+    const sessionUrl = new URL('/api/auth/login', url.origin);
     const sessionResponse = await fetch(sessionUrl, {
+      method: 'GET',
       headers: {
-        Cookie: request.headers.get('Cookie') || '',
+        Cookie: `admin_session=${sessionId}`,
       },
     });
 
-    const session = await sessionResponse.json();
-    return session;
+    if (!sessionResponse.ok) {
+      return null;
+    }
+
+    const sessionData = await sessionResponse.json();
+    return sessionData.authenticated ? sessionData.data?.session : null;
   } catch (error) {
     console.error('Failed to load admin session:', error);
     return null;
@@ -92,10 +94,30 @@ export const useAdminSession = routeLoader$(async ({ request, url }) => {
 });
 
 export default component$(() => {
-  const session = useSession();
-  const signIn = useSignIn();
-  const signOut = useSignOut();
+  const adminSession = useAdminSession();
   const isLoading = useSignal(false);
+
+  const handleSignOut = async () => {
+    isLoading.value = true;
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        window.location.href = '/';
+      } else {
+        console.error('Sign out failed');
+      }
+    } catch (error) {
+      console.error('Sign out error:', error);
+    } finally {
+      isLoading.value = false;
+    }
+  };
 
   return (
     <div class="min-h-screen bg-gray-50">
@@ -143,23 +165,13 @@ export default component$(() => {
 
             {/* User Menu */}
             <div class="flex items-center space-x-4">
-              {session.value ? (
+              {adminSession.value ? (
                 <>
                   <span class="text-sm">
-                    Welcome, {session.value.user?.name || session.value.user?.email}
+                    Welcome, {adminSession.value.email}
                   </span>
                   <button
-                    onClick$={async () => {
-                      isLoading.value = true;
-                      try {
-                        await signOut.submit({});
-                        window.location.href = '/';
-                      } catch (error) {
-                        console.error('Sign out error:', error);
-                      } finally {
-                        isLoading.value = false;
-                      }
-                    }}
+                    onClick$={handleSignOut}
                     disabled={isLoading.value}
                     class="bg-wedding-accent hover:bg-opacity-80 px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
                   >
@@ -167,14 +179,12 @@ export default component$(() => {
                   </button>
                 </>
               ) : (
-                <button
-                  onClick$={async () => {
-                    await signIn.submit({});
-                  }}
+                <a
+                  href="/auth/signin"
                   class="bg-wedding-accent hover:bg-opacity-80 px-4 py-2 rounded-md text-sm font-medium transition-colors"
                 >
                   Sign In
-                </button>
+                </a>
               )}
               <a
                 href="/"
@@ -189,7 +199,7 @@ export default component$(() => {
 
       {/* Main Content */}
       <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {session.value && (session.value as WeddinSession).user?.role === 'admin' ? (
+        {adminSession.value ? (
           <Slot />
         ) : (
           <div class="text-center py-12">
@@ -200,14 +210,12 @@ export default component$(() => {
               <p class="text-gray-600 mb-6">
                 You need admin privileges to access this area.
               </p>
-              <button
-                onClick$={async () => {
-                  await signIn.submit({});
-                }}
-                class="wedding-button"
+              <a
+                href="/auth/signin"
+                class="wedding-button inline-block"
               >
                 Sign In as Admin
-              </button>
+              </a>
             </div>
           </div>
         )}
@@ -221,9 +229,7 @@ export default component$(() => {
               Wedding Admin Dashboard - Alfina & Mugni 2025
             </p>
             <div class="flex space-x-4 text-sm text-gray-500">
-              <span>Session expires in 8 hours</span>
-              <span>•</span>
-              <span>Auto-refresh every hour</span>
+              <span>Session expires in 24 hours</span>
             </div>
           </div>
         </div>

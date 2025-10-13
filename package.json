@@ -1,6 +1,6 @@
 {
-  "name": "my-qwik-empty-starter",
-  "description": "Blank project with routing included",
+  "name": "alfinamugni-wedding",
+  "description": "Alfina & Mugni Wedding Website - Modern wedding invitation and management system",
   "engines": {
     "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
   },
@@ -12,7 +12,8 @@
     "build.client": "vite build",
     "build.preview": "vite build --ssr src/entry.preview.tsx",
     "build.types": "tsc --incremental --noEmit",
-    "deploy": "echo 'Run \"npm run qwik add\" to install a server adapter'",
+    "deploy": "./scripts/deploy-production.sh",
+    "deploy:preview": "wrangler pages deploy dist --project-name alfinamugni-wedding-preview",
     "dev": "vite --mode ssr",
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
     "fmt": "prettier --write .",
@@ -24,7 +25,12 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:production": "node scripts/test-production.js",
+    "db:migrate": "wrangler d1 migrations apply wedding-database --remote",
+    "db:migrate:local": "wrangler d1 migrations apply wedding-database --local",
+    "db:backup": "wrangler d1 export wedding-database --remote --output backup-$(date +%Y%m%d-%H%M%S).sql",
+    "admin:setup": "node scripts/setup-admin.js"
   },
   "devDependencies": {
     "@auth/qwik": "^0.8.0",
