@@ -4,6 +4,58 @@
  */
 
 import type { Env } from './database';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+// Cache for loaded environment variables
+let cachedEnvVars: Record<string, string> | null = null;
+
+/**
+ * Load environment variables from .dev.vars file
+ */
+function loadDevVars(): Record<string, string> {
+  if (cachedEnvVars) {
+    return cachedEnvVars;
+  }
+
+  const envVars: Record<string, string> = {};
+  
+  try {
+    // Try to read .dev.vars file
+    const devVarsPath = join(process.cwd(), '.dev.vars');
+    const content = readFileSync(devVarsPath, 'utf-8');
+    
+    // Parse the file line by line
+    content.split('\n').forEach(line => {
+      line = line.trim();
+      // Skip empty lines and comments
+      if (!line || line.startsWith('#')) return;
+      
+      const match = line.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        let value = match[2].trim();
+        
+        // Remove quotes if present
+        if ((value.startsWith('"') && value.endsWith('"')) || 
+            (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1);
+        }
+        
+        envVars[key] = value;
+      }
+    });
+    
+    console.log('[DEV] Loaded environment variables from .dev.vars');
+  } catch (error) {
+    console.warn('[DEV] Could not load .dev.vars file:', error);
+    // Fallback to process.env
+    return process.env as Record<string, string>;
+  }
+  
+  cachedEnvVars = envVars;
+  return envVars;
+}
 
 // In-memory KV store for development
 class MockKV {
@@ -72,20 +124,28 @@ export function getDevEnv(): Env {
   }
 
   // Load environment variables from .dev.vars or process.env
+  const envVars = loadDevVars();
+  
   const env: Env = {
     ADMIN_KV: mockAdminKV as any,
     SESSIONS: mockSessionsKV as any,
     DB: null as any, // Will be mocked or use local D1
     WEDDING_PHOTOS: null as any, // Will be mocked or use local R2
     WEDDING_PHOTOS_PREVIEW: null as any,
-    ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'admin@alfinamugni.wedding',
-    ADMIN_PASSWORD_HASH: process.env.ADMIN_PASSWORD_HASH || '',
-    RESEND_API_KEY: process.env.RESEND_API_KEY || '',
-    JWT_SECRET: process.env.JWT_SECRET || 'dev-jwt-secret-change-in-production',
+    ADMIN_EMAIL: envVars.ADMIN_EMAIL || process.env.ADMIN_EMAIL || 'admin@alfinamugni.wedding',
+    ADMIN_PASSWORD_HASH: envVars.ADMIN_PASSWORD_HASH || process.env.ADMIN_PASSWORD_HASH || '',
+    RESEND_API_KEY: envVars.RESEND_API_KEY || process.env.RESEND_API_KEY || '',
+    JWT_SECRET: envVars.JWT_SECRET || process.env.JWT_SECRET || 'dev-jwt-secret-change-in-production',
     ENVIRONMENT: 'development',
     WEDDING_DATE: '2025-11-29',
     TIMEZONE: 'Asia/Jakarta',
   };
+
+  console.log('[DEV] Environment configured:', {
+    ADMIN_EMAIL: env.ADMIN_EMAIL,
+    ADMIN_PASSWORD_HASH: env.ADMIN_PASSWORD_HASH ? '***SET***' : 'NOT SET',
+    RESEND_API_KEY: env.RESEND_API_KEY ? '***SET***' : 'NOT SET',
+  });
 
   return env;
 }
