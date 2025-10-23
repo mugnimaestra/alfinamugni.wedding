@@ -6,6 +6,8 @@ compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
 # Database bindings
+# In local dev (wrangler dev), these use Miniflare's local D1 simulation
+# Data is persisted in .wrangler/state/v3/d1/
 [[d1_databases]]
 binding = "DB"
 database_name = "wedding-database"
@@ -17,6 +19,8 @@ database_name = "wedding-database-preview"
 database_id = "a2cc2db7-740c-4532-ac34-cb7956aac5d4"
 
 # R2 Storage bindings
+# In local dev, these use Miniflare's local R2 simulation
+# Data is persisted in .wrangler/state/v3/r2/
 [[r2_buckets]]
 binding = "WEDDING_PHOTOS"
 bucket_name = "wedding-photos-bucket"
@@ -26,6 +30,8 @@ binding = "WEDDING_PHOTOS_PREVIEW"
 bucket_name = "wedding-photos-bucket-preview"
 
 # KV Namespaces
+# In local dev, these use Miniflare's local KV simulation
+# Data is persisted in .wrangler/state/v3/kv/
 [[kv_namespaces]]
 binding = "SESSIONS"
 id = "7a1d563e050844cc82717f57e1de5e5a"

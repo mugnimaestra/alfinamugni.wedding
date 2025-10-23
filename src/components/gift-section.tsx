@@ -68,8 +68,8 @@ export const GiftSection = component$(() => {
           </p>
         </div>
 
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {/* Bank Transfer */}
+        <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto mb-12">
+          {/* Bank Jago Transfer */}
           <div
             class="gift-card wedding-card p-6 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl"
             style={{ backgroundColor: "var(--wedding-cream)" }}
@@ -81,14 +81,14 @@ export const GiftSection = component$(() => {
               >
                 Transfer Bank
               </h3>
-              <div class="text-sm text-gray-600 mb-3">BCA</div>
+              <div class="text-sm text-gray-600 mb-3">Bank Jago</div>
             </div>
             <div
               class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 rounded-lg mb-4"
             >
-              <div class="text-xs uppercase tracking-wide mb-1">Account Number</div>
-              <div class="text-lg font-mono">1234 5678 9012</div>
-              <div class="text-sm mt-2">ALFINA MUGNI</div>
+              <div class="text-xs uppercase tracking-wide mb-1">Nomor Rekening</div>
+              <div class="text-lg font-mono">105803971206</div>
+              <div class="text-sm mt-2">ALFINA NURMAYATI</div>
             </div>
             <button
               class="wedding-button w-full py-2 px-4 rounded transition-colors"
@@ -96,146 +96,9 @@ export const GiftSection = component$(() => {
                 backgroundColor: "var(--wedding-accent)",
                 color: "white"
               }}
-              onClick$={() => copyToClipboard("123456789012", "Bank")}
+              onClick$={() => copyToClipboard("105803971206", "Bank Jago")}
             >
               Salin Nomor Rekening
-            </button>
-          </div>
-
-          {/* GoPay */}
-          <div
-            class="gift-card wedding-card p-6 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl"
-            style={{ backgroundColor: "var(--wedding-cream)" }}
-          >
-            <div class="mb-4">
-              <h3
-                class="text-xl font-semibold mb-2"
-                style={{ color: "var(--wedding-brown)" }}
-              >
-                GoPay
-              </h3>
-              <div class="text-sm text-gray-600 mb-3">Dompet Digital</div>
-            </div>
-            <div
-              class="bg-gradient-to-r from-green-500 to-green-700 text-white p-4 rounded-lg mb-4"
-            >
-              <div class="text-xs uppercase tracking-wide mb-1">Phone Number</div>
-              <div class="text-lg font-mono">+62 812 3456 7890</div>
-              <div class="text-sm mt-2">ALFINA MUGNI</div>
-            </div>
-            <div class="space-y-2">
-              <button
-                class="wedding-button w-full py-2 px-4 rounded transition-colors"
-                style={{
-                  backgroundColor: "var(--wedding-accent)",
-                  color: "white"
-                }}
-                onClick$={() => copyToClipboard("+6281234567890", "GoPay")}
-              >
-                Salin Nomor Telepon
-              </button>
-              <div class="text-xs text-gray-500">
-                Scan QR code atau gunakan nomor telepon
-              </div>
-            </div>
-          </div>
-
-          {/* OVO */}
-          <div
-            class="gift-card wedding-card p-6 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl"
-            style={{ backgroundColor: "var(--wedding-cream)" }}
-          >
-            <div class="mb-4">
-              <h3
-                class="text-xl font-semibold mb-2"
-                style={{ color: "var(--wedding-brown)" }}
-              >
-                OVO
-              </h3>
-              <div class="text-sm text-gray-600 mb-3">Dompet Digital</div>
-            </div>
-            <div
-              class="bg-gradient-to-r from-purple-500 to-purple-700 text-white p-4 rounded-lg mb-4"
-            >
-              <div class="text-xs uppercase tracking-wide mb-1">Phone Number</div>
-              <div class="text-lg font-mono">+62 812 3456 7890</div>
-              <div class="text-sm mt-2">ALFINA MUGNI</div>
-            </div>
-            <button
-              class="wedding-button w-full py-2 px-4 rounded transition-colors"
-              style={{
-                backgroundColor: "var(--wedding-accent)",
-                color: "white"
-              }}
-              onClick$={() => copyToClipboard("+6281234567890", "OVO")}
-            >
-              Copy Phone Number
-            </button>
-          </div>
-
-          {/* Dana */}
-          <div
-            class="gift-card wedding-card p-6 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl"
-            style={{ backgroundColor: "var(--wedding-cream)" }}
-          >
-            <div class="mb-4">
-              <h3
-                class="text-xl font-semibold mb-2"
-                style={{ color: "var(--wedding-brown)" }}
-              >
-                DANA
-              </h3>
-              <div class="text-sm text-gray-600 mb-3">Dompet Digital</div>
-            </div>
-            <div
-              class="bg-gradient-to-r from-blue-400 to-blue-600 text-white p-4 rounded-lg mb-4"
-            >
-              <div class="text-xs uppercase tracking-wide mb-1">Phone Number</div>
-              <div class="text-lg font-mono">+62 812 3456 7890</div>
-              <div class="text-sm mt-2">ALFINA MUGNI</div>
-            </div>
-            <button
-              class="wedding-button w-full py-2 px-4 rounded transition-colors"
-              style={{
-                backgroundColor: "var(--wedding-accent)",
-                color: "white"
-              }}
-              onClick$={() => copyToClipboard("+6281234567890", "DANA")}
-            >
-              Copy Phone Number
-            </button>
-          </div>
-
-          {/* ShopeePay */}
-          <div
-            class="gift-card wedding-card p-6 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl"
-            style={{ backgroundColor: "var(--wedding-cream)" }}
-          >
-            <div class="mb-4">
-              <h3
-                class="text-xl font-semibold mb-2"
-                style={{ color: "var(--wedding-brown)" }}
-              >
-                ShopeePay
-              </h3>
-              <div class="text-sm text-gray-600 mb-3">Dompet Digital</div>
-            </div>
-            <div
-              class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 rounded-lg mb-4"
-            >
-              <div class="text-xs uppercase tracking-wide mb-1">Phone Number</div>
-              <div class="text-lg font-mono">+62 812 3456 7890</div>
-              <div class="text-sm mt-2">ALFINA MUGNI</div>
-            </div>
-            <button
-              class="wedding-button w-full py-2 px-4 rounded transition-colors"
-              style={{
-                backgroundColor: "var(--wedding-accent)",
-                color: "white"
-              }}
-              onClick$={() => copyToClipboard("+6281234567890", "ShopeePay")}
-            >
-              Copy Phone Number
             </button>
           </div>
 

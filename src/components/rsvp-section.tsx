@@ -8,47 +8,25 @@ import {
 export const RsvpSection = component$(() => {
   const showRsvpForm = useSignal(false);
   const guestName = useSignal("");
-  const guestEmail = useSignal("");
-  const guestPhone = useSignal("");
   const attendance = useSignal("");
   const plusOne = useSignal("");
   const plusOneName = useSignal("");
   const mealPreference = useSignal("");
   const plusOneMeal = useSignal("");
-  const specialRequests = useSignal("");
-  const dietaryRestrictions = useSignal("");
   const accommodation = useSignal("");
 
   const isSubmitting = useSignal(false);
   const submitMessage = useSignal("");
   const submitError = useSignal("");
 
-  // Enhanced validation helper
-  const validateIndonesianPhone = $((phone: string): boolean => {
-    if (!phone) return true; // Optional field
-
-    // Remove all non-digit characters except + at the beginning
-    const cleanPhone = phone.replace(/[^\d+]/g, '').replace(/(?!^)\+/g, '');
-
-    // Indonesian phone patterns
-    const patterns = [
-      /^\+628\d{8,11}$/, // Mobile with country code
-      /^08\d{8,11}$/, // Mobile without country code
-      /^\+6221\d{7,8}$/, // Jakarta landline with country code
-      /^021\d{7,8}$/, // Jakarta landline
-    ];
-
-    return patterns.some(pattern => pattern.test(cleanPhone));
-  });
-
   const handleRsvpSubmit = $(async () => {
     // Reset messages
     submitError.value = "";
     submitMessage.value = "";
 
-    // Basic validation
-    if (!guestName.value.trim() || !guestEmail.value.trim() || !attendance.value) {
-      submitError.value = "Mohon isi semua field yang wajib diisi (Nama, Email, Kehadiran).";
+    // Basic validation - only name and attendance required
+    if (!guestName.value.trim() || !attendance.value) {
+      submitError.value = "Mohon isi nama lengkap dan pilihan kehadiran.";
       return;
     }
 
@@ -58,34 +36,9 @@ export const RsvpSection = component$(() => {
       return;
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(guestEmail.value.trim())) {
-      submitError.value = "Format email tidak valid.";
-      return;
-    }
-
-    // Validate Indonesian phone number if provided
-    if (guestPhone.value && !validateIndonesianPhone(guestPhone.value)) {
-      submitError.value = "Format nomor telepon Indonesia tidak valid. Contoh: 08123456789 atau +628123456789";
-      return;
-    }
-
     // Validate plus one requirements
     if (plusOne.value === "yes" && (!plusOneName.value || plusOneName.value.trim().length < 2)) {
       submitError.value = "Nama pendamping harus diisi jika membawa tamu tambahan.";
-      return;
-    }
-
-    // Validate meal preferences for attending guests
-    if (attendance.value !== "unable" && !mealPreference.value) {
-      submitError.value = "Pilihan makanan wajib diisi untuk tamu yang hadir.";
-      return;
-    }
-
-    // Validate plus one meal if bringing plus one
-    if (plusOne.value === "yes" && attendance.value !== "unable" && !plusOneMeal.value) {
-      submitError.value = "Pilihan makanan pendamping harus diisi.";
       return;
     }
 
@@ -94,15 +47,11 @@ export const RsvpSection = component$(() => {
     try {
       const rsvpData = {
         guest_name: guestName.value.trim(),
-        email: guestEmail.value.trim().toLowerCase(),
-        phone: guestPhone.value.trim() || undefined,
         attending: attendance.value,
         plus_one_count: plusOne.value === "yes" ? 1 : 0,
         plus_one_name: plusOneName.value?.trim() || undefined,
         meal_preference: mealPreference.value || undefined,
         plus_one_meal: plusOneMeal.value || undefined,
-        special_requests: specialRequests.value?.trim() || undefined,
-        dietary_restrictions: dietaryRestrictions.value?.trim() || undefined,
         accommodation_needed: accommodation.value === "yes"
       };
 
@@ -121,20 +70,16 @@ export const RsvpSection = component$(() => {
       }
 
       // Success
-      submitMessage.value = result.message || "RSVP berhasil dikirim! Email konfirmasi akan segera dikirim.";
+      submitMessage.value = result.message || "RSVP berhasil dikirim! Terima kasih.";
 
       // Reset form after a delay
       setTimeout(() => {
         guestName.value = "";
-        guestEmail.value = "";
-        guestPhone.value = "";
         attendance.value = "";
         plusOne.value = "";
         plusOneName.value = "";
         mealPreference.value = "";
         plusOneMeal.value = "";
-        specialRequests.value = "";
-        dietaryRestrictions.value = "";
         accommodation.value = "";
         showRsvpForm.value = false;
         submitMessage.value = "";
@@ -216,48 +161,18 @@ export const RsvpSection = component$(() => {
 
               <form class="space-y-6">
                 {/* Guest Information */}
-                <div class="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium mb-2" style={{ color: "var(--wedding-brown)" }}>
-                      Nama Lengkap *
-                    </label>
-                    <input
-                      type="text"
-                      value={guestName.value}
-                      onInput$={(e) => guestName.value = (e.target as HTMLInputElement).value}
-                      class="w-full p-3 border rounded-md focus:ring-2 focus:ring-wedding-accent focus:border-transparent"
-                      placeholder="Masukkan nama lengkap Anda"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium mb-2" style={{ color: "var(--wedding-brown)" }}>
-                      Alamat Email *
-                    </label>
-                    <input
-                      type="email"
-                      value={guestEmail.value}
-                      onInput$={(e) => guestEmail.value = (e.target as HTMLInputElement).value}
-                      class="w-full p-3 border rounded-md focus:ring-2 focus:ring-wedding-accent focus:border-transparent"
-                      placeholder="Masukkan email Anda"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium mb-2" style={{ color: "var(--wedding-brown)" }}>
-                      Nomor Telepon (Opsional)
-                    </label>
-                    <input
-                      type="tel"
-                      value={guestPhone.value}
-                      onInput$={(e) => guestPhone.value = (e.target as HTMLInputElement).value}
-                      class="w-full p-3 border rounded-md focus:ring-2 focus:ring-wedding-accent focus:border-transparent"
-                      placeholder="08123456789 atau +628123456789"
-                    />
-                    <p class="text-xs text-gray-500 mt-1">
-                      Format Indonesia: 08xx atau +628xx
-                    </p>
-                  </div>
+                <div>
+                  <label class="block text-sm font-medium mb-2" style={{ color: "var(--wedding-brown)" }}>
+                    Nama Lengkap *
+                  </label>
+                  <input
+                    type="text"
+                    value={guestName.value}
+                    onInput$={(e) => guestName.value = (e.target as HTMLInputElement).value}
+                    class="w-full p-3 border rounded-md focus:ring-2 focus:ring-wedding-accent focus:border-transparent"
+                    placeholder="Masukkan nama lengkap Anda"
+                    required
+                  />
                 </div>
 
                 {/* Attendance */}
@@ -444,32 +359,6 @@ export const RsvpSection = component$(() => {
                   </div>
                 )}
 
-                {/* Special Requests */}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium mb-2" style={{ color: "var(--wedding-brown)" }}>
-                      Pantangan/Alergi Makanan
-                    </label>
-                    <textarea
-                      value={dietaryRestrictions.value}
-                      onInput$={(e) => dietaryRestrictions.value = (e.target as HTMLTextAreaElement).value}
-                      class="w-full p-3 border rounded-md h-20 resize-none focus:ring-2 focus:ring-wedding-accent focus:border-transparent"
-                      placeholder="Alergi makanan laut, vegetarian, dll..."
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium mb-2" style={{ color: "var(--wedding-brown)" }}>
-                      Permintaan Khusus Lainnya
-                    </label>
-                    <textarea
-                      value={specialRequests.value}
-                      onInput$={(e) => specialRequests.value = (e.target as HTMLTextAreaElement).value}
-                      class="w-full p-3 border rounded-md h-20 resize-none focus:ring-2 focus:ring-wedding-accent focus:border-transparent"
-                      placeholder="Kebutuhan aksesibilitas, kursi roda, dll..."
-                    />
-                  </div>
-                </div>
-
                 {/* Success/Error Messages */}
                 {submitMessage.value && (
                   <div class="p-4 bg-green-100 border border-green-300 rounded-md text-green-800 text-sm">
@@ -519,26 +408,16 @@ export const RsvpSection = component$(() => {
           </div>
         )}
 
-        <div class="mt-16 grid md:grid-cols-2 gap-x-16 gap-y-8 max-w-4xl mx-auto">
+        <div class="mt-16 max-w-2xl mx-auto">
           <div class="rsvp-info-card text-center" style={{ opacity: 0 }}>
             <h3 class="font-serif text-2xl md:text-3xl text-wedding-brown mb-4 font-medium">
-              Kode Berpakaian
-            </h3>
-            <p class="text-wedding-text-secondary text-lg">Pakaian Formal</p>
-            <p class="text-wedding-text-muted text-base mt-2">
-              Kami mohon tidak memakai warna putih atau krem
-            </p>
-          </div>
-
-          <div class="rsvp-info-card text-center" style={{ opacity: 0 }}>
-            <h3 class="font-serif text-2xl md:text-3xl text-wedding-brown mb-4 font-medium">
-              Daftar Hadiah
+              Hadiah Pernikahan
             </h3>
             <p class="text-wedding-text-secondary text-lg">
-              Kehadiran Anda adalah hadiah kami
+              Kehadiran Anda adalah hadiah terbesar bagi kami
             </p>
             <p class="text-wedding-text-muted text-base mt-2">
-              Namun jika Anda ingin memberikan hadiah, kami terdaftar di...
+              Namun jika Anda ingin memberikan hadiah, informasi tersedia di bagian Hadiah Pernikahan di bawah
             </p>
           </div>
         </div>

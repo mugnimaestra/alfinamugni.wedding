@@ -12,42 +12,28 @@ interface StoryMilestone {
 export const StorySection = component$(() => {
   const storyMilestones: StoryMilestone[] = [
     {
-      year: "2019",
-      title: "Pertemuan Pertama",
-      description: "Kami bertemu selama tahun terakhir di Universitas Indonesia, sama-sama belajar hingga larut malam di perpustakaan. Yang dimulai sebagai pertanyaan sederhana tentang tugas kalkulus menjadi percakapan pertama kami.",
+      year: "Masa Sekolah",
+      title: "Pertemuan Awal",
+      description: "Kami bersekolah di SMP dan SMA yang sama, namun pertemuan kami yang sebenarnya terjadi di tempat yang tidak terduga. Takdir mempertemukan kami di waktu yang tepat.",
       icon: "📚",
       side: "left"
     },
     {
-      year: "2020",
-      title: "Semakin Dekat",
-      description: "Kencan minum kopi berubah menjadi jalan-jalan panjang di sekitar kampus. Kami menemukan kecintaan yang sama terhadap sastra Indonesia, musik tradisional, dan impian kami untuk membuat perbedaan di dunia.",
-      icon: "☕",
+      year: "10 Desember 2022",
+      title: "Hubungan Resmi",
+      description: "Setelah saling mengenal lebih dalam, kami memutuskan untuk meresmikan hubungan kami. Ini adalah hari yang spesial ketika kami berkomitmen untuk saling mendukung dan tumbuh bersama.",
+      icon: "❤️",
       side: "right"
     },
     {
-      year: "2021",
-      title: "Kencan Pertama",
-      description: "Kencan resmi pertama kami di Taman Suropati, di mana Mugni dengan gugup meminta Alfina menjadi pacarnya di bawah pohon beringin tua. Dia berkata ya, dan kami tak terpisahkan sejak saat itu.",
-      icon: "🌳",
-      side: "left"
-    },
-    {
-      year: "2023",
-      title: "Tinggal Bersama",
-      description: "Kami menemukan apartemen kecil kami di Kemang dan mulai membangun hidup bersama. Belajar memasak masakan tradisional Indonesia dan menciptakan tradisi keluarga kami sendiri.",
-      icon: "🏠",
-      side: "right"
-    },
-    {
-      year: "2024",
+      year: "Agustus 2024",
       title: "Lamaran",
-      description: "Selama perjalanan akhir pekan ke Yogyakarta, di Taman Sari yang indah, Mugni berlutut. Dengan air mata kebahagiaan, Alfina berkata ya untuk selamanya.",
+      description: "Dengan penuh kebahagiaan, Mugni melamar Alfina. Momen yang penuh haru dan sukacita, menandai langkah baru menuju kehidupan bersama sebagai suami istri.",
       icon: "💍",
       side: "left"
     },
     {
-      year: "2025",
+      year: "29 November 2025",
       title: "Hari Pernikahan Kami",
       description: "Dan sekarang, kami siap memulai babak baru sebagai suami istri, dikelilingi oleh keluarga dan teman-teman tercinta. Alhamdulillah untuk perjalanan indah ini!",
       icon: "👰‍♀️🤵‍♂️",

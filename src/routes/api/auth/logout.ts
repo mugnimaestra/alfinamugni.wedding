@@ -1,7 +1,6 @@
 import type { RequestHandler } from '@builder.io/qwik-city';
-import { type Env } from '../../../lib/database';
 import { createAuth } from '../../../lib/auth';
-import { getEnvWithFallback } from '../../../lib/dev-env';
+import { getEnv } from '../../../lib/env';
 
 // Admin logout API endpoint
 export const onPost: RequestHandler = async ({ cookie, json, platform }) => {
@@ -16,7 +15,7 @@ export const onPost: RequestHandler = async ({ cookie, json, platform }) => {
       });
     }
 
-    const env = getEnvWithFallback(platform?.env);
+    const env = getEnv(platform?.env);
     const auth = createAuth(env);
     
     // Logout from auth system
@@ -58,7 +57,7 @@ export const onGet: RequestHandler = async ({ cookie, json, platform }) => {
     const sessionId = cookie.get('admin_session')?.value;
     
     if (sessionId) {
-      const env = getEnvWithFallback(platform?.env);
+      const env = getEnv(platform?.env);
       const auth = createAuth(env);
       await auth.logout(sessionId);
     }

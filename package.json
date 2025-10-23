@@ -8,18 +8,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "qwik build",
+    "build": "pnpm run build.client && vite build --config adapters/cloudflare-pages/vite.config.ts",
     "build.client": "vite build",
-    "build.preview": "vite build --ssr src/entry.preview.tsx",
     "build.types": "tsc --incremental --noEmit",
     "deploy": "./scripts/deploy-production.sh",
     "deploy:preview": "wrangler pages deploy dist --project-name alfinamugni-wedding-preview",
     "dev": "vite --mode ssr",
+    "dev:api": "wrangler pages dev dist --live-reload",
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
     "fmt": "prettier --write .",
     "fmt.check": "prettier --check .",
     "lint": "eslint \"src/**/*.ts*\"",
-    "preview": "qwik build preview && vite preview --open",
+    "preview": "pnpm build && wrangler pages dev dist",
     "start": "vite --open --mode ssr",
     "qwik": "qwik",
     "test": "vitest",
@@ -30,6 +30,7 @@
     "db:migrate": "wrangler d1 migrations apply wedding-database --remote",
     "db:migrate:local": "wrangler d1 migrations apply wedding-database --local",
     "db:backup": "wrangler d1 export wedding-database --remote --output backup-$(date +%Y%m%d-%H%M%S).sql",
+    "seed:local": "./scripts/seed-local-data.sh",
     "admin:setup": "node scripts/setup-admin.js"
   },
   "devDependencies": {
@@ -60,6 +61,7 @@
     "typescript": "5.4.5",
     "typescript-eslint": "8.26.1",
     "undici": "*",
+    "undici-types": "^7.16.0",
     "vite": "5.3.5",
     "vite-tsconfig-paths": "^4.2.1",
     "vitest": "^3.2.4"

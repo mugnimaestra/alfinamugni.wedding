@@ -1,51 +1,122 @@
-import { useSignal, useTask$, type Signal } from "@builder.io/qwik";
-import { GalleryService, type GalleryItem } from "../services/gallery-service";
+import { useSignal, useVisibleTask$, type Signal, $ } from "@builder.io/qwik";
+
+export interface GalleryItem {
+  id: string;
+  type: 'image' | 'video';
+  title: string;
+  description: string;
+  author: string;
+  timestamp: string;
+  status: 'pending' | 'approved' | 'rejected';
+  url?: string;
+  thumbnail?: string;
+  category?: string;
+  featured?: boolean;
+}
 
 export interface UseGalleryReturn {
   items: Signal<GalleryItem[]>;
   loading: Signal<boolean>;
-  addItem: (item: Omit<GalleryItem, 'id' | 'timestamp' | 'status'>) => GalleryItem;
-  updateItemStatus: (id: string, status: 'approved' | 'rejected') => void;
-  deleteItem: (id: string) => void;
-  searchItems: (query: string) => GalleryItem[];
-  getStatistics: () => { total: number; pending: number; approved: number; rejected: number };
-  uploadFile: (file: File, metadata: { title: string; description: string; author: string }) => Promise<GalleryItem>;
+  error: Signal<string | null>;
+  uploadFile: (file: File, metadata: { title: string; description: string; author: string }) => Promise<void>;
+  refreshGallery: () => Promise<void>;
+}
+
+// Database photo type
+interface DatabasePhoto {
+  id?: number;
+  description?: string;
+  original_name?: string;
+  uploader_name?: string;
+  upload_date?: string;
+  approved?: boolean;
+  url?: string;
+  thumbnail_url?: string;
+  category?: string;
+  featured?: boolean;
+}
+
+// Transform database photo to GalleryItem
+function transformPhotoToGalleryItem(photo: DatabasePhoto): GalleryItem {
+  return {
+    id: photo.id?.toString() || '',
+    type: 'image', // For now, all are images
+    title: photo.description || photo.original_name || 'Untitled',
+    description: photo.description || '',
+    author: photo.uploader_name || 'Anonymous',
+    timestamp: photo.upload_date || new Date().toISOString(),
+    status: photo.approved ? 'approved' : 'pending',
+    url: photo.url,
+    thumbnail: photo.thumbnail_url || photo.url,
+    category: photo.category,
+    featured: photo.featured
+  };
 }
 
 export const useGallery = (): UseGalleryReturn => {
-  const galleryService = GalleryService.getInstance();
   const items = useSignal<GalleryItem[]>([]);
   const loading = useSignal(true);
+  const error = useSignal<string | null>(null);
 
-  useTask$(() => {
-    // Initialize service if not already initialized
-    if (galleryService.getItems().length === 0) {
-      galleryService.initialize();
-    }
-    
-    // Subscribe to updates
-    const unsubscribe = galleryService.subscribe((newItems) => {
-      items.value = newItems;
+  const fetchGallery = $(async () => {
+    try {
+      loading.value = true;
+      error.value = null;
+      
+      const response = await fetch('/api/gallery');
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        items.value = result.data.map(transformPhotoToGalleryItem);
+      } else {
+        throw new Error(result.error || 'Failed to fetch gallery');
+      }
+    } catch (err) {
+      console.error('Gallery fetch error:', err);
+      error.value = err instanceof Error ? err.message : 'Failed to load gallery';
+      items.value = [];
+    } finally {
       loading.value = false;
-    });
-    
-    // Connect WebSocket
-    galleryService.connectWebSocket();
-    
-    // Cleanup on unmount
-    return () => {
-      unsubscribe();
-    };
+    }
+  });
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async () => {
+    await fetchGallery();
+  });
+
+  const uploadFile = $(async (file: File, metadata: { title: string; description: string; author: string }) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('uploader_name', metadata.author);
+      formData.append('description', metadata.title + (metadata.description ? ': ' + metadata.description : ''));
+      formData.append('category', 'guests');
+      
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Upload failed');
+      }
+      
+      // Refresh gallery after successful upload
+      await fetchGallery();
+    } catch (err) {
+      console.error('Upload error:', err);
+      throw err;
+    }
   });
 
   return {
     items,
     loading,
-    addItem: galleryService.addItem.bind(galleryService),
-    updateItemStatus: galleryService.updateItemStatus.bind(galleryService),
-    deleteItem: galleryService.deleteItem.bind(galleryService),
-    searchItems: galleryService.searchItems.bind(galleryService),
-    getStatistics: galleryService.getStatistics.bind(galleryService),
-    uploadFile: galleryService.uploadFile.bind(galleryService)
+    error,
+    uploadFile,
+    refreshGallery: fetchGallery
   };
 };

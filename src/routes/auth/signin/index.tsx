@@ -6,8 +6,7 @@ import { Label } from '~/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Alert, AlertDescription } from '~/components/ui/alert';
 import { createAuth } from '~/lib/auth';
-import type { Env } from '~/lib/database';
-import { getEnvWithFallback } from '~/lib/dev-env';
+import { getEnv } from '~/lib/env';
 
 // Check if user is already authenticated
 export const useCheckSession = routeLoader$(async ({ cookie, redirect, platform }) => {
@@ -16,7 +15,7 @@ export const useCheckSession = routeLoader$(async ({ cookie, redirect, platform 
   if (sessionId) {
     // Validate session directly using auth library
     try {
-      const env = getEnvWithFallback(platform?.env);
+      const env = getEnv(platform?.env);
       const auth = createAuth(env);
       const validation = await auth.validateSession(sessionId);
 
@@ -40,8 +39,8 @@ export const useCheckSession = routeLoader$(async ({ cookie, redirect, platform 
 export const useSignInAction = routeAction$(
   async (values, { fail, platform, cookie, redirect }) => {
     try {
-      // Get environment with fallback to dev mock
-      const env = getEnvWithFallback(platform?.env);
+      // Get environment (with fallback for Vite dev mode)
+      const env = getEnv(platform?.env);
 
       // Create auth instance
       const auth = createAuth(env);

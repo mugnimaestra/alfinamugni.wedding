@@ -10,7 +10,7 @@ export const CountdownSection = component$(() => {
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     // Wedding date: November 29, 2025
-    const weddingDate = new Date("2025-11-29T10:00:00+07:00").getTime(); // 10 AM Jakarta time
+    const weddingDate = new Date("2025-11-29T09:00:00+07:00").getTime(); // 9 AM Jakarta time (Akad Nikah)
 
     const updateCountdown = () => {
       const now = new Date().getTime();

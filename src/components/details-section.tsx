@@ -52,7 +52,7 @@ export const DetailsSection = component$(() => {
 
               <div class="mb-6">
                 <p class="text-wedding-text-secondary text-xl md:text-2xl font-medium mb-2">
-                  10:00 AM - 11:30 AM
+                  9:00 AM - 11:30 AM
                 </p>
                 <p class="text-wedding-text-muted text-lg">
                   Sabtu, 29 November 2025
@@ -60,15 +60,9 @@ export const DetailsSection = component$(() => {
               </div>
 
               <div class="text-wedding-text-muted text-base md:text-lg space-y-2 mb-6">
-                <p class="font-medium">Masjid Al-Ikhlas</p>
-                <p>Jl. Kebon Jeruk Raya No. 123</p>
-                <p>Jakarta Barat, Indonesia</p>
-              </div>
-
-              <div class="bg-wedding-cream p-4 rounded-lg">
-                <p class="text-sm text-wedding-text-muted">
-                  <strong>Dress Code:</strong> Pakaian formal sopan
-                </p>
+                <p class="font-medium">Tamarin Hotel Jakarta</p>
+                <p>Jl. K.H. Wahid Hasyim No.77, RT.1/RW.4</p>
+                <p>Gondangdia, Kec. Menteng, Jakarta 10340</p>
               </div>
             </div>
           </div>
@@ -100,7 +94,7 @@ export const DetailsSection = component$(() => {
 
               <div class="mb-6">
                 <p class="text-wedding-text-secondary text-xl md:text-2xl font-medium mb-2">
-                  7:00 PM - 11:00 PM
+                  12:00 PM - 3:00 PM
                 </p>
                 <p class="text-wedding-text-muted text-lg">
                   Sabtu, 29 November 2025
@@ -108,18 +102,9 @@ export const DetailsSection = component$(() => {
               </div>
 
               <div class="text-wedding-text-muted text-base md:text-lg space-y-2 mb-6">
-                <p class="font-medium">Grand Ballroom Hotel Mulia</p>
-                <p>Jl. HR Rasuna Said No. 456</p>
-                <p>Jakarta Selatan, Indonesia</p>
-              </div>
-
-              <div class="bg-wedding-cream p-4 rounded-lg space-y-2">
-                <p class="text-sm text-wedding-text-muted">
-                  <strong>Dress Code:</strong> Pakaian formal / tradisional
-                </p>
-                <p class="text-sm text-wedding-text-muted">
-                  <strong>Parkir:</strong> Tersedia valet
-                </p>
+                <p class="font-medium">Tamarin Hotel Jakarta</p>
+                <p>Jl. K.H. Wahid Hasyim No.77, RT.1/RW.4</p>
+                <p>Gondangdia, Kec. Menteng, Jakarta 10340</p>
               </div>
             </div>
           </div>
@@ -137,32 +122,38 @@ export const DetailsSection = component$(() => {
 
             <div class="grid md:grid-cols-2 gap-8">
               <div>
-                <h4 class="font-semibold text-wedding-brown mb-3">Live Streaming</h4>
+                <h4 class="font-semibold text-wedding-brown mb-3">Parkir</h4>
                 <p class="text-wedding-text-muted text-sm">
-                  Kedua upacara akan disiarkan langsung untuk mereka yang tidak dapat hadir secara langsung.
-                  Link akan dibagikan menjelang hari H.
+                  Area parkir tersedia di gedung Tamarin Hotel Jakarta untuk kenyamanan tamu.
                 </p>
               </div>
 
               <div>
-                <h4 class="font-semibold text-wedding-brown mb-3">Protokol Kesehatan</h4>
+                <h4 class="font-semibold text-wedding-brown mb-3">Transportasi Umum</h4>
                 <p class="text-wedding-text-muted text-sm">
-                  Mohon mengikuti semua protokol kesehatan. Masker dianjurkan untuk acara dalam ruangan.
+                  <strong>MRT:</strong> Stasiun Bundaran HI (10 menit jalan kaki, 654m)
+                  <br />
+                  <strong>TransJakarta:</strong> Halte Sarinah (433m)
+                  <br />
+                  <strong>Bus:</strong> Jalur 1, 1H, 9D, AC52, JAK.10A
+                  <br />
+                  <strong>Kereta:</strong> Stasiun Gondangdia (6 menit jalan kaki)
                 </p>
               </div>
 
               <div>
-                <h4 class="font-semibold text-wedding-brown mb-3">Transportasi</h4>
+                <h4 class="font-semibold text-wedding-brown mb-3">Lokasi</h4>
                 <p class="text-wedding-text-muted text-sm">
-                  Layanan antar jemput tersedia dari lokasi Akad ke lokasi Resepsi pukul 18:00.
+                  Hotel terletak di pusat kota Jakarta dengan akses mudah dari berbagai arah.
+                  Area Menteng sangat terhubung dengan jaringan transportasi umum.
                 </p>
               </div>
 
               <div>
                 <h4 class="font-semibold text-wedding-brown mb-3">Akomodasi</h4>
                 <p class="text-wedding-text-muted text-sm">
-                  Tarif khusus tersedia di Hotel Mulia untuk tamu luar kota.
-                  Hubungi kami untuk kode booking.
+                  Untuk tamu luar kota, Tamarin Hotel Jakarta menyediakan kamar.
+                  Hubungi kami untuk informasi lebih lanjut.
                 </p>
               </div>
             </div>

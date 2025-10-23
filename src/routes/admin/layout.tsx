@@ -2,7 +2,7 @@ import { component$, Slot, useSignal } from '@builder.io/qwik';
 import { routeLoader$ } from '@builder.io/qwik-city';
 import type { RequestHandler } from '@builder.io/qwik-city';
 import { createAuth } from '~/lib/auth';
-import { getEnvWithFallback } from '~/lib/dev-env';
+import { getEnv } from '~/lib/env';
 
 // Enhanced server-side session validation with Custom Auth
 export const onRequest: RequestHandler = async ({ request, redirect, url, headers, cookie, platform }) => {
@@ -30,7 +30,7 @@ export const onRequest: RequestHandler = async ({ request, redirect, url, header
     }
 
     // Validate session directly (not via HTTP call to avoid SSR issues in dev mode)
-    const env = getEnvWithFallback(platform?.env);
+    const env = getEnv(platform?.env);
     const auth = createAuth(env);
     const validation = await auth.validateSession(sessionId);
 
@@ -65,7 +65,7 @@ export const useAdminSession = routeLoader$(async ({ cookie, platform }) => {
     }
 
     // Validate session directly
-    const env = getEnvWithFallback(platform?.env);
+    const env = getEnv(platform?.env);
     const auth = createAuth(env);
     const validation = await auth.validateSession(sessionId);
 

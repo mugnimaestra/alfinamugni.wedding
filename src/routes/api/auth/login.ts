@@ -1,7 +1,6 @@
 import type { RequestHandler } from '@builder.io/qwik-city';
-import { type Env } from '../../../lib/database';
 import { createAuth } from '../../../lib/auth';
-import { getEnvWithFallback } from '../../../lib/dev-env';
+import { getEnv } from '../../../lib/env';
 
 // Admin login API endpoint
 export const onPost: RequestHandler = async ({ request, json, cookie, platform }) => {
@@ -43,8 +42,10 @@ export const onPost: RequestHandler = async ({ request, json, cookie, platform }
       });
     }
 
+    // Get environment (with fallback for Vite dev mode)
+    const env = getEnv(platform?.env);
+
     // Create auth instance
-    const env = getEnvWithFallback(platform?.env);
     const auth = createAuth(env);
 
     // Authenticate user
@@ -135,7 +136,7 @@ export const onGet: RequestHandler = async ({ cookie, json, platform }) => {
       });
     }
 
-    const env = getEnvWithFallback(platform?.env);
+    const env = getEnv(platform?.env);
     const auth = createAuth(env);
     const validation = await auth.validateSession(sessionId);
 
