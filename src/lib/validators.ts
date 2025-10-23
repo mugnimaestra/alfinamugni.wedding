@@ -112,6 +112,13 @@ export const PhotoUploadSchema = z.object({
   description: z.string()
     .max(300, 'Deskripsi terlalu panjang')
     .optional(),
+  // Metadata fields for analytics
+  user_agent: z.string().max(500).optional(),
+  screen_resolution: z.string().max(50).optional(),
+  device_orientation: z.string().max(20).optional(),
+  connection_type: z.string().max(20).optional(),
+  country_code: z.string().length(2).optional(),
+  camera_model: z.string().max(100).optional(),
 });
 
 // Admin user validation schema

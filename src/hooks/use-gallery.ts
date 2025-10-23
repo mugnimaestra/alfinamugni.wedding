@@ -1,4 +1,5 @@
 import { useSignal, useVisibleTask$, type Signal, $ } from "@builder.io/qwik";
+import { appendMetadataToFormData } from "../utils/device-metadata";
 
 export interface GalleryItem {
   id: string;
@@ -92,18 +93,21 @@ export const useGallery = (): UseGalleryReturn => {
       formData.append('uploader_name', metadata.author);
       formData.append('description', metadata.title + (metadata.description ? ': ' + metadata.description : ''));
       formData.append('category', 'guests');
-      
+
+      // Collect and append device metadata for analytics
+      appendMetadataToFormData(formData);
+
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData
       });
-      
+
       const result = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Upload failed');
       }
-      
+
       // Refresh gallery after successful upload
       await fetchGallery();
     } catch (err) {

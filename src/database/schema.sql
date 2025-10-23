@@ -54,7 +54,13 @@ CREATE TABLE IF NOT EXISTS photo_uploads (
   description TEXT,
   approved_at TEXT,
   approved_by TEXT,
-  ip_address TEXT
+  ip_address TEXT,
+  user_agent TEXT,
+  screen_resolution TEXT,
+  device_orientation TEXT,
+  connection_type TEXT,
+  country_code TEXT,
+  camera_model TEXT
 );
 
 -- Admin users table
@@ -118,6 +124,8 @@ CREATE INDEX IF NOT EXISTS idx_guest_wishes_created_at ON guest_wishes(created_a
 CREATE INDEX IF NOT EXISTS idx_photo_uploads_approved ON photo_uploads(approved);
 CREATE INDEX IF NOT EXISTS idx_photo_uploads_category ON photo_uploads(category);
 CREATE INDEX IF NOT EXISTS idx_photo_uploads_upload_date ON photo_uploads(upload_date);
+CREATE INDEX IF NOT EXISTS idx_photo_uploads_country ON photo_uploads(country_code);
+CREATE INDEX IF NOT EXISTS idx_photo_uploads_device ON photo_uploads(user_agent);
 
 CREATE INDEX IF NOT EXISTS idx_email_notifications_status ON email_notifications(status);
 CREATE INDEX IF NOT EXISTS idx_email_notifications_type ON email_notifications(email_type);

@@ -118,10 +118,12 @@ pnpm run qwik        # Direct access to Qwik CLI commands
 ## Architecture
 
 **Framework**: Qwik v1.14.1 with Qwik City for routing
+**Deployment**: Hybrid Static + API (SSG pages + Cloudflare Functions for APIs)
 **Styling**: Tailwind CSS v4.1.8 + custom wedding theme in CSS variables
 **Build Tool**: Vite 5.3.5
 **Package Manager**: pnpm (required - efficient, disk space-saving package manager)
 **Language**: TypeScript 5.4.5
+**Hosting**: Cloudflare Pages with D1 database, R2 storage, and KV namespaces
 
 ### pnpm Benefits
 
@@ -132,6 +134,48 @@ The project migrated to pnpm for better dependency management:
 - **Strict Mode**: Prevents phantom dependencies and improves dependency security
 - **Workspace Support**: Ready for future monorepo expansion
 - **Better Lockfiles**: More reliable and deterministic installations
+
+### Hybrid Static + API Architecture (Simplified!)
+
+The project uses a **simplified hybrid architecture** that eliminates most deployment complexity:
+
+#### How It Works
+
+1. **Static Pages (SSG)**: All public pages (home, story, details, contact) are pre-generated as static HTML at build time
+   - Super fast loading (no server processing needed)
+   - Simple development with `pnpm run dev`
+   - No Cloudflare bindings needed for UI work
+
+2. **Dynamic API Routes**: API endpoints (`/api/*`) run as Cloudflare Functions
+   - Have full access to D1 (database), R2 (storage), KV (key-value)
+   - Handle RSVP submissions, wishes, photo uploads, admin auth
+   - Test with `pnpm run preview` (builds + runs with real bindings)
+
+#### Development Workflow
+
+**For UI/Page Development** (90% of the time):
+```bash
+pnpm run dev       # Fast Vite dev server, no build needed, no bindings
+```
+- Instant hot reload
+- No Cloudflare complexity
+- Just edit components and see changes immediately
+
+**To Test API Routes** (when needed):
+```bash
+pnpm run preview   # Builds project + runs with real Cloudflare bindings
+```
+- Full D1, R2, KV access
+- Test forms, authentication, database operations
+- Matches production environment
+
+**Why This is Better**:
+- ✅ Simple dev workflow (just `pnpm run dev`)
+- ✅ No stub environments or complex workarounds
+- ✅ Fast builds (static HTML generation)
+- ✅ Wedding guests get instant page loads
+- ✅ Still uses Cloudflare D1/R2/KV for backend features
+- ✅ Clear separation: static UI + dynamic APIs
 
 ### Key Directories
 

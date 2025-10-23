@@ -257,6 +257,12 @@ export interface PhotoUpload {
   approved_at?: string;
   approved_by?: string;
   ip_address?: string;
+  user_agent?: string;
+  screen_resolution?: string;
+  device_orientation?: string;
+  connection_type?: string;
+  country_code?: string;
+  camera_model?: string;
 }
 
 // Database utility class with enhanced error handling
@@ -435,8 +441,9 @@ export class WeddingDatabase {
       INSERT INTO photo_uploads (
         filename, original_name, file_size, content_type, width, height,
         uploader_name, uploader_email, bucket_path, r2_key, approved, featured,
-        category, description, ip_address
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        category, description, ip_address, user_agent, screen_resolution,
+        device_orientation, connection_type, country_code, camera_model
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = await stmt.bind(
@@ -454,7 +461,13 @@ export class WeddingDatabase {
       photoData.featured,
       photoData.category,
       photoData.description || null,
-      photoData.ip_address || null
+      photoData.ip_address || null,
+      photoData.user_agent || null,
+      photoData.screen_resolution || null,
+      photoData.device_orientation || null,
+      photoData.connection_type || null,
+      photoData.country_code || null,
+      photoData.camera_model || null
     ).run();
 
     if (!result.success) {

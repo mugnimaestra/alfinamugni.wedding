@@ -13,6 +13,12 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
     const category = formData.get('category') as string || 'guests';
     const description = formData.get('description') as string;
 
+    // Collect client metadata from form
+    const screenResolution = formData.get('screen_resolution') as string;
+    const deviceOrientation = formData.get('device_orientation') as string;
+    const connectionType = formData.get('connection_type') as string;
+    const cameraModel = formData.get('camera_model') as string;
+
     if (!file) {
       throw json(400, {
         error: 'No file provided',
@@ -44,10 +50,12 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
     const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
     const filename = `${timestamp}_${randomId}.${fileExtension}`;
 
-    // Get client information
+    // Get client information from headers
     const clientIP = request.headers.get('CF-Connecting-IP') ||
                     request.headers.get('X-Forwarded-For') ||
                     'unknown';
+    const userAgent = request.headers.get('User-Agent') || undefined;
+    const countryCode = request.headers.get('CF-IPCountry') || undefined;
 
     // Determine bucket path based on category
     const bucketPath = `photos/${category}/${new Date().getFullYear()}/${new Date().getMonth() + 1}`;
@@ -89,7 +97,13 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
         featured: false,
         category: category as 'ceremony' | 'reception' | 'guests' | 'professional',
         description: description || undefined,
-        ip_address: clientIP
+        ip_address: clientIP,
+        user_agent: userAgent,
+        screen_resolution: screenResolution || undefined,
+        device_orientation: deviceOrientation || undefined,
+        connection_type: connectionType || undefined,
+        country_code: countryCode,
+        camera_model: cameraModel || undefined
       };
 
       const result = await db.createPhotoUpload(photoData);

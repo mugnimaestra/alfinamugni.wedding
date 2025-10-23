@@ -32,6 +32,10 @@ pnpm run test             # Vitest watch mode
 pnpm run test:ui          # Visual test interface at http://localhost:51204
 pnpm run test:run         # Single test run (for CI/CD)
 pnpm run test:coverage    # Generate coverage report
+
+# Cloudflare Local Development
+pnpm run seed:local       # Seed local KV, D1, R2 with dev data
+pnpm run db:migrate:local # Apply D1 migrations to local database
 ```
 
 ### Running Specific Tests
@@ -324,8 +328,207 @@ Indonesian wedding celebration (November 29, 2025, Jakarta). Design reflects cul
 - Images should use WebP format with progressive loading
 - Test Core Web Vitals after changes (LCP < 2.5s target)
 
+## Cloudflare Local Development
+
+### Architecture
+
+This project uses **Cloudflare Pages** with **Wrangler 4.38.0** for local development. When you run `pnpm run dev`, all Cloudflare bindings (KV, D1, R2) are **automatically simulated locally** using Miniflare v3 powered by workerd (the same runtime Cloudflare uses in production).
+
+**No mocks needed!** Cloudflare provides high-fidelity local simulation out of the box.
+
+### Local Resources
+
+All local data is persisted in `.wrangler/state/`:
+- **KV namespaces**: `.wrangler/state/v3/kv/`
+- **D1 databases**: `.wrangler/state/v3/d1/`
+- **R2 buckets**: `.wrangler/state/v3/r2/`
+
+### Bindings Configuration
+
+Configured in `wrangler.toml`:
+
+```toml
+# D1 Databases (local simulation during dev)
+[[d1_databases]]
+binding = "DB"
+database_name = "wedding-database"
+database_id = "b09507db-7dbb-4fb9-bad6-ab4b3bb3d064"
+
+# R2 Storage (local simulation during dev)
+[[r2_buckets]]
+binding = "WEDDING_PHOTOS"
+bucket_name = "wedding-photos-bucket"
+
+# KV Namespaces (local simulation during dev)
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "7a1d563e050844cc82717f57e1de5e5a"
+preview_id = "b228f0fb185347ffa13d54d0aac24ab8"
+```
+
+### Accessing Bindings in Code
+
+Bindings are available via `platform.env` in route loaders and actions:
+
+```typescript
+import type { RequestHandler } from '@builder.io/qwik-city';
+import type { Env } from '~/lib/database';
+
+export const onRequest: RequestHandler = async ({ platform }) => {
+  // Always check platform.env is available
+  if (!platform?.env) {
+    throw new Error('Platform environment not available');
+  }
+  
+  const env = platform.env as Env;
+  
+  // Access bindings
+  await env.SESSIONS.put('key', 'value');
+  const data = await env.DB.prepare('SELECT * FROM users').all();
+  await env.WEDDING_PHOTOS.put('photo.jpg', file);
+};
+```
+
+### First-Time Setup
+
+1. **Initialize local environment** (first run only):
+   ```bash
+   pnpm run dev  # Creates .wrangler/state/ directory
+   ```
+
+2. **Seed local data**:
+   ```bash
+   pnpm run seed:local  # Applies D1 migrations and seeds data
+   ```
+
+3. **Access the application**:
+   - Main site: http://localhost:5173
+   - Admin login: http://localhost:5173/auth/signin
+
+### Local Development Modes
+
+**1. Vite Dev Mode (Quick Start - Default)**
+```bash
+pnpm run dev
+```
+- Uses Vite's SSR mode for fastest hot reload
+- Environment variables loaded from `.dev.vars`
+- KV/D1/R2 operations print warnings (stubs only)
+- **Best for**: UI development, non-database features
+- **Limitation**: No real Cloudflare bindings
+
+**2. Wrangler Dev Mode (Full Simulation - Recommended for Backend)**
+```bash
+pnpm wrangler pages dev
+```
+- All resources simulated locally via Miniflare
+- Real KV, D1, R2 implementations
+- Data persists in `.wrangler/state/`
+- **Best for**: Testing auth, database, file uploads
+- Requires running `pnpm run seed:local` first
+
+**3. Hybrid with Remote Bindings (Advanced)**
+
+To connect specific bindings to deployed resources, add `experimental_remote: true` in `wrangler.toml`:
+
+```toml
+[[r2_buckets]]
+binding = "WEDDING_PHOTOS"
+bucket_name = "wedding-photos-bucket"
+experimental_remote = true  # Connect to actual R2 bucket
+```
+
+Then run:
+```bash
+pnpm wrangler dev --x-remote-bindings
+```
+
+**4. Fully Remote (Legacy)**
+```bash
+pnpm wrangler dev --remote
+```
+- Everything runs on Cloudflare's edge
+- Slower, costs money, but guarantees production parity
+
+### Working with Local Data
+
+**KV Operations:**
+```bash
+# Add key-value pair to local KV
+pnpm wrangler kv key put "session-123" "value" --binding SESSIONS --local
+
+# Get value from local KV
+pnpm wrangler kv key get "session-123" --binding SESSIONS --local
+
+# List keys in local KV
+pnpm wrangler kv key list --binding SESSIONS --local
+```
+
+**D1 Operations:**
+```bash
+# Apply migrations to local database
+pnpm run db:migrate:local
+
+# Execute SQL query on local database
+pnpm wrangler d1 execute wedding-database --local --command="SELECT * FROM rsvps"
+```
+
+**R2 Operations:**
+```bash
+# Upload file to local R2
+pnpm wrangler r2 object put WEDDING_PHOTOS/photo.jpg --file=./photo.jpg --local
+
+# List objects in local R2
+pnpm wrangler r2 object list WEDDING_PHOTOS --local
+```
+
+### Resetting Local Data
+
+To start fresh:
+```bash
+rm -rf .wrangler/state
+pnpm run dev  # Reinitialize
+pnpm run seed:local  # Re-seed
+```
+
+### Environment Variables
+
+Local environment variables are stored in `.dev.vars` (not committed to git):
+```bash
+# .dev.vars
+ADMIN_EMAIL=admin@alfinamugni.wedding
+ADMIN_PASSWORD_HASH=$2b$10$...
+RESEND_API_KEY=re_...
+```
+
+These are automatically loaded by Wrangler during local development.
+
+### Best Practices
+
+1. **Always use `platform.env`** - Never create custom mocks
+2. **Check `platform?.env` exists** before accessing bindings
+3. **Use local mode by default** - Only use remote bindings when necessary
+4. **Commit `.wrangler/` to `.gitignore`** - Never commit local state
+5. **Use `.dev.vars` for secrets** - Keep production secrets secure
+
+### Troubleshooting
+
+**Problem**: `platform.env` is undefined
+- **Solution**: Make sure you're running via `pnpm run dev`, not a custom Node script
+
+**Problem**: Bindings not persisting between sessions
+- **Solution**: Check that `.wrangler/state/` exists and is writable
+
+**Problem**: "Database not found" error
+- **Solution**: Run `pnpm run db:migrate:local` to apply migrations
+
+**Problem**: Need to test with production data
+- **Solution**: Use remote bindings (see Hybrid mode above) or export/import data
+
 ## Configuration Files
 
+- `wrangler.toml`: Cloudflare Workers/Pages configuration with bindings
+- `.dev.vars`: Local environment variables (secrets) - not committed
 - `vite.config.ts`: Vite with Qwik plugins, build optimization
 - `vitest.config.ts`: Vitest with jsdom environment for component tests
 - `tailwind.config.js`: Wedding theme colors, typography (Playfair Display + Inter)
