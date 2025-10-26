@@ -74,11 +74,8 @@ const DatabaseGuestWishSchema = z.object({
 
 const DatabasePhotoUploadSchema = z.object({
   id: z.number().optional(),
-  approved: z.boolean().default(false),
   featured: z.boolean().default(false),
   upload_date: z.string().optional(),
-  approved_at: z.string().optional(),
-  approved_by: z.string().optional(),
   ip_address: z.string().optional(),
 }).passthrough(); // Allow additional fields from PhotoUploadSchema
 
@@ -250,12 +247,9 @@ export interface PhotoUpload {
   uploader_email?: string;
   bucket_path: string;
   r2_key: string;
-  approved: boolean;
   featured: boolean;
   category: 'ceremony' | 'reception' | 'guests' | 'professional';
   description?: string;
-  approved_at?: string;
-  approved_by?: string;
   ip_address?: string;
   user_agent?: string;
   screen_resolution?: string;
@@ -440,10 +434,10 @@ export class WeddingDatabase {
     const stmt = this.db.prepare(`
       INSERT INTO photo_uploads (
         filename, original_name, file_size, content_type, width, height,
-        uploader_name, uploader_email, bucket_path, r2_key, approved, featured,
+        uploader_name, uploader_email, bucket_path, r2_key, featured,
         category, description, ip_address, user_agent, screen_resolution,
         device_orientation, connection_type, country_code, camera_model
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = await stmt.bind(
@@ -457,7 +451,6 @@ export class WeddingDatabase {
       photoData.uploader_email || null,
       photoData.bucket_path,
       photoData.r2_key,
-      photoData.approved,
       photoData.featured,
       photoData.category,
       photoData.description || null,
@@ -483,11 +476,17 @@ export class WeddingDatabase {
   }
 
   async getApprovedPhotos(category?: string): Promise<PhotoUpload[]> {
-    let query = 'SELECT * FROM photo_uploads WHERE approved = true';
+    // Since we removed approval system, this now returns all photos
+    // Keeping method name for backward compatibility
+    return this.getAllPhotos(category);
+  }
+
+  async getAllPhotos(category?: string): Promise<PhotoUpload[]> {
+    let query = 'SELECT * FROM photo_uploads';
     const params: (string | number | boolean | null | ArrayBuffer)[] = [];
 
     if (category) {
-      query += ' AND category = ?';
+      query += ' WHERE category = ?';
       params.push(category);
     }
 
@@ -497,26 +496,7 @@ export class WeddingDatabase {
     return await getTypedResults(stmt.bind(...params), DatabasePhotoUploadSchema);
   }
 
-  async getAllPhotos(): Promise<PhotoUpload[]> {
-    const stmt = this.db.prepare('SELECT * FROM photo_uploads ORDER BY upload_date DESC');
-    return await getTypedResults(stmt, DatabasePhotoUploadSchema);
-  }
-
-  async approvePhoto(id: number, approvedBy?: string): Promise<PhotoUpload> {
-    const stmt = this.db.prepare(`
-      UPDATE photo_uploads
-      SET approved = true, approved_at = datetime('now'), approved_by = ?
-      WHERE id = ?
-    `);
-
-    const result = await stmt.bind(approvedBy || null, id).run();
-
-    if (!result.success) {
-      throw new Error('Failed to approve photo');
-    }
-
-    return this.getPhotoUploadById(id);
-  }
+  // Note: Removed approvePhoto() method as approval system is no longer used
 
   // Analytics Methods
   async logPageView(pageData: {

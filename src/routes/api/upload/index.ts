@@ -93,7 +93,6 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
         uploader_email: uploaderEmail || undefined,
         bucket_path: bucketPath,
         r2_key: r2Key,
-        approved: (platform.env as Env).ENVIRONMENT === 'development', // Auto-approve in dev
         featured: false,
         category: category as 'ceremony' | 'reception' | 'guests' | 'professional',
         description: description || undefined,
@@ -119,7 +118,6 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
           original_name: result.original_name,
           file_size: result.file_size,
           category: result.category,
-          approved: result.approved,
           upload_date: result.upload_date,
           // Generate signed URL for immediate preview
           preview_url: `https://placeholder.example.com/${bucketPath}/${filename}` // TODO: Generate real signed URL

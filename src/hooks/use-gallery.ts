@@ -8,7 +8,6 @@ export interface GalleryItem {
   description: string;
   author: string;
   timestamp: string;
-  status: 'pending' | 'approved' | 'rejected';
   url?: string;
   thumbnail?: string;
   category?: string;
@@ -30,7 +29,6 @@ interface DatabasePhoto {
   original_name?: string;
   uploader_name?: string;
   upload_date?: string;
-  approved?: boolean;
   url?: string;
   thumbnail_url?: string;
   category?: string;
@@ -46,7 +44,6 @@ function transformPhotoToGalleryItem(photo: DatabasePhoto): GalleryItem {
     description: photo.description || '',
     author: photo.uploader_name || 'Anonymous',
     timestamp: photo.upload_date || new Date().toISOString(),
-    status: photo.approved ? 'approved' : 'pending',
     url: photo.url,
     thumbnail: photo.thumbnail_url || photo.url,
     category: photo.category,

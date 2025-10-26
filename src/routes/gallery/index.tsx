@@ -8,7 +8,7 @@ import { getDatabase, type Env } from "../../lib/database";
 export const useGalleryData = routeLoader$(async ({ platform }) => {
   try {
     const db = getDatabase(platform.env as Env);
-    const photos = await db.getApprovedPhotos();
+    const photos = await db.getAllPhotos();
 
     // Transform photos to include URLs
     const photosWithUrls = photos.map((photo) => ({
@@ -19,7 +19,6 @@ export const useGalleryData = routeLoader$(async ({ platform }) => {
       uploader_name: photo.uploader_name,
       upload_date: photo.upload_date,
       category: photo.category,
-      approved: photo.approved,
       featured: photo.featured,
       url: `/api/photos/${photo.id}`,
       thumbnail_url: `/api/photos/${photo.id}`,

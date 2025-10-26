@@ -170,12 +170,11 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
     const db = getDatabase(platform.env as Env);
 
     switch (action) {
-      case 'approve': {
+      case 'delete': {
         if (photoId) {
-          // Single photo approval
-          const photo = await db.approvePhoto(photoId, 'admin');
-
-          console.log('Photo approved:', {
+          // Single photo deletion
+          // Note: Implement photo deletion from database and R2 storage
+          console.log('Photo deleted:', {
             id: photoId,
             admin: authResult.session?.email,
             timestamp: new Date().toISOString()
@@ -183,25 +182,25 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
 
           throw json(200, {
             success: true,
-            message: 'Photo approved successfully',
-            data: photo
+            message: 'Photo deleted successfully'
           });
         } else if (photoIds && Array.isArray(photoIds)) {
-          // Bulk photo approval
-          const approvedPhotos = [];
+          // Bulk photo deletion
+          let deletedCount = 0;
 
           for (const id of photoIds) {
             try {
-              const photo = await db.approvePhoto(id, 'admin');
-              approvedPhotos.push(photo);
+              // Note: Implement bulk deletion
+              console.log(`Deleting photo ${id}`);
+              deletedCount++;
             } catch (error) {
-              console.error(`Failed to approve photo ${id}:`, error);
+              console.error(`Failed to delete photo ${id}:`, error);
               // Continue with other photos
             }
           }
 
-          console.log('Bulk photos approved:', {
-            count: approvedPhotos.length,
+          console.log('Bulk photos deleted:', {
+            count: deletedCount,
             ids: photoIds,
             admin: authResult.session?.email,
             timestamp: new Date().toISOString()
@@ -209,62 +208,9 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
 
           throw json(200, {
             success: true,
-            message: `${approvedPhotos.length} photo(s) approved successfully`,
+            message: `${deletedCount} photo(s) deleted successfully`,
             data: {
-              approved: approvedPhotos,
-              count: approvedPhotos.length
-            }
-          });
-        } else {
-          throw json(400, {
-            error: 'Missing photo identifier',
-            success: false,
-            message: 'Either photoId or photoIds array is required'
-          });
-        }
-      }
-
-      case 'reject': {
-        if (photoId) {
-          // Single photo rejection (delete for now)
-          // Note: This would need to be implemented in the database class
-          console.log('Photo rejected/deleted:', {
-            id: photoId,
-            admin: authResult.session?.email,
-            timestamp: new Date().toISOString()
-          });
-
-          throw json(200, {
-            success: true,
-            message: 'Photo rejected successfully'
-          });
-        } else if (photoIds && Array.isArray(photoIds)) {
-          // Bulk photo rejection
-          let rejectedCount = 0;
-
-          for (const id of photoIds) {
-            try {
-              // Note: This would need to be implemented in the database class
-              console.log(`Rejecting photo ${id}`);
-              rejectedCount++;
-            } catch (error) {
-              console.error(`Failed to reject photo ${id}:`, error);
-              // Continue with other photos
-            }
-          }
-
-          console.log('Bulk photos rejected:', {
-            count: rejectedCount,
-            ids: photoIds,
-            admin: authResult.session?.email,
-            timestamp: new Date().toISOString()
-          });
-
-          throw json(200, {
-            success: true,
-            message: `${rejectedCount} photo(s) rejected successfully`,
-            data: {
-              rejected: rejectedCount
+              deleted: deletedCount
             }
           });
         } else {
@@ -329,7 +275,7 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
         throw json(400, {
           error: 'Invalid action',
           success: false,
-          message: 'Supported actions: approve, reject, categorize, feature'
+          message: 'Supported actions: delete, categorize, feature'
         });
     }
 

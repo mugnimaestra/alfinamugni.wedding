@@ -174,15 +174,7 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
       });
     }
 
-    if (type === 'photo' && action === 'approve') {
-      const photo = await db.approvePhoto(parseInt(id), 'admin');
-      throw json(200, {
-        success: true,
-        message: 'Photo approved successfully',
-        data: photo
-      });
-    }
-
+    // Note: Photo approval removed as approval system is no longer used
     throw json(400, {
       error: 'Invalid action or type combination',
       success: false

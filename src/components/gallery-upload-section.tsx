@@ -292,24 +292,6 @@ export const GalleryUploadSection = component$(() => {
                       </span>
                     </div>
                   )}
-
-                  {/* Status Badge */}
-                  {item.status !== "approved" && (
-                    <div class="absolute right-4 top-4">
-                      <Badge
-                        variant={
-                          item.status === "pending"
-                            ? "secondary"
-                            : "destructive"
-                        }
-                        class="text-xs backdrop-blur"
-                      >
-                        {item.status === "pending"
-                          ? "Pending Approval"
-                          : "Rejected"}
-                      </Badge>
-                    </div>
-                  )}
                 </div>
 
                 <div class="space-y-4 px-6 py-6">

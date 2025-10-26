@@ -48,12 +48,9 @@ CREATE TABLE IF NOT EXISTS photo_uploads (
   uploader_email TEXT,
   bucket_path TEXT NOT NULL,
   r2_key TEXT NOT NULL,
-  approved BOOLEAN DEFAULT FALSE,
   featured BOOLEAN DEFAULT FALSE,
   category TEXT CHECK (category IN ('ceremony', 'reception', 'guests', 'professional')),
   description TEXT,
-  approved_at TEXT,
-  approved_by TEXT,
   ip_address TEXT,
   user_agent TEXT,
   screen_resolution TEXT,
@@ -121,7 +118,6 @@ CREATE INDEX IF NOT EXISTS idx_rsvps_created_at ON rsvps(created_at);
 CREATE INDEX IF NOT EXISTS idx_guest_wishes_approved ON guest_wishes(approved);
 CREATE INDEX IF NOT EXISTS idx_guest_wishes_created_at ON guest_wishes(created_at);
 
-CREATE INDEX IF NOT EXISTS idx_photo_uploads_approved ON photo_uploads(approved);
 CREATE INDEX IF NOT EXISTS idx_photo_uploads_category ON photo_uploads(category);
 CREATE INDEX IF NOT EXISTS idx_photo_uploads_upload_date ON photo_uploads(upload_date);
 CREATE INDEX IF NOT EXISTS idx_photo_uploads_country ON photo_uploads(country_code);
@@ -142,7 +138,6 @@ INSERT OR IGNORE INTO wedding_settings (setting_key, setting_value, description)
 ('reception_time', '18:00', 'Reception start time'),
 ('venue_name', 'Jakarta Wedding Venue', 'Wedding venue name'),
 ('venue_address', 'Jakarta, Indonesia', 'Wedding venue address'),
-('auto_approve_photos', 'false', 'Automatically approve uploaded photos'),
 ('auto_approve_wishes', 'false', 'Automatically approve guest wishes'),
 ('email_notifications_enabled', 'true', 'Enable email notifications'),
 ('guest_photo_uploads_enabled', 'true', 'Allow guests to upload photos'),

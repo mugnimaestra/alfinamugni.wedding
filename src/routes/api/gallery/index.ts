@@ -10,18 +10,8 @@ export const onGet: RequestHandler = async ({ request, json, platform }) => {
 
     const db = getDatabase(platform.env as Env);
 
-    // For now, simple admin check - will be replaced with proper auth in Phase 2
-    const isAdmin = includeAll && (platform.env as Env).ENVIRONMENT === 'development';
-
-    let photos: PhotoUpload[];
-
-    if (isAdmin) {
-      // Admin can see all photos
-      photos = await db.getAllPhotos();
-    } else {
-      // Public can only see approved photos
-      photos = await db.getApprovedPhotos(category || undefined);
-    }
+    // All photos are now immediately visible (no approval system)
+    const photos = await db.getAllPhotos(category || undefined);
 
     // Generate R2 URLs for photos
     const photosWithUrls = await Promise.all(photos.map(async (photo) => {
@@ -50,7 +40,6 @@ export const onGet: RequestHandler = async ({ request, json, platform }) => {
             category: photo.category,
             description: photo.description,
             featured: photo.featured,
-            approved: photo.approved,
             upload_date: photo.upload_date,
             uploader_name: photo.uploader_name,
             url: url,
@@ -72,7 +61,6 @@ export const onGet: RequestHandler = async ({ request, json, platform }) => {
         category: photo.category,
         description: photo.description,
         featured: photo.featured,
-        approved: photo.approved,
         upload_date: photo.upload_date,
         uploader_name: photo.uploader_name,
         url: `https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80`,
@@ -101,58 +89,4 @@ export const onGet: RequestHandler = async ({ request, json, platform }) => {
   }
 };
 
-// Get photo by ID with signed URL
-export const onPatch: RequestHandler = async ({ request, json, platform }) => {
-  try {
-    const { id, action } = await request.json();
-
-    if (!id || !action) {
-      throw json(400, {
-        error: 'Missing required fields: id, action',
-        success: false
-      });
-    }
-
-    const db = getDatabase(platform.env as Env);
-
-    if (action === 'approve') {
-      // TODO: Add admin authentication check in Phase 2
-      const photo = await db.approvePhoto(parseInt(id), 'admin'); // Placeholder admin user
-
-      throw json(200, {
-        success: true,
-        message: 'Photo approved successfully',
-        data: {
-          id: photo.id,
-          approved: photo.approved,
-          approved_at: photo.approved_at
-        }
-      });
-    }
-
-    if (action === 'feature') {
-      // TODO: Implement feature/unfeature functionality
-      throw json(501, {
-        error: 'Feature functionality not yet implemented',
-        success: false
-      });
-    }
-
-    throw json(400, {
-      error: 'Invalid action. Supported actions: approve, feature',
-      success: false
-    });
-
-  } catch (error) {
-    console.error('Photo action error:', error);
-
-    if (error instanceof Response) {
-      throw error;
-    }
-
-    throw json(500, {
-      error: 'Internal server error',
-      success: false
-    });
-  }
-};
+// Note: Removed photo approval endpoint as approval system is no longer used
