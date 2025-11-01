@@ -12,15 +12,14 @@ export default extendConfig(baseConfig, () => {
     },
     plugins: [
       cloudflarePagesAdapter({
-        // Enable Static Site Generation for main public pages only
-        // Gallery, admin, and auth pages are dynamic (SSR) because they need:
-        // - User authentication (admin/auth)
-        // - Dynamic photo loading (gallery)
-        // - Database access
-        ssg: {
-          include: ['/'],  // Only pre-generate the homepage (has all main content)
-          origin: 'https://alfinamugni.wedding', // Your production domain
-        },
+        // SSG temporarily disabled for invitation cover feature
+        // The invitation cover uses client-side audio and animations
+        // All pages will use SSR instead
+        // TODO: Re-enable SSG after fixing serialization issues
+        // ssg: {
+        //   include: ['/'],
+        //   origin: 'https://alfinamugni.wedding',
+        // },
       }),
     ],
   };

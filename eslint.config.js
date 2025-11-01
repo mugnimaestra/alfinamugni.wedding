@@ -73,6 +73,30 @@ export default tseslint.config(
       "qwik/valid-lexical-scope": "off",
     },
   },
+  // Prevent lucide-react imports in Qwik components (use @qwikest/icons instead)
+  {
+    files: ["src/**/*.tsx", "src/**/*.ts"],
+    ignores: ["pinterest-ui/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "lucide-react",
+              message:
+                "❌ Do not import from 'lucide-react' in Qwik components.\n" +
+                "Use '@qwikest/icons/lucide' instead with Lu prefix:\n" +
+                "  ✅ import { LuUpload, LuX, LuImage } from '@qwikest/icons/lucide'\n" +
+                "  ❌ import { Upload, X, Image } from 'lucide-react'\n\n" +
+                "Why: lucide-react provides React components which cause runtime errors in Qwik.\n" +
+                "Error: 'JSX element Type must be either a string or a function, got object'",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // Temporary fix for command.tsx file
   {
     files: ["src/components/ui/command.tsx"],

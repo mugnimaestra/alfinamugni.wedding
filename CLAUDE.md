@@ -223,8 +223,84 @@ Typography uses Playfair Display (serif) for headings and Inter (sans-serif) for
 5. **Performance**: Leverage Qwik's automatic optimizations and lazy loading
 6. **Testing**: Write tests for new components using Vitest and @testing-library/react
 7. **Forms**: Use @modular-forms/qwik for form validation and management
-8. **Icons**: Use @qwikest/icons for consistent iconography
+8. **Icons**: Use @qwikest/icons for consistent iconography (see Icon Library section below)
 9. **Animations**: Use motion library for smooth animations and transitions
+
+## Icon Library Usage (IMPORTANT!)
+
+**⚠️ Common Mistake to Avoid**: Do NOT import icons from `lucide-react` in Qwik components!
+
+### The Problem
+
+Importing from `lucide-react` in Qwik components causes runtime errors:
+
+```tsx
+// ❌ WRONG - Causes runtime error!
+import { Upload, X, Image } from "lucide-react";
+
+// Error: "The <Type> of the JSX element must be either a string or a function.
+//         Instead, it's a 'object': [object Object]."
+```
+
+**Why?** `lucide-react` exports React components (objects with React-specific properties like `$$typeof`), which Qwik cannot render.
+
+### The Solution
+
+Always use `@qwikest/icons/lucide` for icon imports in Qwik components:
+
+```tsx
+// ✅ CORRECT - Works perfectly in Qwik!
+import { LuUpload, LuX, LuImage } from "@qwikest/icons/lucide";
+
+// Usage in JSX
+<LuUpload class="w-5 h-5" />
+<LuX class="w-4 h-4" />
+<LuImage class="w-6 h-6" />
+```
+
+### Icon Naming Convention
+
+All icons from `@qwikest/icons/lucide` have the **`Lu` prefix**:
+
+| React Name (lucide-react) | Qwik Name (@qwikest/icons) |
+|---------------------------|----------------------------|
+| `Upload`                  | `LuUpload`                 |
+| `X`                       | `LuX`                      |
+| `Image`                   | `LuImage`                  |
+| `Video`                   | `LuVideo`                  |
+| `Check`                   | `LuCheck`                  |
+| `ChevronDown`             | `LuChevronDown`            |
+| `Search`                  | `LuSearch`                 |
+| `Trash2`                  | `LuTrash2`                 |
+
+### ESLint Protection
+
+The project has ESLint configured to prevent `lucide-react` imports:
+
+```bash
+pnpm run lint  # Will catch lucide-react imports and show helpful error message
+```
+
+### Testing
+
+Two tests ensure icon hygiene:
+
+1. **Static Analysis Test** (`tests/integration/icon-imports.test.ts`):
+   - Scans all files in `src/components/` and `src/routes/`
+   - Fails if any file imports from `lucide-react`
+   - Run: `pnpm test:run tests/integration/icon-imports.test.ts`
+
+2. **Component Render Test** (`tests/integration/gallery-components.test.tsx`):
+   - Verifies gallery components render without JSX type errors
+   - Ensures icons are Qwik-compatible
+
+### When is `lucide-react` OK?
+
+`lucide-react` is only acceptable in:
+- React-specific directories (e.g., `pinterest-ui/`)
+- Non-Qwik configuration files
+
+For all Qwik components in `src/`, always use `@qwikest/icons/lucide`.
 
 ## Configuration Files
 
