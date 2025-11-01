@@ -1,20 +1,21 @@
-import { component$, useSignal } from "@builder.io/qwik";
+import { component$, useSignal, $ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { Button } from "../../../components/ui/button";
 import { Card } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { Input } from "../../../components/ui/input";
-import { Trash2, Search } from "lucide-react";
+import { LuTrash2, LuSearch } from "@qwikest/icons/lucide";
 import { useGallery } from "../../../hooks/use-gallery";
+import { toast } from "sonner";
 
 export default component$(() => {
   const searchQuery = useSignal("");
   const selectedItems = useSignal<Set<string>>(new Set());
 
-  const { items: mediaItems, getStatistics, searchItems } = useGallery();
+  const { items: mediaItems, statistics, searchItems, refreshGallery } = useGallery();
   const filteredItems = useSignal(mediaItems.value);
 
-  const filterItems = () => {
+  const filterItems = $(() => {
     let filtered = mediaItems.value;
 
     // Apply search filter
@@ -23,7 +24,7 @@ export default component$(() => {
     }
 
     filteredItems.value = filtered;
-  };
+  });
 
   const toggleSelection = (id: string) => {
     const newSelection = new Set(selectedItems.value);
@@ -37,8 +38,29 @@ export default component$(() => {
 
   const handleDelete = $(async (id: string) => {
     if (confirm("Are you sure you want to delete this photo?")) {
-      // TODO: Implement delete functionality
-      console.log("Deleting photo:", id);
+      try {
+        const response = await fetch(`/api/photos/${id}`, {
+          method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          toast.success('Photo deleted successfully');
+          await refreshGallery();
+          // Clear selection if deleted item was selected
+          if (selectedItems.value.has(id)) {
+            const newSelection = new Set(selectedItems.value);
+            newSelection.delete(id);
+            selectedItems.value = newSelection;
+          }
+        } else {
+          toast.error(`Delete failed: ${result.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Delete error:', error);
+        toast.error('Failed to delete photo. Please try again.');
+      }
     }
   });
 
@@ -49,13 +71,28 @@ export default component$(() => {
         `Are you sure you want to delete ${selectedItems.value.size} photo(s)?`
       )
     ) {
-      // TODO: Implement bulk delete functionality
-      console.log("Deleting photos:", Array.from(selectedItems.value));
-      selectedItems.value = new Set();
+      try {
+        const deletePromises = Array.from(selectedItems.value).map(id =>
+          fetch(`/api/photos/${id}`, { method: 'DELETE' }).then(r => r.json())
+        );
+
+        const results = await Promise.all(deletePromises);
+        const failures = results.filter(r => !r.success);
+
+        if (failures.length > 0) {
+          toast.error(`${failures.length} photo(s) failed to delete`);
+        } else {
+          toast.success(`${results.length} photo(s) deleted successfully`);
+        }
+
+        await refreshGallery();
+        selectedItems.value = new Set();
+      } catch (error) {
+        console.error('Bulk delete error:', error);
+        toast.error('Failed to delete photos. Please try again.');
+      }
     }
   });
-
-  const counts = getStatistics();
 
   return (
     <div class="space-y-6">
@@ -69,7 +106,7 @@ export default component$(() => {
         </div>
         <div class="flex items-center gap-4">
           <Badge variant="outline" class="text-sm">
-            Total: {counts.total}
+            Total: {statistics.value.total}
           </Badge>
           {selectedItems.value.size > 0 && (
             <Button
@@ -77,7 +114,7 @@ export default component$(() => {
               variant="destructive"
               class="text-white"
             >
-              <Trash2 class="w-4 h-4 mr-2" />
+              <LuTrash2 class="w-4 h-4 mr-2" />
               Delete Selected ({selectedItems.value.size})
             </Button>
           )}
@@ -89,7 +126,7 @@ export default component$(() => {
         <div class="flex flex-col md:flex-row gap-4">
           <div class="flex-1">
             <div class="relative">
-              <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <LuSearch class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 type="text"
                 placeholder="Search by title, author, or description..."
@@ -157,7 +194,7 @@ export default component$(() => {
                   onClick$={() => handleDelete(item.id)}
                   class="w-full bg-red-600 hover:bg-red-700 text-white"
                 >
-                  <Trash2 class="w-3 h-3 mr-1" />
+                  <LuTrash2 class="w-3 h-3 mr-1" />
                   Delete
                 </Button>
               </div>
@@ -171,7 +208,7 @@ export default component$(() => {
         <Card class="p-12">
           <div class="text-center">
             <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search class="w-8 h-8 text-gray-400" />
+              <LuSearch class="w-8 h-8 text-gray-400" />
             </div>
             <h3 class="text-lg font-medium text-gray-900 mb-2">
               No media found

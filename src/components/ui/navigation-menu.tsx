@@ -10,7 +10,7 @@ import {
 } from "@builder.io/qwik";
 import { cva } from "class-variance-authority";
 import { cn } from "~/lib/utils";
-import { ChevronDown } from "lucide-react";
+import { LuChevronDown } from "@qwikest/icons/lucide";
 
 // Navigation Menu Context Store
 interface NavigationMenuStore {
@@ -202,7 +202,7 @@ export const NavigationMenuTrigger = component$<NavigationMenuTriggerProps>(
         {...props}
       >
         <Slot />
-        <ChevronDown class="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180" />
+        <LuChevronDown class="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180" />
       </button>
     );
   }
@@ -383,7 +383,7 @@ export const NavigationMenuSubTrigger =
           {...props}
         >
           <Slot />
-          <ChevronDown class="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180" />
+          <LuChevronDown class="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180" />
         </button>
       );
     }

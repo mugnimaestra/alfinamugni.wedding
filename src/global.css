@@ -188,6 +188,77 @@ body {
   }
 }
 
+@keyframes musicBar {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/* Invitation Cover Styles */
+.invitation-cover {
+  /* Prevent scrolling when cover is visible */
+  overflow: hidden;
+}
+
+.invitation-cover::before {
+  /* Ensure smooth transitions */
+  content: "";
+  transition: opacity 0.6s ease;
+}
+
+/* Audio Player Mobile Responsiveness */
+@media (max-width: 640px) {
+  .audio-player-floating {
+    bottom: 1rem !important;
+    right: 1rem !important;
+  }
+
+  .audio-control-button {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .audio-mute-button {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .now-playing-text {
+    font-size: 0.7rem !important;
+    padding: 0.3rem 0.6rem !important;
+    max-width: 160px !important;
+  }
+
+  .music-bars {
+    height: 16px !important;
+  }
+}
+
+/* Invitation Cover Mobile Responsiveness */
+@media (max-width: 640px) {
+  .cover-guest-name {
+    font-size: 1.25rem !important;
+  }
+
+  .cover-couple-names {
+    font-size: 2rem !important;
+  }
+
+  .cover-monogram svg {
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  .open-invitation-button {
+    padding: 0.875rem 2rem !important;
+    font-size: 0.95rem !important;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .wedding-section {

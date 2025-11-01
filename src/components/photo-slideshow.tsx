@@ -8,22 +8,22 @@ import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Slider } from './ui/slider';
-import { 
-  Play, 
-  Pause, 
-  SkipBack, 
-  SkipForward,
-  Volume2,
-  VolumeX,
-  Maximize2,
-  Minimize2,
-  Settings,
-  Shuffle,
-  Repeat,
-  Share2,
-  Download,
-  Image as ImageIcon
-} from 'lucide-react';
+import {
+  LuPlay,
+  LuPause,
+  LuSkipBack,
+  LuSkipForward,
+  LuVolume2,
+  LuVolumeX,
+  LuMaximize2,
+  LuMinimize2,
+  LuSettings,
+  LuShuffle,
+  LuRepeat,
+  LuShare2,
+  LuDownload,
+  LuImage as LuImageIcon
+} from '@qwikest/icons/lucide';
 
 interface Slide {
   id: string;
@@ -515,10 +515,10 @@ export const PhotoSlideshow = component$<PhotoSlideshowProps>((props) => {
                   onClick$={shareCurrentSlide}
                   class="text-white hover:bg-white/20"
                 >
-                  <Share2 class="w-4 h-4" />
+                  <LuShare2 class="w-4 h-4" />
                 </Button>
               )}
-              
+
               {allowDownload && (
                 <Button
                   variant="ghost"
@@ -526,10 +526,10 @@ export const PhotoSlideshow = component$<PhotoSlideshowProps>((props) => {
                   onClick$={downloadCurrentSlide}
                   class="text-white hover:bg-white/20"
                 >
-                  <Download class="w-4 h-4" />
+                  <LuDownload class="w-4 h-4" />
                 </Button>
               )}
-              
+
               {showSettings && (
                 <Button
                   variant="ghost"
@@ -537,10 +537,10 @@ export const PhotoSlideshow = component$<PhotoSlideshowProps>((props) => {
                   onClick$={() => showSettingsPanel.value = !showSettingsPanel.value}
                   class="text-white hover:bg-white/20"
                 >
-                  <Settings class="w-4 h-4" />
+                  <LuSettings class="w-4 h-4" />
                 </Button>
               )}
-              
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -548,9 +548,9 @@ export const PhotoSlideshow = component$<PhotoSlideshowProps>((props) => {
                 class="text-white hover:bg-white/20"
               >
                 {isFullscreen.value ? (
-                  <Minimize2 class="w-4 h-4" />
+                  <LuMinimize2 class="w-4 h-4" />
                 ) : (
-                  <Maximize2 class="w-4 h-4" />
+                  <LuMaximize2 class="w-4 h-4" />
                 )}
               </Button>
             </div>
@@ -569,7 +569,7 @@ export const PhotoSlideshow = component$<PhotoSlideshowProps>((props) => {
               onClick$={previousSlide}
               class="text-white hover:bg-white/20"
             >
-              <SkipBack class="w-4 h-4" />
+              <LuSkipBack class="w-4 h-4" />
             </Button>
 
             {/* Play/Pause Button */}
@@ -580,9 +580,9 @@ export const PhotoSlideshow = component$<PhotoSlideshowProps>((props) => {
               class="text-white hover:bg-white/20"
             >
               {isPlaying.value ? (
-                <Pause class="w-4 h-4" />
+                <LuPause class="w-4 h-4" />
               ) : (
-                <Play class="w-4 h-4" />
+                <LuPlay class="w-4 h-4" />
               )}
             </Button>
 
@@ -593,7 +593,7 @@ export const PhotoSlideshow = component$<PhotoSlideshowProps>((props) => {
               onClick$={nextSlide}
               class="text-white hover:bg-white/20"
             >
-              <SkipForward class="w-4 h-4" />
+              <LuSkipForward class="w-4 h-4" />
             </Button>
 
             {/* Progress Bar */}
@@ -618,9 +618,9 @@ export const PhotoSlideshow = component$<PhotoSlideshowProps>((props) => {
               class="text-white hover:bg-white/20"
             >
               {isMuted.value ? (
-                <VolumeX class="w-4 h-4" />
+                <LuVolumeX class="w-4 h-4" />
               ) : (
-                <Volume2 class="w-4 h-4" />
+                <LuVolume2 class="w-4 h-4" />
               )}
             </Button>
 
@@ -628,12 +628,12 @@ export const PhotoSlideshow = component$<PhotoSlideshowProps>((props) => {
             <div class="flex items-center gap-1">
               {settings.loop && (
                 <Badge variant="secondary" class="text-xs">
-                  <Repeat class="w-3 h-3" />
+                  <LuRepeat class="w-3 h-3" />
                 </Badge>
               )}
               {settings.shuffle && (
                 <Badge variant="secondary" class="text-xs">
-                  <Shuffle class="w-3 h-3" />
+                  <LuShuffle class="w-3 h-3" />
                 </Badge>
               )}
             </div>
@@ -757,7 +757,7 @@ export const PhotoSlideshow = component$<PhotoSlideshowProps>((props) => {
       {slides.length === 0 && (
         <div class="absolute inset-0 flex items-center justify-center">
           <div class="text-center text-white">
-            <ImageIcon class="w-16 h-16 mx-auto mb-4 opacity-50" />
+            <LuImageIcon class="w-16 h-16 mx-auto mb-4 opacity-50" />
             <h3 class="text-xl font-semibold mb-2">No slides available</h3>
             <p class="opacity-80">Add photos to start the slideshow</p>
           </div>

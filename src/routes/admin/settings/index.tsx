@@ -5,20 +5,20 @@ import { Card } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import {
-  Settings,
-  Save,
-  RefreshCw,
-  Database,
-  Mail,
-  Shield,
-  Globe,
-  Image,
-  Calendar,
-  Key,
-  AlertTriangle,
-  CheckCircle,
-  XCircle
-} from 'lucide-react';
+  LuSettings,
+  LuSave,
+  LuRefreshCw,
+  LuDatabase,
+  LuMail,
+  LuShield,
+  LuGlobe,
+  LuImage,
+  LuCalendar,
+  LuKey,
+  LuAlertTriangle,
+  LuCheckCircle,
+  LuXCircle
+} from '@qwikest/icons/lucide';
 import { getDatabase, type Env } from '../../../lib/database';
 
 // Server-side data loader for settings
@@ -150,11 +150,11 @@ export default component$(() => {
   };
 
   const tabs = [
-    { id: 'general', label: 'General', icon: Globe },
-    { id: 'wedding', label: 'Wedding Details', icon: Calendar },
-    { id: 'features', label: 'Features', icon: Settings },
-    { id: 'security', label: 'Security', icon: Shield },
-    { id: 'system', label: 'System', icon: Database },
+    { id: 'general', label: 'General', icon: LuGlobe },
+    { id: 'wedding', label: 'Wedding Details', icon: LuCalendar },
+    { id: 'features', label: 'Features', icon: LuSettings },
+    { id: 'security', label: 'Security', icon: LuShield },
+    { id: 'system', label: 'System', icon: LuDatabase },
   ];
 
   const Tab = component$(({
@@ -202,12 +202,12 @@ export default component$(() => {
           >
             {saving.value ? (
               <>
-                <RefreshCw class="w-4 h-4 mr-2 animate-spin" />
+                <LuRefreshCw class="w-4 h-4 mr-2 animate-spin" />
                 Saving...
               </>
             ) : (
               <>
-                <Save class="w-4 h-4 mr-2" />
+                <LuSave class="w-4 h-4 mr-2" />
                 Save Changes
               </>
             )}
@@ -219,7 +219,7 @@ export default component$(() => {
       {hasChanges.value && (
         <Card class="p-4 bg-yellow-50 border-yellow-200">
           <div class="flex items-center space-x-2 text-yellow-800">
-            <AlertTriangle class="w-5 h-5" />
+            <LuAlertTriangle class="w-5 h-5" />
             <span class="font-medium">You have unsaved changes</span>
           </div>
         </Card>
@@ -249,7 +249,7 @@ export default component$(() => {
           {activeTab.value === 'general' && (
             <Card class="p-6">
               <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                <Globe class="w-5 h-5 mr-2" />
+                <LuGlobe class="w-5 h-5 mr-2" />
                 General Settings
               </h3>
               <div class="space-y-6">
@@ -297,7 +297,7 @@ export default component$(() => {
           {activeTab.value === 'wedding' && (
             <Card class="p-6">
               <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                <Calendar class="w-5 h-5 mr-2" />
+                <LuCalendar class="w-5 h-5 mr-2" />
                 Wedding Details
               </h3>
               <div class="space-y-6">
@@ -355,13 +355,13 @@ export default component$(() => {
           {activeTab.value === 'features' && (
             <Card class="p-6">
               <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                <Settings class="w-5 h-5 mr-2" />
+                <LuSettings class="w-5 h-5 mr-2" />
                 Feature Settings
               </h3>
               <div class="space-y-6">
                 <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                   <div class="flex items-center space-x-3">
-                    <Image class="w-5 h-5 text-gray-600" />
+                    <LuImage class="w-5 h-5 text-gray-600" />
                     <div>
                       <h4 class="text-sm font-medium text-gray-900">Photo Uploads</h4>
                       <p class="text-sm text-gray-500">Allow guests to upload photos</p>
@@ -380,7 +380,7 @@ export default component$(() => {
 
                 <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                   <div class="flex items-center space-x-3">
-                    <CheckCircle class="w-5 h-5 text-gray-600" />
+                    <LuCheckCircle class="w-5 h-5 text-gray-600" />
                     <div>
                       <h4 class="text-sm font-medium text-gray-900">Auto-Approve Wishes</h4>
                       <p class="text-sm text-gray-500">Automatically approve guest wishes</p>
@@ -404,13 +404,13 @@ export default component$(() => {
           {activeTab.value === 'security' && (
             <Card class="p-6">
               <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                <Shield class="w-5 h-5 mr-2" />
+                <LuShield class="w-5 h-5 mr-2" />
                 Security Settings
               </h3>
               <div class="space-y-6">
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <div class="flex items-center space-x-2 text-yellow-800 mb-2">
-                    <AlertTriangle class="w-5 h-5" />
+                    <LuAlertTriangle class="w-5 h-5" />
                     <span class="font-medium">Security Notice</span>
                   </div>
                   <p class="text-sm text-yellow-700">
@@ -422,24 +422,24 @@ export default component$(() => {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div class="p-4 border border-gray-200 rounded-lg">
                     <div class="flex items-center space-x-3 mb-2">
-                      <Key class="w-5 h-5 text-green-600" />
+                      <LuKey class="w-5 h-5 text-green-600" />
                       <span class="font-medium text-gray-900">Authentication</span>
                     </div>
                     <p class="text-sm text-gray-600">Secure admin authentication enabled</p>
                     <div class="flex items-center mt-2">
-                      <CheckCircle class="w-4 h-4 text-green-600 mr-2" />
+                      <LuCheckCircle class="w-4 h-4 text-green-600 mr-2" />
                       <span class="text-sm text-green-600">Active</span>
                     </div>
                   </div>
 
                   <div class="p-4 border border-gray-200 rounded-lg">
                     <div class="flex items-center space-x-3 mb-2">
-                      <Shield class="w-5 h-5 text-green-600" />
+                      <LuShield class="w-5 h-5 text-green-600" />
                       <span class="font-medium text-gray-900">Rate Limiting</span>
                     </div>
                     <p class="text-sm text-gray-600">RSVP and API rate limiting active</p>
                     <div class="flex items-center mt-2">
-                      <CheckCircle class="w-4 h-4 text-green-600 mr-2" />
+                      <LuCheckCircle class="w-4 h-4 text-green-600 mr-2" />
                       <span class="text-sm text-green-600">Active</span>
                     </div>
                   </div>
@@ -452,13 +452,13 @@ export default component$(() => {
           {activeTab.value === 'system' && (
             <Card class="p-6">
               <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                <Database class="w-5 h-5 mr-2" />
+                <LuDatabase class="w-5 h-5 mr-2" />
                 System Settings
               </h3>
               <div class="space-y-6">
                 <div class="flex items-center justify-between p-4 border border-red-200 rounded-lg bg-red-50">
                   <div class="flex items-center space-x-3">
-                    <XCircle class="w-5 h-5 text-red-600" />
+                    <LuXCircle class="w-5 h-5 text-red-600" />
                     <div>
                       <h4 class="text-sm font-medium text-red-900">Maintenance Mode</h4>
                       <p class="text-sm text-red-700">Temporarily disable public access</p>
@@ -478,24 +478,24 @@ export default component$(() => {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div class="p-4 border border-gray-200 rounded-lg">
                     <div class="flex items-center space-x-3 mb-2">
-                      <Database class="w-5 h-5 text-green-600" />
+                      <LuDatabase class="w-5 h-5 text-green-600" />
                       <span class="font-medium text-gray-900">Database</span>
                     </div>
                     <p class="text-sm text-gray-600">Cloudflare D1 connected</p>
                     <div class="flex items-center mt-2">
-                      <CheckCircle class="w-4 h-4 text-green-600 mr-2" />
+                      <LuCheckCircle class="w-4 h-4 text-green-600 mr-2" />
                       <span class="text-sm text-green-600">Healthy</span>
                     </div>
                   </div>
 
                   <div class="p-4 border border-gray-200 rounded-lg">
                     <div class="flex items-center space-x-3 mb-2">
-                      <Mail class="w-5 h-5 text-green-600" />
+                      <LuMail class="w-5 h-5 text-green-600" />
                       <span class="font-medium text-gray-900">Email Service</span>
                     </div>
                     <p class="text-sm text-gray-600">Resend API configured</p>
                     <div class="flex items-center mt-2">
-                      <CheckCircle class="w-4 h-4 text-green-600 mr-2" />
+                      <LuCheckCircle class="w-4 h-4 text-green-600 mr-2" />
                       <span class="text-sm text-green-600">Operational</span>
                     </div>
                   </div>
@@ -503,7 +503,7 @@ export default component$(() => {
 
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div class="flex items-center space-x-2 text-blue-800 mb-2">
-                    <Database class="w-5 h-5" />
+                    <LuDatabase class="w-5 h-5" />
                     <span class="font-medium">System Information</span>
                   </div>
                   <div class="text-sm text-blue-700 space-y-1">

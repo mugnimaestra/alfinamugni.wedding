@@ -167,10 +167,10 @@ export const onPost: RequestHandler = async ({ request, json, platform }) => {
       });
     }
 
-    const db = getDatabase(platform.env as Env);
-
     switch (action) {
       case 'delete': {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const db = getDatabase(platform.env as Env);
         if (photoId) {
           // Single photo deletion
           // Note: Implement photo deletion from database and R2 storage

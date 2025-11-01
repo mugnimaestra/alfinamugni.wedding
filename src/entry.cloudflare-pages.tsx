@@ -21,8 +21,6 @@ declare global {
     WEDDING_ASSETS: R2Bucket;
     RESEND_API_KEY: string;
     ENVIRONMENT: string;
-    WEDDING_DATE: string;
-    TIMEZONE: string;
   }
 }
 

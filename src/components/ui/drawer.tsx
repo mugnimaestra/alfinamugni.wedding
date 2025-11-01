@@ -10,7 +10,7 @@ import {
 } from "@builder.io/qwik";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "~/lib/utils";
-import { X } from "lucide-react";
+import { LuX } from "@qwikest/icons/lucide";
 
 // Drawer Context Store
 interface DrawerStore {
@@ -212,7 +212,7 @@ export const DrawerContent = component$<DrawerContentProps>(
           {...props}
         >
           <DrawerClose class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
-            <X class="h-4 w-4" />
+            <LuX class="h-4 w-4" />
             <span class="sr-only">Close</span>
           </DrawerClose>
           <Slot />

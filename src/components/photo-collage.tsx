@@ -9,15 +9,15 @@ import { Card } from './ui/card';
 import { Slider } from './ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import {
-  Grid3X3,
-  Layout,
-  Image as ImageIcon,
-  Download,
-  Save,
-  RotateCw,
-  Plus,
-  X
-} from 'lucide-react';
+  LuGrid3x3,
+  LuLayout,
+  LuImage as LuImageIcon,
+  LuDownload,
+  LuSave,
+  LuRotateCw,
+  LuPlus,
+  LuX
+} from '@qwikest/icons/lucide';
 
 interface CollageImage {
   id: string;
@@ -452,7 +452,7 @@ export const PhotoCollage = component$<PhotoCollageProps>((props) => {
         <div class="border-b bg-gray-50 p-4">
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold flex items-center gap-2">
-              <Grid3X3 class="w-5 h-5" />
+              <LuGrid3x3 class="w-5 h-5" />
               Photo Collage Creator
             </h3>
             <div class="flex items-center gap-2">
@@ -462,7 +462,7 @@ export const PhotoCollage = component$<PhotoCollageProps>((props) => {
                 onClick$={shuffleImages}
                 disabled={collageImages.value.length === 0}
               >
-                <RotateCw class="w-4 h-4 mr-1" />
+                <LuRotateCw class="w-4 h-4 mr-1" />
                 Shuffle
               </Button>
               <Button
@@ -471,7 +471,7 @@ export const PhotoCollage = component$<PhotoCollageProps>((props) => {
                 onClick$={autoArrange}
                 disabled={collageImages.value.length === 0}
               >
-                <Layout class="w-4 h-4 mr-1" />
+                <LuLayout class="w-4 h-4 mr-1" />
                 Auto Arrange
               </Button>
               <Button
@@ -480,7 +480,7 @@ export const PhotoCollage = component$<PhotoCollageProps>((props) => {
                 onClick$={downloadCollage}
                 disabled={collageImages.value.length === 0}
               >
-                <Download class="w-4 h-4 mr-1" />
+                <LuDownload class="w-4 h-4 mr-1" />
                 Download
               </Button>
               <Button
@@ -490,7 +490,7 @@ export const PhotoCollage = component$<PhotoCollageProps>((props) => {
               >
                 {isProcessing.value ? 'Processing...' : (
                   <>
-                    <Save class="w-4 h-4 mr-1" />
+                    <LuSave class="w-4 h-4 mr-1" />
                     Save Collage
                   </>
                 )}
@@ -512,7 +512,7 @@ export const PhotoCollage = component$<PhotoCollageProps>((props) => {
               {collageImages.value.length === 0 && (
                 <div class="absolute inset-0 flex items-center justify-center">
                   <div class="text-center">
-                    <ImageIcon class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <LuImageIcon class="w-16 h-16 text-gray-400 mx-auto mb-4" />
                     <h4 class="text-lg font-medium text-gray-600 mb-2">No photos yet</h4>
                     <p class="text-gray-500">Add photos to create your collage</p>
                   </div>
@@ -553,7 +553,7 @@ export const PhotoCollage = component$<PhotoCollageProps>((props) => {
                   <h4 class="font-medium">Photos ({collageImages.value.length}/{maxImages})</h4>
                   {collageImages.value.length < maxImages && (
                     <Button size="sm" variant="outline">
-                      <Plus class="w-4 h-4 mr-1" />
+                      <LuPlus class="w-4 h-4 mr-1" />
                       Add Photo
                     </Button>
                   )}
@@ -591,7 +591,7 @@ export const PhotoCollage = component$<PhotoCollageProps>((props) => {
                         }}
                         class="text-red-500 hover:text-red-700"
                       >
-                        <X class="w-4 h-4" />
+                        <LuX class="w-4 h-4" />
                       </Button>
                     </div>
                   ))}

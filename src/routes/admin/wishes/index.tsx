@@ -6,18 +6,18 @@ import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import {
-  Heart,
-  Search,
-  Filter,
-  Check,
-  X,
-  Clock,
-  MessageSquare,
-  Mail,
-  Flag,
-  Trash2,
-  Download
-} from 'lucide-react';
+  LuHeart,
+  LuSearch,
+  LuFilter,
+  LuCheck,
+  LuX,
+  LuClock,
+  LuMessageSquare,
+  LuMail,
+  LuFlag,
+  LuTrash2,
+  LuDownload
+} from '@qwikest/icons/lucide';
 import { getDatabase, type Env } from '../../../lib/database';
 
 // Server-side data loader for wishes data
@@ -232,7 +232,7 @@ export default component$(() => {
             variant="outline"
             class="flex items-center space-x-2"
           >
-            <Download class="w-4 h-4" />
+            <LuDownload class="w-4 h-4" />
             <span>Export Approved</span>
           </Button>
           {selectedWishes.value.size > 0 && (
@@ -242,7 +242,7 @@ export default component$(() => {
                 class="bg-green-600 hover:bg-green-700 text-white"
                 size="sm"
               >
-                <Check class="w-4 h-4 mr-2" />
+                <LuCheck class="w-4 h-4 mr-2" />
                 Approve ({selectedWishes.value.size})
               </Button>
               <Button
@@ -250,7 +250,7 @@ export default component$(() => {
                 variant="destructive"
                 size="sm"
               >
-                <X class="w-4 h-4 mr-2" />
+                <LuX class="w-4 h-4 mr-2" />
                 Delete ({selectedWishes.value.size})
               </Button>
             </>
@@ -266,7 +266,7 @@ export default component$(() => {
               <p class="text-sm font-medium text-gray-600">Total Wishes</p>
               <p class="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
-            <Heart class="w-8 h-8 text-pink-500" />
+            <LuHeart class="w-8 h-8 text-pink-500" />
           </div>
         </Card>
 
@@ -276,7 +276,7 @@ export default component$(() => {
               <p class="text-sm font-medium text-gray-600">Approved</p>
               <p class="text-2xl font-bold text-green-600">{stats.approved}</p>
             </div>
-            <Check class="w-8 h-8 text-green-600" />
+            <LuCheck class="w-8 h-8 text-green-600" />
           </div>
         </Card>
 
@@ -286,7 +286,7 @@ export default component$(() => {
               <p class="text-sm font-medium text-gray-600">Pending Review</p>
               <p class="text-2xl font-bold text-yellow-600">{stats.pending}</p>
             </div>
-            <Clock class="w-8 h-8 text-yellow-600" />
+            <LuClock class="w-8 h-8 text-yellow-600" />
           </div>
         </Card>
       </div>
@@ -296,7 +296,7 @@ export default component$(() => {
         <div class="flex flex-col md:flex-row gap-4">
           <div class="flex-1">
             <div class="relative">
-              <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <LuSearch class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 type="text"
                 placeholder="Search by name, email, or message content..."
@@ -339,7 +339,7 @@ export default component$(() => {
       {filteredWishes.value.length === 0 ? (
         <Card class="p-12">
           <div class="text-center">
-            <Filter class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <LuFilter class="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 class="text-lg font-medium text-gray-900 mb-2">No wishes found</h3>
             <p class="text-gray-600">
               {searchQuery.value || statusFilter.value !== 'all'
@@ -372,13 +372,13 @@ export default component$(() => {
                 {/* Guest Info */}
                 <div class="flex items-center space-x-3 mb-4">
                   <div class="w-10 h-10 bg-wedding-brown bg-opacity-10 rounded-full flex items-center justify-center">
-                    <Heart class="w-5 h-5 text-wedding-brown" />
+                    <LuHeart class="w-5 h-5 text-wedding-brown" />
                   </div>
                   <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-gray-900">{wish.guest_name}</p>
                     {wish.email && (
                       <div class="flex items-center text-xs text-gray-500">
-                        <Mail class="w-3 h-3 mr-1" />
+                        <LuMail class="w-3 h-3 mr-1" />
                         {wish.email}
                       </div>
                     )}
@@ -406,7 +406,7 @@ export default component$(() => {
                 {/* Footer */}
                 <div class="flex items-center justify-between text-xs text-gray-500">
                   <div class="flex items-center">
-                    <Clock class="w-3 h-3 mr-1" />
+                    <LuClock class="w-3 h-3 mr-1" />
                     {new Date(wish.created_at!).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -444,7 +444,7 @@ export default component$(() => {
                           }}
                           class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 text-xs"
                         >
-                          <Check class="w-3 h-3 mr-1" />
+                          <LuCheck class="w-3 h-3 mr-1" />
                           Approve
                         </Button>
                         <Button
@@ -476,7 +476,7 @@ export default component$(() => {
                           }}
                           class="px-3 py-1 text-xs"
                         >
-                          <Flag class="w-3 h-3 mr-1" />
+                          <LuFlag class="w-3 h-3 mr-1" />
                           Flag
                         </Button>
                       </>
@@ -510,7 +510,7 @@ export default component$(() => {
                       }}
                       class="px-3 py-1 text-xs text-red-600 hover:text-red-700"
                     >
-                      <Trash2 class="w-3 h-3 mr-1" />
+                      <LuTrash2 class="w-3 h-3 mr-1" />
                       Delete
                     </Button>
                   </div>
@@ -524,7 +524,7 @@ export default component$(() => {
       {/* Moderation Guidelines */}
       <Card class="p-6 bg-blue-50 border-blue-200">
         <h3 class="text-lg font-medium text-blue-900 mb-2 flex items-center">
-          <MessageSquare class="w-5 h-5 mr-2" />
+          <LuMessageSquare class="w-5 h-5 mr-2" />
           Moderation Guidelines
         </h3>
         <div class="text-sm text-blue-800 space-y-2">

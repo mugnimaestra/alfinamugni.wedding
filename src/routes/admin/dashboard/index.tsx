@@ -1,20 +1,20 @@
-import { component$, useSignal, useTask$ } from '@builder.io/qwik';
+import { $, component$, useSignal, useTask$ } from '@builder.io/qwik';
 import type { DocumentHead } from '@builder.io/qwik-city';
 import { routeLoader$ } from '@builder.io/qwik-city';
 import { Card } from '../../../components/ui/card';
 import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import {
-  Users,
-  Calendar,
-  ImageIcon,
-  TrendingUp,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  Heart,
-  BarChart3
-} from 'lucide-react';
+  LuUsers,
+  LuCalendar,
+  LuImage as LuImageIcon,
+  LuTrendingUp,
+  LuClock,
+  LuCheckCircle,
+  LuAlertTriangle,
+  LuHeart,
+  LuBarChart3
+} from '@qwikest/icons/lucide';
 import { getDatabase, type Env } from '../../../lib/database';
 
 // Server-side data loader for dashboard statistics
@@ -75,7 +75,7 @@ export default component$(() => {
     lastRefresh.value = new Date().toLocaleTimeString();
   });
 
-  const refreshDashboard = async () => {
+  const refreshDashboard = $(async () => {
     refreshing.value = true;
     try {
       // Trigger page refresh to get new data
@@ -83,7 +83,7 @@ export default component$(() => {
     } finally {
       refreshing.value = false;
     }
-  };
+  });
 
   const { rsvpStats, recentRsvps, recentWishes, photoStats } = dashboardData.value;
 
@@ -111,7 +111,7 @@ export default component$(() => {
             variant="outline"
             size="sm"
           >
-            <TrendingUp class="w-4 h-4 mr-2" />
+            <LuTrendingUp class="w-4 h-4 mr-2" />
             {refreshing.value ? 'Refreshing...' : 'Refresh'}
           </Button>
         </div>
@@ -130,7 +130,7 @@ export default component$(() => {
               </p>
             </div>
             <div class="w-12 h-12 bg-wedding-brown bg-opacity-10 rounded-full flex items-center justify-center">
-              <Users class="w-6 h-6 text-wedding-brown" />
+              <LuUsers class="w-6 h-6 text-wedding-brown" />
             </div>
           </div>
         </Card>
@@ -146,7 +146,7 @@ export default component$(() => {
               </p>
             </div>
             <div class="w-12 h-12 bg-wedding-sage bg-opacity-20 rounded-full flex items-center justify-center">
-              <Calendar class="w-6 h-6 text-wedding-brown" />
+              <LuCalendar class="w-6 h-6 text-wedding-brown" />
             </div>
           </div>
         </Card>
@@ -162,7 +162,7 @@ export default component$(() => {
               </p>
             </div>
             <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
-              <Heart class="w-6 h-6 text-pink-600" />
+              <LuHeart class="w-6 h-6 text-pink-600" />
             </div>
           </div>
         </Card>
@@ -178,7 +178,7 @@ export default component$(() => {
               </p>
             </div>
             <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <ImageIcon class="w-6 h-6 text-blue-600" />
+              <LuImageIcon class="w-6 h-6 text-blue-600" />
             </div>
           </div>
         </Card>
@@ -188,7 +188,7 @@ export default component$(() => {
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card class="p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <BarChart3 class="w-5 h-5 mr-2 text-wedding-brown" />
+            <LuBarChart3 class="w-5 h-5 mr-2 text-wedding-brown" />
             Attendance Breakdown
           </h3>
           <div class="space-y-4">
@@ -246,14 +246,14 @@ export default component$(() => {
         {/* Recent Activities */}
         <Card class="p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Clock class="w-5 h-5 mr-2 text-wedding-brown" />
+            <LuClock class="w-5 h-5 mr-2 text-wedding-brown" />
             Recent Activity
           </h3>
           <div class="space-y-3">
             {recentRsvps.slice(0, 3).map((rsvp, index) => (
               <div key={rsvp.id || index} class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                 <div class="w-8 h-8 bg-wedding-brown bg-opacity-10 rounded-full flex items-center justify-center">
-                  <CheckCircle class="w-4 h-4 text-wedding-brown" />
+                  <LuCheckCircle class="w-4 h-4 text-wedding-brown" />
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-gray-900 truncate">
@@ -284,34 +284,34 @@ export default component$(() => {
       <Card class="p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Button
-            class="h-24 flex flex-col items-center justify-center space-y-2 wedding-button"
-            onClick$={() => window.location.href = '/admin/rsvps'}
+          <a
+            href="/admin/rsvps"
+            class="h-24 flex flex-col items-center justify-center space-y-2 wedding-button no-underline"
           >
-            <Users class="w-6 h-6" />
+            <LuUsers class="w-6 h-6" />
             <span class="text-sm">View RSVPs</span>
-          </Button>
-          <Button
-            class="h-24 flex flex-col items-center justify-center space-y-2 wedding-button"
-            onClick$={() => window.location.href = '/admin/gallery'}
+          </a>
+          <a
+            href="/admin/gallery"
+            class="h-24 flex flex-col items-center justify-center space-y-2 wedding-button no-underline"
           >
-            <ImageIcon class="w-6 h-6" />
+            <LuImageIcon class="w-6 h-6" />
             <span class="text-sm">Manage Gallery</span>
-          </Button>
-          <Button
-            class="h-24 flex flex-col items-center justify-center space-y-2 wedding-button"
-            onClick$={() => window.location.href = '/admin/wishes'}
+          </a>
+          <a
+            href="/admin/wishes"
+            class="h-24 flex flex-col items-center justify-center space-y-2 wedding-button no-underline"
           >
-            <Heart class="w-6 h-6" />
+            <LuHeart class="w-6 h-6" />
             <span class="text-sm">Review Wishes</span>
-          </Button>
-          <Button
-            class="h-24 flex flex-col items-center justify-center space-y-2 wedding-button"
-            onClick$={() => window.location.href = '/admin/settings'}
+          </a>
+          <a
+            href="/admin/settings"
+            class="h-24 flex flex-col items-center justify-center space-y-2 wedding-button no-underline"
           >
-            <AlertTriangle class="w-6 h-6" />
+            <LuAlertTriangle class="w-6 h-6" />
             <span class="text-sm">Settings</span>
-          </Button>
+          </a>
         </div>
       </Card>
 

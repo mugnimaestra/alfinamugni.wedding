@@ -257,6 +257,21 @@ export interface PhotoUpload {
   connection_type?: string;
   country_code?: string;
   camera_model?: string;
+  session_id?: string;
+}
+
+// Gallery session data types
+export interface GallerySession {
+  id?: number;
+  session_id: string;
+  title: string;
+  description?: string;
+  is_active: boolean;
+  qr_code_url?: string;
+  created_at?: string;
+  created_by?: string;
+  photo_count: number;
+  last_upload_at?: string;
 }
 
 // Database utility class with enhanced error handling
@@ -496,6 +511,15 @@ export class WeddingDatabase {
     return await getTypedResults(stmt.bind(...params), DatabasePhotoUploadSchema);
   }
 
+  async deletePhotoUpload(id: number): Promise<void> {
+    const stmt = this.db.prepare('DELETE FROM photo_uploads WHERE id = ?');
+    const result = await stmt.bind(id).run();
+
+    if (!result.success) {
+      throw new Error(`Failed to delete photo upload: ${result.error || 'Unknown error'}`);
+    }
+  }
+
   // Note: Removed approvePhoto() method as approval system is no longer used
 
   // Analytics Methods
@@ -600,6 +624,114 @@ export class WeddingDatabase {
         error instanceof Error ? error : new Error(String(error))
       );
     }
+  }
+
+  // Gallery Session Methods
+  async createSession(sessionData: Omit<GallerySession, 'id' | 'created_at' | 'photo_count'>): Promise<GallerySession> {
+    const stmt = this.db.prepare(`
+      INSERT INTO gallery_sessions (
+        session_id, title, description, is_active, qr_code_url, created_by
+      ) VALUES (?, ?, ?, ?, ?, ?)
+    `);
+
+    const result = await stmt.bind(
+      sessionData.session_id,
+      sessionData.title,
+      sessionData.description || null,
+      sessionData.is_active,
+      sessionData.qr_code_url || null,
+      sessionData.created_by || 'admin'
+    ).run();
+
+    if (!result.success) {
+      throw new Error('Failed to create gallery session');
+    }
+
+    return this.getSessionById(result.meta.last_row_id as number);
+  }
+
+  async getSessionById(id: number): Promise<GallerySession> {
+    const stmt = this.db.prepare('SELECT * FROM gallery_sessions WHERE id = ?');
+    const result = await stmt.bind(id).first();
+    
+    if (!result) {
+      throw new Error('Session not found');
+    }
+
+    return result as GallerySession;
+  }
+
+  async getSessionBySessionId(sessionId: string): Promise<GallerySession | null> {
+    const stmt = this.db.prepare('SELECT * FROM gallery_sessions WHERE session_id = ?');
+    const result = await stmt.bind(sessionId).first();
+    return result as GallerySession | null;
+  }
+
+  async getAllSessions(): Promise<GallerySession[]> {
+    const stmt = this.db.prepare('SELECT * FROM gallery_sessions ORDER BY created_at DESC');
+    const result = await stmt.all();
+    return (result.results || []) as GallerySession[];
+  }
+
+  async updateSession(id: number, updates: Partial<GallerySession>): Promise<GallerySession> {
+    const cleanUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([key, value]) =>
+        value !== undefined && !['id', 'created_at', 'session_id'].includes(key)
+      )
+    );
+
+    if (Object.keys(cleanUpdates).length === 0) {
+      throw new ValidationError('No valid fields to update', 'updates');
+    }
+
+    const setClause = Object.keys(cleanUpdates).map(key => `${key} = ?`).join(', ');
+    const values = Object.values(cleanUpdates);
+
+    const stmt = this.db.prepare(`
+      UPDATE gallery_sessions
+      SET ${setClause}
+      WHERE id = ?
+    `);
+
+    const result = await stmt.bind(...values, id).run();
+
+    if (!result.success) {
+      throw new Error(`Failed to update session: ${result.error || 'Unknown error'}`);
+    }
+
+    return this.getSessionById(id);
+  }
+
+  async incrementSessionPhotoCount(sessionId: string): Promise<void> {
+    const stmt = this.db.prepare(`
+      UPDATE gallery_sessions
+      SET photo_count = photo_count + 1,
+          last_upload_at = datetime('now')
+      WHERE session_id = ?
+    `);
+
+    await stmt.bind(sessionId).run();
+  }
+
+  async getSessionPhotos(sessionId: string, limit?: number, cursor?: number): Promise<PhotoUpload[]> {
+    let query = 'SELECT * FROM photo_uploads WHERE session_id = ?';
+    const params: (string | number | boolean | null | ArrayBuffer)[] = [sessionId];
+
+    if (cursor) {
+      query += ' AND id > ?';
+      params.push(cursor);
+    }
+
+    query += ' ORDER BY upload_date DESC';
+
+    if (limit) {
+      query += ' LIMIT ?';
+      params.push(limit);
+    }
+
+    const stmt = this.db.prepare(query);
+    const result = await stmt.bind(...params).all();
+    return (result.results || []) as PhotoUpload[];
   }
 }
 

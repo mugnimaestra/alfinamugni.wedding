@@ -1,121 +1,107 @@
-import { component$, useSignal } from '@builder.io/qwik';
-import { routeLoader$, Form, routeAction$, z, zod$ } from '@builder.io/qwik-city';
-import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
-import { Label } from '~/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
-import { Alert, AlertDescription } from '~/components/ui/alert';
-import { createAuth } from '~/lib/auth';
-import { getEnv } from '~/lib/env';
+import { component$, useSignal, $ } from "@builder.io/qwik";
+import { routeLoader$ } from "@builder.io/qwik-city";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { Alert, AlertDescription } from "~/components/ui/alert";
+import { createAuth } from "~/lib/auth";
+import { getEnv } from "~/lib/env";
 
 // Check if user is already authenticated
-export const useCheckSession = routeLoader$(async ({ cookie, redirect, platform }) => {
-  const sessionId = cookie.get('admin_session')?.value;
+export const useCheckSession = routeLoader$(
+  async ({ cookie, redirect, platform }) => {
+    const sessionId = cookie.get("admin_session")?.value;
 
-  if (sessionId) {
-    // Validate session directly using auth library
-    try {
-      const env = getEnv(platform?.env);
-      const auth = createAuth(env);
-      const validation = await auth.validateSession(sessionId);
+    if (sessionId) {
+      // Validate session directly using auth library
+      try {
+        const env = getEnv(platform?.env);
+        const auth = createAuth(env);
+        const validation = await auth.validateSession(sessionId);
 
-      if (validation.valid) {
-        throw redirect(302, '/admin');
+        if (validation.valid) {
+          throw redirect(302, "/admin");
+        }
+      } catch (error) {
+        // If redirect is thrown, it will be handled by the framework
+        if (error instanceof Response && error.status === 302) {
+          throw error;
+        }
+        // Log other errors but don't block signin
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        console.error("Session check error:", errorMessage);
       }
-    } catch (error) {
-      // If redirect is thrown, it will be handled by the framework
-      if (error instanceof Response && error.status === 302) {
-        throw error;
-      }
-      // Log other errors but don't block signin
-      console.error('Session check error:', error);
     }
+
+    return { authenticated: false };
   }
-
-  return { authenticated: false };
-});
-
-// Login action
-export const useSignInAction = routeAction$(
-  async (values, { fail, platform, cookie, redirect }) => {
-    try {
-      // Get environment (with fallback for Vite dev mode)
-      const env = getEnv(platform?.env);
-
-      // Create auth instance
-      const auth = createAuth(env);
-
-      // Authenticate user
-      const authResult = await auth.authenticate(values.email, values.password);
-
-      if (!authResult.success) {
-        const statusCode = authResult.lockoutTime ? 423 : 401;
-
-        return fail(statusCode, {
-          error: authResult.error || 'Authentication failed',
-          remainingAttempts: authResult.remainingAttempts,
-          lockoutTime: authResult.lockoutTime,
-        });
-      }
-
-      if (!authResult.session) {
-        return fail(500, {
-          error: 'Session creation failed',
-        });
-      }
-
-      // Set secure session cookie
-      // Use secure: false for localhost development
-      const isProduction = platform?.env?.ENVIRONMENT === 'production';
-      
-      cookie.set('admin_session', authResult.session.id, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: 'Strict',
-        path: '/',
-        maxAge: 24 * 60 * 60, // 24 hours
-        expires: new Date(authResult.session.expiresAt)
-      });
-
-      // Generate and store CSRF token
-      const csrfToken = auth.generateCSRFToken();
-      await auth.storeCSRFToken(authResult.session.id, csrfToken);
-
-      // Set CSRF token cookie
-      cookie.set('csrf_token', csrfToken, {
-        secure: isProduction,
-        sameSite: 'Strict',
-        path: '/',
-        maxAge: 60 * 60, // 1 hour
-        httpOnly: false
-      });
-
-      // Redirect to admin dashboard
-      throw redirect(302, '/admin/');
-
-    } catch (error) {
-      // If redirect is thrown, it will be handled by the framework
-      if (error instanceof Response && error.status === 302) {
-        throw error;
-      }
-
-      console.error('Login action error:', error);
-      return fail(500, {
-        error: 'Login failed. Please try again.',
-      });
-    }
-  },
-  zod$({
-    email: z.string().email('Valid email is required'),
-    password: z.string().min(1, 'Password is required'),
-  })
 );
 
 export default component$(() => {
-  const signInAction = useSignInAction();
   useCheckSession(); // Just call it to trigger the redirect if needed
-  const error = useSignal<string>('');
+  const error = useSignal<string>("");
   const isLoading = useSignal<boolean>(false);
+
+  const handleSubmit = $((event: Event) => {
+    event.preventDefault();
+    const form = event.target as HTMLFormElement;
+    const formData = new FormData(form);
+
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    // Basic validation
+    if (!email || !password) {
+      error.value = "Email and password are required";
+      return;
+    }
+
+    // Clear previous errors
+    error.value = "";
+    isLoading.value = true;
+
+    // Submit to API
+    fetch("/api/auth/signin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    })
+      .then(async (response) => {
+        const data = await response.json();
+
+        if (data.success) {
+          // Redirect to admin dashboard
+          window.location.href = "/admin/";
+        } else {
+          // Handle different error cases
+          if (data.lockoutTime) {
+            const lockoutMinutes = Math.ceil(data.lockoutTime / 60000);
+            error.value = `Account locked. Try again in ${lockoutMinutes} minutes.`;
+          } else if (data.remainingAttempts !== undefined) {
+            error.value = `${data.error}. ${data.remainingAttempts} attempts remaining.`;
+          } else {
+            error.value = data.error || "Login failed";
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("Login error:", err);
+        error.value = "Failed to connect to server. Please try again.";
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  });
 
   return (
     <div class="min-h-screen bg-gradient-to-br from-wedding-cream to-wedding-beige flex items-center justify-center p-4">
@@ -129,31 +115,7 @@ export default component$(() => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Form
-            action={signInAction}
-            onSubmit$={() => {
-              isLoading.value = true;
-              error.value = '';
-            }}
-            onSubmitCompleted$={(event) => {
-              isLoading.value = false;
-              const result = event.detail;
-              if ('failed' in result && result.failed) {
-                const failedResult = result as { value: { lockoutTime?: number; remainingAttempts?: number; error?: string } };
-                if (failedResult.value?.lockoutTime) {
-                  const lockoutMinutes = Math.ceil(failedResult.value.lockoutTime / 60000);
-                  error.value = `Account locked. Try again in ${lockoutMinutes} minutes.`;
-                } else if (failedResult.value?.remainingAttempts !== undefined) {
-                  error.value = `${failedResult.value.error}. ${failedResult.value.remainingAttempts} attempts remaining.`;
-                } else {
-                  error.value = failedResult.value?.error || 'Login failed';
-                }
-              } else if ('success' in result && result.success) {
-                // Redirect will be handled by the server
-                window.location.href = '/admin';
-              }
-            }}
-          >
+          <form preventdefault:submit onSubmit$={handleSubmit}>
             <div class="space-y-4">
               {error.value && (
                 <Alert class="border-red-200 bg-red-50">
@@ -198,10 +160,10 @@ export default component$(() => {
                 class="w-full bg-wedding-accent hover:bg-wedding-accent/90 text-white"
                 disabled={isLoading.value}
               >
-                {isLoading.value ? 'Signing in...' : 'Sign In'}
+                {isLoading.value ? "Signing in..." : "Sign In"}
               </Button>
             </div>
-          </Form>
+          </form>
 
           <div class="mt-6 text-center">
             <p class="text-sm text-wedding-brown/60">

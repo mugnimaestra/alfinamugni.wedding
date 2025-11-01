@@ -45,12 +45,6 @@ preview_id = "admin-sessions-kv-preview"
 # Environment variables
 [vars]
 ENVIRONMENT = "development"
-WEDDING_DATE = "2025-11-29"
-TIMEZONE = "Asia/Jakarta"
-WEDDING_LOCATION = "Jakarta, Indonesia"
-EXPECTED_GUESTS = "200"
-BRIDE_NAME = "Alfina"
-GROOM_NAME = "Mugni"
 
 # Environment-specific configuration for Pages
 [env.production]

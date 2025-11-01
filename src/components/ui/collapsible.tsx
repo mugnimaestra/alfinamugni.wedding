@@ -9,7 +9,7 @@ import {
 } from "@builder.io/qwik";
 import { cva } from "class-variance-authority";
 import { cn } from "~/lib/utils";
-import { ChevronDown } from "lucide-react";
+import { LuChevronDown } from "@qwikest/icons/lucide";
 
 // Collapsible Context Store
 interface CollapsibleStore {
@@ -143,7 +143,7 @@ export const CollapsibleTrigger = component$<CollapsibleTriggerProps>(
         {...props}
       >
         <Slot />
-        <ChevronDown
+        <LuChevronDown
           class={cn(
             "h-4 w-4 shrink-0 transition-transform duration-200",
             isOpen.value && "rotate-180"

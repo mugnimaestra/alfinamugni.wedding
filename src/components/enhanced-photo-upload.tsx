@@ -16,17 +16,16 @@ import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { 
-  Upload, 
-  X, 
-  Image, 
-  Camera, 
-  FolderOpen, 
-  Sparkles,
-  Search,
-  Grid3X3,
-  List,
-} from 'lucide-react';
+import {
+  LuUpload,
+  LuX,
+  LuCamera,
+  LuFolderOpen,
+  LuSparkles,
+  LuSearch,
+  LuGrid3x3,
+  LuList,
+} from '@qwikest/icons/lucide';
 import { processImageForUpload, type ProcessedImage } from '../utils/image-processor';
 import { getNetworkInfo, type NetworkInfo } from '../utils/network-utils';
 import { useGallery } from '../hooks/use-gallery';
@@ -542,7 +541,7 @@ export const EnhancedPhotoUpload = component$<EnhancedPhotoUploadProps>((props) 
                   onClick$={() => fileInputRef.value?.click()}
                   class="bg-wedding-accent hover:bg-wedding-brown text-white px-6 py-3"
                 >
-                  <FolderOpen class="w-5 h-5 mr-2" />
+                  <LuFolderOpen class="w-5 h-5 mr-2" />
                   Browse Files
                 </Button>
 
@@ -552,7 +551,7 @@ export const EnhancedPhotoUpload = component$<EnhancedPhotoUploadProps>((props) 
                     variant="outline"
                     class="border-green-600 text-green-600 hover:bg-green-50 px-6 py-3"
                   >
-                    <Camera class="w-5 h-5 mr-2" />
+                    <LuCamera class="w-5 h-5 mr-2" />
                     Take Photo
                   </Button>
                 )}
@@ -602,7 +601,7 @@ export const EnhancedPhotoUpload = component$<EnhancedPhotoUploadProps>((props) 
                     disabled={uploadState.isUploading || uploadState.selectedFiles.every(f => f.status !== 'pending')}
                     class="bg-wedding-accent hover:bg-wedding-brown text-white"
                   >
-                    <Upload class="w-4 h-4 mr-2" />
+                    <LuUpload class="w-4 h-4 mr-2" />
                     Upload All
                   </Button>
                 </div>
@@ -611,7 +610,7 @@ export const EnhancedPhotoUpload = component$<EnhancedPhotoUploadProps>((props) 
               {/* Search and Filter */}
               <div class="flex flex-col sm:flex-row gap-4 mb-6">
                 <div class="flex-1 relative">
-                  <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <LuSearch class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     placeholder="Search files..."
                     value={uploadState.searchQuery}
@@ -636,14 +635,14 @@ export const EnhancedPhotoUpload = component$<EnhancedPhotoUploadProps>((props) 
                     size="sm"
                     onClick$={() => uploadState.viewMode = 'grid'}
                   >
-                    <Grid3X3 class="w-4 h-4" />
+                    <LuGrid3x3 class="w-4 h-4" />
                   </Button>
                   <Button
                     variant={uploadState.viewMode === 'list' ? 'default' : 'outline'}
                     size="sm"
                     onClick$={() => uploadState.viewMode = 'list'}
                   >
-                    <List class="w-4 h-4" />
+                    <LuList class="w-4 h-4" />
                   </Button>
                 </div>
               </div>
@@ -704,7 +703,7 @@ export const EnhancedPhotoUpload = component$<EnhancedPhotoUploadProps>((props) 
                           disabled={file.status === 'uploading'}
                           class="text-red-500 hover:text-red-700"
                         >
-                          <X class="w-4 h-4" />
+                          <LuX class="w-4 h-4" />
                         </Button>
                       </div>
 
@@ -741,7 +740,7 @@ export const EnhancedPhotoUpload = component$<EnhancedPhotoUploadProps>((props) 
           <Card class="p-6">
             <h3 class="text-lg font-semibold mb-4">Photo Editing Tools</h3>
             <div class="text-center py-12 text-gray-500">
-              <Sparkles class="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <LuSparkles class="w-16 h-16 mx-auto mb-4 opacity-50" />
               <p>Advanced editing features coming soon!</p>
               <p class="text-sm mt-2">Filters, crops, adjustments, and more</p>
             </div>

@@ -1,4 +1,4 @@
-import { useSignal, useVisibleTask$, type Signal, $ } from "@builder.io/qwik";
+import { useSignal, useVisibleTask$, useComputed$, type Signal, $, type QRL } from "@builder.io/qwik";
 import { appendMetadataToFormData } from "../utils/device-metadata";
 
 export interface GalleryItem {
@@ -18,8 +18,10 @@ export interface UseGalleryReturn {
   items: Signal<GalleryItem[]>;
   loading: Signal<boolean>;
   error: Signal<string | null>;
-  uploadFile: (file: File, metadata: { title: string; description: string; author: string }) => Promise<void>;
-  refreshGallery: () => Promise<void>;
+  uploadFile: QRL<(file: File, metadata: { title: string; description: string; author: string }) => Promise<void>>;
+  refreshGallery: QRL<() => Promise<void>>;
+  statistics: Signal<{ total: number; images: number; videos: number }>;
+  searchItems: QRL<(query: string) => GalleryItem[]>;
 }
 
 // Database photo type
@@ -51,19 +53,19 @@ function transformPhotoToGalleryItem(photo: DatabasePhoto): GalleryItem {
   };
 }
 
-export const useGallery = (): UseGalleryReturn => {
-  const items = useSignal<GalleryItem[]>([]);
-  const loading = useSignal(true);
+export const useGallery = (initialPhotos?: GalleryItem[]): UseGalleryReturn => {
+  const items = useSignal<GalleryItem[]>(initialPhotos || []);
+  const loading = useSignal(!initialPhotos);
   const error = useSignal<string | null>(null);
 
   const fetchGallery = $(async () => {
     try {
       loading.value = true;
       error.value = null;
-      
+
       const response = await fetch('/api/gallery');
       const result = await response.json();
-      
+
       if (result.success && result.data) {
         items.value = result.data.map(transformPhotoToGalleryItem);
       } else {
@@ -80,7 +82,10 @@ export const useGallery = (): UseGalleryReturn => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    await fetchGallery();
+    // Only fetch if no initial photos were provided
+    if (!initialPhotos) {
+      await fetchGallery();
+    }
   });
 
   const uploadFile = $(async (file: File, metadata: { title: string; description: string; author: string }) => {
@@ -113,11 +118,34 @@ export const useGallery = (): UseGalleryReturn => {
     }
   });
 
+  const statistics = useComputed$(() => {
+    const total = items.value.length;
+    const images = items.value.filter(item => item.type === 'image').length;
+    const videos = items.value.filter(item => item.type === 'video').length;
+
+    return { total, images, videos };
+  });
+
+  const searchItems = $((query: string): GalleryItem[] => {
+    if (!query.trim()) {
+      return items.value;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    return items.value.filter(item =>
+      item.title.toLowerCase().includes(lowerQuery) ||
+      item.description.toLowerCase().includes(lowerQuery) ||
+      item.author.toLowerCase().includes(lowerQuery)
+    );
+  });
+
   return {
     items,
     loading,
     error,
     uploadFile,
-    refreshGallery: fetchGallery
+    refreshGallery: fetchGallery,
+    statistics,
+    searchItems
   };
 };

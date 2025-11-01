@@ -9,24 +9,24 @@ import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { 
-  Search, 
-  Heart, 
-  MessageCircle, 
-  Share2, 
-  Download,
-  Grid3X3,
-  List,
-  MapPin,
-  Camera,
-  TrendingUp,
-  Eye,
-  Star,
-  Bookmark,
-  ChevronLeft,
-  ChevronRight,
-  X,
-} from 'lucide-react';
+import {
+  LuSearch,
+  LuHeart,
+  LuMessageCircle,
+  LuShare2,
+  LuDownload,
+  LuGrid3x3,
+  LuList,
+  LuMapPin,
+  LuCamera,
+  LuTrendingUp,
+  LuEye,
+  LuStar,
+  LuBookmark,
+  LuChevronLeft,
+  LuChevronRight,
+  LuX,
+} from '@qwikest/icons/lucide';
 
 interface Photo {
   id: string;
@@ -434,7 +434,7 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
           <div class="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div class="flex-1 relative">
-              <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <LuSearch class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 placeholder="Search photos, authors, or tags..."
                 value={searchQuery.value}
@@ -485,14 +485,14 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
                   size="sm"
                   onClick$={() => filterOptions.viewMode = 'grid'}
                 >
-                  <Grid3X3 class="w-4 h-4" />
+                  <LuGrid3x3 class="w-4 h-4" />
                 </Button>
                 <Button
                   variant={filterOptions.viewMode === 'list' ? 'default' : 'outline'}
                   size="sm"
                   onClick$={() => filterOptions.viewMode = 'list'}
                 >
-                  <List class="w-4 h-4" />
+                  <LuList class="w-4 h-4" />
                 </Button>
               </div>
             </div>
@@ -528,15 +528,15 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
                     {/* Overlay */}
                     {filterOptions.viewMode !== 'list' && (
                       <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Eye class="w-8 h-8 text-white" />
+                        <LuEye class="w-8 h-8 text-white" />
                       </div>
                     )}
-                    
+
                     {/* Featured Badge */}
                     {photo.featured && (
                       <div class="absolute top-2 left-2">
                         <Badge variant="secondary" class="text-xs bg-yellow-500 text-white">
-                          <Star class="w-3 h-3 mr-1" />
+                          <LuStar class="w-3 h-3 mr-1" />
                           Featured
                         </Badge>
                       </div>
@@ -551,15 +551,15 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
                     {/* Stats */}
                     <div class="flex items-center gap-3 mt-2 text-xs text-gray-500">
                       <span class="flex items-center gap-1">
-                        <Heart class="w-3 h-3" />
+                        <LuHeart class="w-3 h-3" />
                         {formatNumber(photo.likes)}
                       </span>
                       <span class="flex items-center gap-1">
-                        <MessageCircle class="w-3 h-3" />
+                        <LuMessageCircle class="w-3 h-3" />
                         {formatNumber(photo.comments)}
                       </span>
                       <span class="flex items-center gap-1">
-                        <Eye class="w-3 h-3" />
+                        <LuEye class="w-3 h-3" />
                         {formatNumber(photo.views)}
                       </span>
                     </div>
@@ -569,7 +569,7 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
             </div>
           ) : (
             <div class="text-center py-12">
-              <Camera class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <LuCamera class="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 class="text-lg font-medium text-gray-900 mb-2">No photos found</h3>
               <p class="text-gray-600">Try adjusting your search or filters</p>
             </div>
@@ -584,7 +584,7 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
                 onClick$={() => currentPage.value = Math.max(1, currentPage.value - 1)}
                 disabled={currentPage.value === 1}
               >
-                <ChevronLeft class="w-4 h-4" />
+                <LuChevronLeft class="w-4 h-4" />
                 Previous
               </Button>
               
@@ -611,7 +611,7 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
                 disabled={currentPage.value === totalPages}
               >
                 Next
-                <ChevronRight class="w-4 h-4" />
+                <LuChevronRight class="w-4 h-4" />
               </Button>
             </div>
           )}
@@ -635,7 +635,7 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
                     />
                     <div class="absolute top-2 right-2">
                       <Badge variant="secondary" class="bg-orange-500 text-white">
-                        <TrendingUp class="w-3 h-3 mr-1" />
+                        <LuTrendingUp class="w-3 h-3 mr-1" />
                         Trending
                       </Badge>
                     </div>
@@ -646,11 +646,11 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
                     <div class="flex items-center justify-between mt-2">
                       <div class="flex items-center gap-2 text-sm text-gray-500">
                         <span class="flex items-center gap-1">
-                          <Heart class="w-3 h-3" />
+                          <LuHeart class="w-3 h-3" />
                           {formatNumber(photo.likes)}
                         </span>
                         <span class="flex items-center gap-1">
-                          <Eye class="w-3 h-3" />
+                          <LuEye class="w-3 h-3" />
                           {formatNumber(photo.views)}
                         </span>
                       </div>
@@ -705,7 +705,7 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
               onClick$={closeLightbox}
               class="absolute top-4 right-4 text-white hover:bg-white/20 z-10"
             >
-              <X class="w-6 h-6" />
+              <LuX class="w-6 h-6" />
             </Button>
 
             {/* Navigation */}
@@ -715,16 +715,16 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
               onClick$={() => navigatePhotos('prev')}
               class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:bg-white/20 z-10"
             >
-              <ChevronLeft class="w-8 h-8" />
+              <LuChevronLeft class="w-8 h-8" />
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"
               onClick$={() => navigatePhotos('next')}
               class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:bg-white/20 z-10"
             >
-              <ChevronRight class="w-8 h-8" />
+              <LuChevronRight class="w-8 h-8" />
             </Button>
 
             {/* Photo */}
@@ -750,12 +750,12 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
                     <span>{formatDate(selectedPhoto.value.timestamp)}</span>
                     {selectedPhoto.value.location && (
                       <span class="flex items-center gap-1">
-                        <MapPin class="w-3 h-3" />
+                        <LuMapPin class="w-3 h-3" />
                         {selectedPhoto.value.location}
                       </span>
                     )}
                   </div>
-                  
+
                   <div class="flex items-center gap-2">
                     {allowLikes && (
                       <Button
@@ -764,11 +764,11 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
                         onClick$={() => toggleLike(selectedPhoto.value!)}
                         class={`text-white hover:bg-white/20 ${selectedPhoto.value.isLiked ? 'text-red-500' : ''}`}
                       >
-                        <Heart class={`w-4 h-4 ${selectedPhoto.value.isLiked ? 'fill-current' : ''}`} />
+                        <LuHeart class={`w-4 h-4 ${selectedPhoto.value.isLiked ? 'fill-current' : ''}`} />
                         {formatNumber(selectedPhoto.value.likes)}
                       </Button>
                     )}
-                    
+
                     {allowSharing && (
                       <Button
                         variant="ghost"
@@ -776,10 +776,10 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
                         onClick$={() => sharePhoto(selectedPhoto.value!)}
                         class="text-white hover:bg-white/20"
                       >
-                        <Share2 class="w-4 h-4" />
+                        <LuShare2 class="w-4 h-4" />
                       </Button>
                     )}
-                    
+
                     {allowDownloads && (
                       <Button
                         variant="ghost"
@@ -787,17 +787,17 @@ export const PublicPhotoGallery = component$<PublicPhotoGalleryProps>((props) =>
                         onClick$={() => downloadPhoto(selectedPhoto.value!)}
                         class="text-white hover:bg-white/20"
                       >
-                        <Download class="w-4 h-4" />
+                        <LuDownload class="w-4 h-4" />
                       </Button>
                     )}
-                    
+
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick$={() => toggleBookmark(selectedPhoto.value!)}
                       class={`text-white hover:bg-white/20 ${selectedPhoto.value.isBookmarked ? 'text-yellow-500' : ''}`}
                     >
-                      <Bookmark class={`w-4 h-4 ${selectedPhoto.value.isBookmarked ? 'fill-current' : ''}`} />
+                      <LuBookmark class={`w-4 h-4 ${selectedPhoto.value.isBookmarked ? 'fill-current' : ''}`} />
                     </Button>
                   </div>
                 </div>

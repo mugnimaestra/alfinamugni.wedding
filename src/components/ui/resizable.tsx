@@ -10,7 +10,7 @@ import {
 } from "@builder.io/qwik";
 import { cva } from "class-variance-authority";
 import { cn } from "~/lib/utils";
-import { GripVertical } from "lucide-react";
+import { LuGripVertical } from "@qwikest/icons/lucide";
 
 // Resizable Context Store
 interface ResizableStore {
@@ -315,7 +315,7 @@ export const ResizableHandle = component$<ResizableHandleProps>(
       >
         {withHandle && (
           <div class="flex items-center justify-center">
-            <GripVertical class="h-4 w-4" />
+            <LuGripVertical class="h-4 w-4" />
           </div>
         )}
       </div>

@@ -9,23 +9,23 @@ import { Card } from './ui/card';
 import { Slider } from './ui/slider';
 import { Badge } from './ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { 
-  RotateCw, 
-  RotateCcw, 
-  FlipHorizontal, 
-  FlipVertical,
-  Sparkles,
-  Sun,
-  Contrast,
-  Droplets,
-  Palette,
-  Wand2,
-  Undo,
-  Redo,
-  Download,
-  Save,
-  X,
-} from 'lucide-react';
+import {
+  LuRotateCw,
+  LuRotateCcw,
+  LuFlipHorizontal,
+  LuFlipVertical,
+  LuSparkles,
+  LuSun,
+  LuContrast,
+  LuDroplets,
+  LuPalette,
+  LuWand2,
+  LuUndo,
+  LuRedo,
+  LuDownload,
+  LuSave,
+  LuX,
+} from '@qwikest/icons/lucide';
 
 interface EditSettings {
   brightness: number;
@@ -388,7 +388,7 @@ export const PhotoEditor = component$<PhotoEditorProps>((props) => {
                 onClick$={undo}
                 disabled={historyIndex.value <= 0}
               >
-                <Undo class="w-4 h-4" />
+                <LuUndo class="w-4 h-4" />
               </Button>
               <Button
                 variant="outline"
@@ -396,14 +396,14 @@ export const PhotoEditor = component$<PhotoEditorProps>((props) => {
                 onClick$={redo}
                 disabled={historyIndex.value >= history.value.length - 1}
               >
-                <Redo class="w-4 h-4" />
+                <LuRedo class="w-4 h-4" />
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick$={reset}
               >
-                <X class="w-4 h-4 mr-1" />
+                <LuX class="w-4 h-4 mr-1" />
                 Reset
               </Button>
               <Button
@@ -411,7 +411,7 @@ export const PhotoEditor = component$<PhotoEditorProps>((props) => {
                 size="sm"
                 onClick$={downloadImage}
               >
-                <Download class="w-4 h-4 mr-1" />
+                <LuDownload class="w-4 h-4 mr-1" />
                 Download
               </Button>
               <Button
@@ -423,7 +423,7 @@ export const PhotoEditor = component$<PhotoEditorProps>((props) => {
                   'Processing...'
                 ) : (
                   <>
-                    <Save class="w-4 h-4 mr-1" />
+                    <LuSave class="w-4 h-4 mr-1" />
                     Save
                   </>
                 )}
@@ -464,7 +464,7 @@ export const PhotoEditor = component$<PhotoEditorProps>((props) => {
                   <div>
                     <div class="flex items-center justify-between mb-2">
                       <label class="text-sm font-medium flex items-center gap-2">
-                        <Sun class="w-4 h-4" />
+                        <LuSun class="w-4 h-4" />
                         Brightness
                       </label>
                       <Badge variant="outline" class="text-xs">
@@ -484,7 +484,7 @@ export const PhotoEditor = component$<PhotoEditorProps>((props) => {
                   <div>
                     <div class="flex items-center justify-between mb-2">
                       <label class="text-sm font-medium flex items-center gap-2">
-                        <Contrast class="w-4 h-4" />
+                        <LuContrast class="w-4 h-4" />
                         Contrast
                       </label>
                       <Badge variant="outline" class="text-xs">
@@ -504,7 +504,7 @@ export const PhotoEditor = component$<PhotoEditorProps>((props) => {
                   <div>
                     <div class="flex items-center justify-between mb-2">
                       <label class="text-sm font-medium flex items-center gap-2">
-                        <Droplets class="w-4 h-4" />
+                        <LuDroplets class="w-4 h-4" />
                         Saturation
                       </label>
                       <Badge variant="outline" class="text-xs">
@@ -524,7 +524,7 @@ export const PhotoEditor = component$<PhotoEditorProps>((props) => {
                   <div>
                     <div class="flex items-center justify-between mb-2">
                       <label class="text-sm font-medium flex items-center gap-2">
-                        <Palette class="w-4 h-4" />
+                        <LuPalette class="w-4 h-4" />
                         Hue
                       </label>
                       <Badge variant="outline" class="text-xs">
@@ -625,7 +625,7 @@ export const PhotoEditor = component$<PhotoEditorProps>((props) => {
                       onClick$={() => rotate('left')}
                       class="flex items-center gap-2"
                     >
-                      <RotateCcw class="w-4 h-4" />
+                      <LuRotateCcw class="w-4 h-4" />
                       Rotate Left
                     </Button>
                     <Button
@@ -633,7 +633,7 @@ export const PhotoEditor = component$<PhotoEditorProps>((props) => {
                       onClick$={() => rotate('right')}
                       class="flex items-center gap-2"
                     >
-                      <RotateCw class="w-4 h-4" />
+                      <LuRotateCw class="w-4 h-4" />
                       Rotate Right
                     </Button>
                   </div>
@@ -647,7 +647,7 @@ export const PhotoEditor = component$<PhotoEditorProps>((props) => {
                       onClick$={() => flip('horizontal')}
                       class="flex items-center gap-2"
                     >
-                      <FlipHorizontal class="w-4 h-4" />
+                      <LuFlipHorizontal class="w-4 h-4" />
                       Flip Horizontal
                     </Button>
                     <Button
@@ -655,7 +655,7 @@ export const PhotoEditor = component$<PhotoEditorProps>((props) => {
                       onClick$={() => flip('vertical')}
                       class="flex items-center gap-2"
                     >
-                      <FlipVertical class="w-4 h-4" />
+                      <LuFlipVertical class="w-4 h-4" />
                       Flip Vertical
                     </Button>
                   </div>
@@ -669,7 +669,7 @@ export const PhotoEditor = component$<PhotoEditorProps>((props) => {
                       onClick$={reset}
                       class="w-full flex items-center gap-2"
                     >
-                      <Wand2 class="w-4 h-4" />
+                      <LuWand2 class="w-4 h-4" />
                       Auto Enhance
                     </Button>
                     <Button
@@ -677,7 +677,7 @@ export const PhotoEditor = component$<PhotoEditorProps>((props) => {
                       onClick$={() => applyPreset(filterPresets[1])}
                       class="w-full flex items-center gap-2"
                     >
-                      <Sparkles class="w-4 h-4" />
+                      <LuSparkles class="w-4 h-4" />
                       Apply Vintage Filter
                     </Button>
                   </div>

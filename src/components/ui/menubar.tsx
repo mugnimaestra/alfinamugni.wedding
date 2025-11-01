@@ -10,7 +10,7 @@ import {
 } from "@builder.io/qwik";
 import { cva } from "class-variance-authority";
 import { cn } from "~/lib/utils";
-import { ChevronDown } from "lucide-react";
+import { LuChevronDown } from "@qwikest/icons/lucide";
 
 // Menubar Context Store
 interface MenubarStore {
@@ -202,7 +202,7 @@ export const MenubarTrigger = component$<MenubarTriggerProps>(({
       {...props}
     >
       <Slot />
-      <ChevronDown class="ml-1 h-4 w-4" />
+      <LuChevronDown class="ml-1 h-4 w-4" />
     </button>
   );
 });
@@ -458,7 +458,7 @@ export const MenubarSubTrigger = component$<MenubarSubTriggerProps>(({
       {...props}
     >
       <Slot />
-      <ChevronDown class="h-4 w-4 rotate-[-90deg]" />
+      <LuChevronDown class="h-4 w-4 rotate-[-90deg]" />
     </div>
   );
 });

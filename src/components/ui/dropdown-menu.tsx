@@ -11,7 +11,7 @@ import {
 } from "@builder.io/qwik";
 import { cva } from "class-variance-authority";
 import { cn } from "~/lib/utils";
-import { ChevronRight, Check } from "lucide-react";
+import { LuChevronRight, LuCheck } from "@qwikest/icons/lucide";
 
 // Dropdown Menu Context Store
 interface DropdownMenuStore {
@@ -288,7 +288,7 @@ export const DropdownMenuCheckboxItem =
           {...props}
         >
           <div class="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-            {checked && <Check class="h-4 w-4" />}
+            {checked && <LuCheck class="h-4 w-4" />}
           </div>
           <Slot />
         </div>
@@ -371,7 +371,7 @@ export const DropdownMenuSubTrigger = component$<DropdownMenuSubTriggerProps>(
         {...props}
       >
         <Slot />
-        <ChevronRight class="h-4 w-4" />
+        <LuChevronRight class="h-4 w-4" />
       </div>
     );
   }

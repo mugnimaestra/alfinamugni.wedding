@@ -1,7 +1,7 @@
 import { component$, type PropsOf, type JSXOutput, Slot } from "@builder.io/qwik";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "~/lib/utils";
-import { ChevronRight, MoreHorizontal } from "lucide-react";
+import { LuChevronRight, LuMoreHorizontal } from "@qwikest/icons/lucide";
 
 const breadcrumbVariants = cva(
   "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
@@ -168,7 +168,7 @@ export const BreadcrumbSeparator = component$<BreadcrumbSeparatorProps>(
         role="presentation"
         {...props}
       >
-        {children ?? <ChevronRight />}
+        {children ?? <LuChevronRight />}
       </li>
     );
   }
@@ -186,7 +186,7 @@ export const BreadcrumbEllipsis = component$<BreadcrumbEllipsisProps>(
         role="presentation"
         {...props}
       >
-        <MoreHorizontal class="h-4 w-4" />
+        <LuMoreHorizontal class="h-4 w-4" />
         <span class="sr-only">More</span>
       </span>
     );

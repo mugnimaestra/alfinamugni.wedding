@@ -1,12 +1,11 @@
 import type { RequestHandler } from '@builder.io/qwik-city';
-import { getDatabase, type Env, type PhotoUpload } from '../../../lib/database';
+import { getDatabase, type Env } from '../../../lib/database';
 
 // Get approved photos for gallery display
 export const onGet: RequestHandler = async ({ request, json, platform }) => {
   try {
     const url = new URL(request.url);
     const category = url.searchParams.get('category');
-    const includeAll = url.searchParams.get('all') === 'true';
 
     const db = getDatabase(platform.env as Env);
 

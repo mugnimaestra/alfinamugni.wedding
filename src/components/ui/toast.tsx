@@ -8,6 +8,7 @@ import {
   useTask$,
   $,
   Slot,
+  type QRL,
 } from "@builder.io/qwik";
 import { cn } from "~/lib/utils";
 
@@ -23,12 +24,18 @@ type ToastProps = {
   duration?: number;
 };
 
-type ToastState = {
+// Separate data state from methods to avoid serialization issues
+type ToastDataState = {
   toasts: ToastProps[];
-  addToast: (toast: Omit<ToastProps, "id">) => string;
-  removeToast: (id: string) => void;
-  clearToasts: () => void;
 };
+
+type ToastMethods = {
+  addToast: QRL<(toast: Omit<ToastProps, "id">) => string>;
+  removeToast: QRL<(id: string) => void>;
+  clearToasts: QRL<() => void>;
+};
+
+type ToastState = ToastDataState & ToastMethods;
 
 const ToastContext = createContextId<ToastState>("toast-context");
 
@@ -41,20 +48,33 @@ export const useToast = () => {
 };
 
 export const ToastProvider = component$(() => {
-  const toastState = useStore<ToastState>({
+  // Store only data in the reactive store - no functions!
+  const toastData = useStore<ToastDataState>({
     toasts: [],
-    addToast: (props: Omit<ToastProps, "id">) => {
-      const id = Math.random().toString(36).substring(2, 9);
-      toastState.toasts = [...toastState.toasts, { ...props, id }];
-      return id;
-    },
-    removeToast: (id: string) => {
-      toastState.toasts = toastState.toasts.filter((toast) => toast.id !== id);
-    },
-    clearToasts: () => {
-      toastState.toasts = [];
-    },
   });
+
+  // Define methods outside the store using $() for proper serialization
+  const addToast = $((props: Omit<ToastProps, "id">) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    toastData.toasts = [...toastData.toasts, { ...props, id }];
+    return id;
+  });
+
+  const removeToast = $((id: string) => {
+    toastData.toasts = toastData.toasts.filter((toast) => toast.id !== id);
+  });
+
+  const clearToasts = $(() => {
+    toastData.toasts = [];
+  });
+
+  // Combine data and methods for context (methods are QRLs, which are serializable)
+  const toastState: ToastState = {
+    toasts: toastData.toasts,
+    addToast,
+    removeToast,
+    clearToasts,
+  };
 
   useContextProvider(ToastContext, toastState);
   
