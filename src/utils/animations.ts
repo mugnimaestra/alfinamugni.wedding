@@ -291,3 +291,72 @@ export const animateTextReveal = (
     });
   });
 };
+
+// Invitation cover exit animation with error handling and timeout fallback
+export const animateCoverExit = (element: HTMLElement): Promise<void> => {
+  if (prefersReducedMotion()) {
+    // Skip animation, just hide immediately
+    element.style.display = "none";
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    // Set timeout fallback to ensure promise resolves even if animation fails
+    const timeoutId = setTimeout(() => {
+      console.warn("Animation timeout - forcing cover exit");
+      element.style.display = "none";
+      resolve();
+    }, 2000); // 2 second fallback
+
+    try {
+      // Animate content fade out and scale down
+      const content = element.querySelector(".cover-content") as HTMLElement;
+      if (content) {
+        animate(
+          content,
+          { opacity: [1, 0], scale: [1, 0.95], y: [0, -30] },
+          {
+            duration: ANIMATION_DURATIONS.medium,
+            ease: WEDDING_EASINGS.elegant,
+          },
+        );
+      }
+
+      // Animate main cover fade out
+      const animation = animate(
+        element,
+        { opacity: [1, 0] },
+        {
+          duration: ANIMATION_DURATIONS.slow,
+          ease: WEDDING_EASINGS.elegant,
+        },
+      );
+
+      // Wait for animation to finish
+      animation.finished.then(
+        () => {
+          clearTimeout(timeoutId);
+          element.style.display = "none";
+          resolve();
+        },
+        (error: unknown) => {
+          console.error("Cover animation failed:", error);
+          clearTimeout(timeoutId);
+          element.style.display = "none";
+          resolve();
+        }
+      );
+    } catch (error) {
+      console.error("Animation setup failed:", error);
+      clearTimeout(timeoutId);
+      element.style.display = "none";
+      resolve();
+    }
+  });
+};
+
+// Music bars animation keyframes (used in audio player)
+export const animateMusicBars = () => {
+  // This is handled via CSS keyframes in global.css
+  // The animation is: transform scaleY from 0.3 to 1
+};
