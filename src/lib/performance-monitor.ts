@@ -125,8 +125,8 @@ export function observeWebVitals(
 
   try {
     lcpObserver.observe({ type: "largest-contentful-paint", buffered: true })
-  } catch (e) {
-    console.warn("LCP observation not supported")
+  } catch (e: any) {
+    console.warn("LCP observation not supported:", e?.message || e)
   }
 
   // Observe FID/INP (Interaction to Next Paint)
@@ -141,8 +141,8 @@ export function observeWebVitals(
 
   try {
     inpObserver.observe({ type: "first-input", buffered: true })
-  } catch (e) {
-    console.warn("FID/INP observation not supported")
+  } catch (e: any) {
+    console.warn("FID/INP observation not supported:", e?.message || e)
   }
 
   // Observe CLS (Cumulative Layout Shift)
@@ -159,8 +159,8 @@ export function observeWebVitals(
 
   try {
     clsObserver.observe({ type: "layout-shift", buffered: true })
-  } catch (e) {
-    console.warn("CLS observation not supported")
+  } catch (e: any) {
+    console.warn("CLS observation not supported:", e?.message || e)
   }
 
   // Get Navigation Timing metrics
@@ -268,7 +268,7 @@ export function checkPerformanceBudget(
  * Log performance metrics to console (development only)
  */
 export function logPerformanceMetrics(metrics: PerformanceMetrics): void {
-  if (process.env.NODE_ENV !== "development") return
+  if (typeof process !== "undefined" && process.env.NODE_ENV !== "development") return
 
   console.group("🚀 Performance Metrics")
   console.log("URL:", metrics.url)

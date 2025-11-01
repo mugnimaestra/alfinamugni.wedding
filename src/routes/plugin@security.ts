@@ -25,6 +25,7 @@ export const onRequest: RequestHandler = async ({ next, url, headers }) => {
 
   // Apply CSP headers
   // Note: In production, consider using a nonce for inline scripts
-  const isProduction = process.env.NODE_ENV === "production"
+  const isProduction =
+    typeof process !== "undefined" && process.env.NODE_ENV === "production"
   applyCSPHeaders(headers, undefined, !isProduction) // Report-only in dev
 }

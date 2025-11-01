@@ -32,8 +32,10 @@ export const CookieConsentBanner = component$(() => {
     consent.value = newConsent
     localStorage.setItem("cookie-consent", JSON.stringify(newConsent))
     
-    // Set cookie
-    document.cookie = `cookie-consent=${encodeURIComponent(JSON.stringify(newConsent))}; max-age=31536000; path=/; SameSite=Strict; Secure`
+    // Set cookie (Secure only on HTTPS)
+    const isSecure = typeof window !== "undefined" && window.location.protocol === "https:"
+    const secureFlag = isSecure ? "; Secure" : ""
+    document.cookie = `cookie-consent=${encodeURIComponent(JSON.stringify(newConsent))}; max-age=31536000; path=/; SameSite=Strict${secureFlag}`
     
     showBanner.value = false
     showSettings.value = false
