@@ -2,16 +2,14 @@
 -- Adds support for ProcessedImage metadata including compression stats,
 -- device info, network info, thumbnails, and dimensions
 
--- Add new columns to photo_uploads table
+-- Add new columns to photo_uploads table (only columns that don't exist in initial schema)
+-- Note: category, width, height already exist in initial schema, so we skip them
 ALTER TABLE photo_uploads ADD COLUMN compressed_size INTEGER;
 ALTER TABLE photo_uploads ADD COLUMN original_size INTEGER;
 ALTER TABLE photo_uploads ADD COLUMN compression_ratio REAL;
 ALTER TABLE photo_uploads ADD COLUMN thumbnail_url TEXT;
 ALTER TABLE photo_uploads ADD COLUMN device_info TEXT;
 ALTER TABLE photo_uploads ADD COLUMN network_info TEXT;
-ALTER TABLE photo_uploads ADD COLUMN category TEXT DEFAULT 'candid';
-ALTER TABLE photo_uploads ADD COLUMN width INTEGER;
-ALTER TABLE photo_uploads ADD COLUMN height INTEGER;
 
 -- Update existing records with default values
 UPDATE photo_uploads 
@@ -19,10 +17,7 @@ SET compressed_size = file_size,
     original_size = file_size,
     compression_ratio = 1.0,
     device_info = 'Unknown',
-    network_info = 'Unknown',
-    category = 'candid',
-    width = 0,
-    height = 0
+    network_info = 'Unknown'
 WHERE compressed_size IS NULL;
 
 -- Create index on category for faster filtering

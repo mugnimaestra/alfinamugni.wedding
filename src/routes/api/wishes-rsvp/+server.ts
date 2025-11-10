@@ -6,24 +6,20 @@ export const GET: RequestHandler = async ({ url, platform }) => {
 	try {
 		const db = getDatabase(platform);
 		
-		// Fetch approved wishes only
+		// Fetch all wishes (auto-approved)
 		const wishes = await db
-			.prepare('SELECT id, guest_name, message, attending, created_at FROM wishes_rsvp WHERE approved = ? ORDER BY created_at DESC')
-			.bind(1)
+			.prepare('SELECT id, guest_name, message, attending, created_at FROM wishes_rsvp ORDER BY created_at DESC')
 			.all();
 
-		// Get counts
+		// Get total count only
 		const counts = await db
-			.prepare('SELECT COUNT(*) as total, SUM(CASE WHEN attending = "yes" THEN 1 ELSE 0 END) as attending, SUM(CASE WHEN attending = "no" THEN 1 ELSE 0 END) as not_attending FROM wishes_rsvp WHERE approved = ?')
-			.bind(1)
+			.prepare('SELECT COUNT(*) as total FROM wishes_rsvp')
 			.first();
 
 		return json({
 			wishes: wishes.results || [],
 			counts: {
-				total: counts?.total || 0,
-				attending: counts?.attending || 0,
-				notAttending: counts?.not_attending || 0
+				total: counts?.total || 0
 			}
 		});
 	} catch (error) {
@@ -47,12 +43,12 @@ export const POST: RequestHandler = async ({ request, platform, getClientAddress
 			return json({ error: 'Konfirmasi kehadiran wajib dipilih' }, { status: 400 });
 		}
 
-		// Insert into database
+		// Insert into database (auto-approved)
 		const result = await db
 			.prepare(
 				'INSERT INTO wishes_rsvp (guest_name, email, message, attending, ip_address, approved) VALUES (?, ?, ?, ?, ?, ?)'
 			)
-			.bind(guest_name, email || null, message, attending, getClientAddress(), false)
+			.bind(guest_name, email || null, message, attending, getClientAddress(), true)
 			.run();
 
 		if (!result.success) {

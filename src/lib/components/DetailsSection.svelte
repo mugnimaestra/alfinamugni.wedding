@@ -68,8 +68,8 @@
 					Muhammad Mugni Hadi
 				</h3>
 				<p class="text-wedding-text-dark mb-6">
-					Putra Ketiga dari Bapak Suaidi<br />
-					& Ibu Anne Machdalia
+					Putra Keempat dari Bapak Suaidi<br />
+					& Ibu Anne Machdalia (Almhm)
 				</p>
 				<a
 					href="https://www.instagram.com/mugnimaestra/"
@@ -93,7 +93,7 @@
 			<p class="text-base md:text-lg italic text-wedding-text-dark mb-2">
 				"Dan segala sesuatu Kami ciptakan berpasang-pasangan agar kamu mengingat (kebesaran Allah)."
 			</p>
-			<p class="text-sm text-wedding-text-muted">(QS. Az Zariyat: 49)</p>
+			<p class="text-sm text-wedding-text-dark">(QS. Az Zariyat: 49)</p>
 		</div>
 
 		<!-- Event Details -->

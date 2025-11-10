@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Disallow admin pages
+User-agent: *
+Disallow: /admin/
+
+# Sitemap (add when sitemap.xml is created)
+# Sitemap: https://alfinamugni.wedding/sitemap.xml
+

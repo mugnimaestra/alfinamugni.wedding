@@ -11,8 +11,6 @@
 
 	interface Counts {
 		total: number;
-		attending: number;
-		notAttending: number;
 	}
 
 	let showForm = $state(false);
@@ -21,7 +19,7 @@
 	let wishMessage = $state('');
 	let attending = $state<'yes' | 'no'>('yes');
 	let wishes = $state<WishRsvp[]>([]);
-	let counts = $state<Counts>({ total: 0, attending: 0, notAttending: 0 });
+	let counts = $state<Counts>({ total: 0 });
 	let isSubmitting = $state(false);
 	let errorMessage = $state('');
 	let successMessage = $state('');
@@ -35,7 +33,7 @@
 			const response = await fetch('/api/wishes-rsvp');
 			const data = await response.json();
 			wishes = data.wishes || [];
-			counts = data.counts || { total: 0, attending: 0, notAttending: 0 };
+			counts = data.counts || { total: 0 };
 		} catch (error) {
 			console.error('Error fetching wishes:', error);
 		}
@@ -62,14 +60,14 @@
 			const response = await fetch('/api/wishes-rsvp', {
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
 					guest_name: wishName,
 					email: wishEmail || null,
 					message: wishMessage,
-					attending
-				})
+					attending,
+				}),
 			});
 
 			const data = await response.json();
@@ -114,7 +112,10 @@
 	}
 </script>
 
-<section id="wishes" class="min-h-screen flex flex-col items-center justify-center px-4 py-20 bg-gradient-to-b from-wedding-white to-wedding-sky">
+<section
+	id="wishes"
+	class="min-h-screen flex flex-col items-center justify-center px-4 py-20 bg-gradient-to-b from-wedding-white to-wedding-sky"
+>
 	<div class="max-w-6xl mx-auto w-full">
 		<div class="text-center mb-12">
 			<h2 class="font-serif text-4xl md:text-6xl mb-6 font-light text-wedding-navy">
@@ -131,18 +132,7 @@
 					<div class="text-3xl font-bold text-wedding-navy">{counts.total}</div>
 					<div class="text-sm text-wedding-navy">Comments</div>
 				</div>
-				<div class="text-center">
-					<div class="text-3xl font-bold text-green-600">{counts.attending}</div>
-					<div class="text-sm text-wedding-navy">Hadir</div>
-				</div>
-				<div class="text-center">
-					<div class="text-3xl font-bold text-red-600">{counts.notAttending}</div>
-					<div class="text-sm text-wedding-navy">Tidak hadir</div>
-				</div>
 			</div>
-
-			<p class="text-sm text-wedding-navy mb-4">*Mohon maaf! Khusus untuk tamu undangan</p>
-
 			<button
 				onclick={() => (showForm = !showForm)}
 				class="wedding-button bg-wedding-navy text-white px-8 py-3 rounded-full transition-all duration-300 hover:bg-wedding-steel border-2 border-transparent hover:border-wedding-steel"
@@ -208,13 +198,13 @@
 							rows="4"
 							class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wedding-gold focus:border-wedding-gold focus:border-transparent"
 							placeholder="Tulis ucapan selamat Anda di sini..."
-						></textarea>
+						/>
 					</div>
 
 					<div>
-						<label class="block text-sm font-medium text-wedding-navy mb-2">
+						<div class="block text-sm font-medium text-wedding-navy mb-2">
 							Konfirmasi Kehadiran *
-						</label>
+						</div>
 						<div class="flex gap-x-4 gap-y-2">
 							<label class="flex items-center cursor-pointer">
 								<input
@@ -253,7 +243,9 @@
 		<!-- Wishes Display -->
 		<div class="max-w-4xl mx-auto space-y-6">
 			{#each wishes as wish (wish.id)}
-				<div class="wedding-card bg-white transition-all duration-300 hover:shadow-xl border-l-4 border-wedding-steel">
+				<div
+					class="wedding-card bg-white transition-all duration-300 hover:shadow-xl border-l-4 border-wedding-steel"
+				>
 					<div class="flex justify-between items-start mb-3">
 						<div class="flex items-center gap-x-3">
 							<h3 class="font-semibold text-lg text-wedding-navy">{wish.guest_name}</h3>
@@ -279,7 +271,9 @@
 		<!-- Closing Text -->
 		<div class="mt-12 max-w-3xl mx-auto text-center">
 			<p class="text-wedding-text-dark leading-relaxed">
-				Merupakan suatu kehormatan dan kebahagiaan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu. Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.
+				Merupakan suatu kehormatan dan kebahagiaan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan
+				hadir dan memberikan doa restu. Atas kehadiran dan doa restunya, kami mengucapkan terima
+				kasih.
 			</p>
 		</div>
 	</div>

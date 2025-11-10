@@ -279,6 +279,28 @@ h6 {
 	animation: musicBar 0.6s ease-in-out infinite;
 }
 
+/* Envelope 3D Transform Support */
+.envelope-container {
+	perspective: 1000px;
+	transform-style: preserve-3d;
+}
+
+.envelope-flap {
+	transform-style: preserve-3d;
+	backface-visibility: hidden;
+}
+
+/* Card Animation States */
+.card-initial {
+	opacity: 0;
+	transform: translateY(50px) scale(0.9);
+}
+
+.card-visible {
+	opacity: 1;
+	transform: translateY(0) scale(1);
+}
+
 /* Responsive utilities */
 @media (max-width: 640px) {
 	body {
