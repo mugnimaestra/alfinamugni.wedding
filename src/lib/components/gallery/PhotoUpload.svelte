@@ -2,20 +2,18 @@
 	import { getDeviceInfo, getNetworkInfo } from '$lib/utils/device';
 
 	interface Props {
-		sessionId?: string;
 		isActive?: boolean;
 		onSuccess?: () => void;
 		onClose: () => void;
 		isOpen: boolean;
 	}
 
-	let { sessionId, isActive = true, onSuccess, onClose, isOpen }: Props = $props();
+	let { isActive = true, onSuccess, onClose, isOpen }: Props = $props();
 
 	let files = $state<File[]>([]);
 	let previews = $state<string[]>([]);
 	let uploaderName = $state('');
 	let description = $state('');
-	let category = $state('candid');
 	let isUploading = $state(false);
 	let uploadProgress = $state(0);
 	let error = $state('');
@@ -69,14 +67,9 @@
 			formData.append('file', file);
 			formData.append('uploader_name', uploaderName || 'Anonymous');
 			formData.append('description', description);
-			formData.append('category', category);
 			formData.append('device_info', deviceInfo);
 			formData.append('network_info', networkInfo);
 			formData.append('original_size', file.size.toString());
-
-			if (sessionId) {
-				formData.append('session_id', sessionId);
-			}
 
 			try {
 				const img = new Image();
@@ -91,11 +84,7 @@
 			}
 
 			try {
-				const endpoint = sessionId
-					? `/api/gallery/${sessionId}/upload`
-					: '/api/gallery/upload';
-
-				const response = await fetch(endpoint, {
+				const response = await fetch('/api/gallery/upload', {
 					method: 'POST',
 					body: formData
 				});
@@ -131,7 +120,6 @@
 		previews = [];
 		uploaderName = '';
 		description = '';
-		category = 'candid';
 		uploadProgress = 0;
 		error = '';
 		successCount = 0;

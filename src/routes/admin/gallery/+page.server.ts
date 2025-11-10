@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ platform }) => {
 	try {
 		const result = await platform.env.DB.prepare(
 			`SELECT id, filename, original_name, file_size, content_type, r2_key,
-			        uploader_name, description, upload_date, featured, category, session_id
+			        uploader_name, description, upload_date, featured
 			 FROM photo_uploads
 			 ORDER BY upload_date DESC`
 		).all();
@@ -20,8 +20,7 @@ export const load: PageServerLoad = async ({ platform }) => {
 				description: p.description || '',
 				uploader_name: p.uploader_name || 'Anonymous',
 				upload_date: p.upload_date || new Date().toISOString(),
-				thumbnail: `/api/photos/${p.id}`,
-				session_id: p.session_id
+				thumbnail: `/api/photos/${p.id}`
 			}))
 		};
 	} catch (err) {

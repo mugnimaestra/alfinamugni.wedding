@@ -1,3 +1,7 @@
+<script lang="ts">
+	import LottiePlayer from './animations/LottiePlayer.svelte';
+</script>
+
 <section
 	id="details"
 	class="min-h-screen bg-gradient-to-b from-wedding-silver-light to-wedding-sky flex flex-col items-center justify-center px-4 py-20"
@@ -103,14 +107,17 @@
 				class="wedding-card bg-wedding-navy text-white border-2 border-wedding-steel transition-all duration-300 hover:shadow-2xl hover:border-wedding-accent"
 			>
 				<div class="text-center p-8">
-					<div class="mb-4">
-						<svg
-							class="w-12 h-12 mx-auto mb-4 text-wedding-sky"
-							fill="currentColor"
-							viewBox="0 0 20 20"
-						>
-							<path d="M10 2L3 7v11a2 2 0 002 2h4v-6h2v6h4a2 2 0 002-2V7l-7-5z" />
-						</svg>
+					<div class="mb-0 flex justify-center">
+						<div style="filter: brightness(0) invert(1);">
+							<LottiePlayer
+								src="/animations/wedding-vows.json"
+								width={96}
+								height={96}
+								loop={true}
+								autoplay={true}
+								className="mb-4"
+							/>
+						</div>
 					</div>
 
 					<h3 class="font-serif text-3xl md:text-4xl text-white mb-4 font-medium">Akad Nikah</h3>
@@ -142,16 +149,17 @@
 				class="wedding-card bg-wedding-navy text-white border-2 border-wedding-steel transition-all duration-300 hover:shadow-2xl hover:border-wedding-accent"
 			>
 				<div class="text-center p-8">
-					<div class="mb-4">
-						<svg
-							class="w-12 h-12 mx-auto mb-4 text-wedding-sky"
-							fill="currentColor"
-							viewBox="0 0 20 20"
-						>
-							<path
-								d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z"
+					<div class="mb-0 flex justify-center">
+						<div style="filter: brightness(0) invert(1);">
+							<LottiePlayer
+								src="/animations/wedding-arch.json"
+								width={96}
+								height={96}
+								loop={true}
+								autoplay={true}
+								className="mb-4"
 							/>
-						</svg>
+						</div>
 					</div>
 
 					<h3 class="font-serif text-3xl md:text-4xl text-white mb-4 font-medium">Resepsi</h3>

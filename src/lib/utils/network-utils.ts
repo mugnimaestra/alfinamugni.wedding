@@ -46,8 +46,6 @@ export interface UploadResponse {
     filename?: string;
     original_name?: string;
     file_size?: number;
-    category?: string;
-    approved?: boolean;
     upload_date?: string;
     preview_url?: string;
     signed_url?: string;

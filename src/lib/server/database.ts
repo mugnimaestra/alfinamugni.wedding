@@ -1,4 +1,6 @@
+import { error } from '@sveltejs/kit';
 import type { D1Database } from '@cloudflare/workers-types';
+import type { Platform } from '@sveltejs/kit';
 
 export interface Database {
 	exec(sql: string): Promise<{ success: boolean }>;
@@ -49,4 +51,18 @@ export async function runMigrations(_db: D1Database): Promise<void> {
 		console.error('Migration error:', error);
 		throw error;
 	}
+}
+
+/**
+ * Get database instance from platform
+ * Validates that platform and database are configured
+ * @param platform - SvelteKit platform object from RequestHandler
+ * @returns D1Database instance
+ * @throws Error if database is not configured
+ */
+export function getDatabase(platform: Platform | undefined): D1Database {
+	if (!platform?.env.DB) {
+		throw error(500, 'Database not configured');
+	}
+	return platform.env.DB;
 }

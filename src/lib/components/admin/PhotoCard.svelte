@@ -6,7 +6,6 @@
 		uploader_name: string;
 		upload_date: string;
 		thumbnail: string;
-		session_id?: string;
 	}
 
 	interface Props {

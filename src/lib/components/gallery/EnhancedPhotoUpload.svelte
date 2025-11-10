@@ -26,7 +26,6 @@
 	interface UploadSettings {
 		autoCompress: boolean;
 		autoEnhance: boolean;
-		category: 'ceremony' | 'reception' | 'prewedding' | 'family' | 'friends' | 'candid' | 'traditional';
 	}
 
 	// Props
@@ -41,8 +40,7 @@
 	let networkInfo = $state<NetworkInfo | null>(null);
 	let uploadSettings = $state<UploadSettings>({
 		autoCompress: true,
-		autoEnhance: true,
-		category: 'candid'
+		autoEnhance: true
 	});
 	let isUploading = $state(false);
 	let totalProgress = $state(0);
@@ -276,7 +274,6 @@
 					formData.append('file', uploadFileObj);
 					formData.append('uploader_name', file.metadata?.deviceInfo || 'Guest');
 					formData.append('description', `Uploaded from ${file.metadata?.deviceInfo}`);
-					formData.append('category', uploadSettings.category);
 
 					const response = await fetch('/api/gallery/upload', {
 						method: 'POST',
@@ -606,21 +603,7 @@
 		<!-- Organize Tab -->
 		{#if activeTab === 'organize'}
 			<div class="p-6 space-y-4">
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-					<select
-						bind:value={uploadSettings.category}
-						class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-					>
-						<option value="ceremony">Ceremony</option>
-						<option value="reception">Reception</option>
-						<option value="prewedding">Pre-wedding</option>
-						<option value="family">Family</option>
-						<option value="friends">Friends</option>
-						<option value="candid">Candid</option>
-						<option value="traditional">Traditional</option>
-					</select>
-				</div>
+				<p class="text-sm text-gray-600">Photo organization features coming soon.</p>
 			</div>
 		{/if}
 

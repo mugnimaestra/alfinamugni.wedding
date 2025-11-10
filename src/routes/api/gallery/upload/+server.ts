@@ -11,7 +11,6 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		const file = formData.get('file') as File;
 		const uploaderName = (formData.get('uploader_name') as string) || 'Anonymous';
 		const description = (formData.get('description') as string) || '';
-		const category = (formData.get('category') as string) || 'candid';
 		
 		// ProcessedImage metadata
 		const originalSize = parseInt(formData.get('original_size') as string) || file.size;
@@ -69,8 +68,8 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 			`INSERT INTO photo_uploads 
 			(filename, original_name, file_size, compressed_size, original_size, compression_ratio,
 			 content_type, bucket_path, r2_key, thumbnail_url, uploader_name, description, 
-			 upload_date, device_info, network_info, category, width, height, approved)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?, ?, ?, ?, 0)`
+			 upload_date, device_info, network_info, width, height)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?, ?, ?)`
 		)
 			.bind(
 				file.name,
@@ -87,7 +86,6 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 				description,
 				deviceInfo,
 				networkInfo,
-				category,
 				width,
 				height
 			)
@@ -101,8 +99,6 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 				filename: file.name,
 				original_name: file.name,
 				file_size: file.size,
-				category: category,
-				approved: false,
 				upload_date: new Date().toISOString(),
 				preview_url: `/api/photos/${result.meta?.last_row_id}`,
 				r2_key: mainKey,
