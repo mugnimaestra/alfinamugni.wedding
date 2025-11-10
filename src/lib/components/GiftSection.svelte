@@ -271,7 +271,7 @@
 		</div>
 
 		<div class="mt-12 max-w-2xl mx-auto">
-			<p class="text-wedding-text-muted text-sm italic">
+			<p class="text-wedding-wedding-silver-light text-sm italic">
 				Terima kasih atas kebaikan dan kemurahan hati Anda. Doa dan kehadiran Anda sangat berarti
 				bagi kami!
 			</p>
