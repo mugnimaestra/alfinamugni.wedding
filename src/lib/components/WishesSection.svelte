@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fly } from 'svelte/transition';
 
 	interface WishRsvp {
 		id: number;
 		guest_name: string;
 		message: string;
 		attending: 'yes' | 'no' | null;
+		visitor_count?: number;
 		created_at: string;
 	}
 
@@ -13,29 +15,56 @@
 		total: number;
 	}
 
+	interface Pagination {
+		page: number;
+		limit: number;
+		total: number;
+		totalPages: number;
+	}
+
 	let showForm = $state(false);
 	let wishName = $state('');
-	let wishEmail = $state('');
 	let wishMessage = $state('');
 	let attending = $state<'yes' | 'no'>('yes');
+	let visitorCount = $state(1);
 	let wishes = $state<WishRsvp[]>([]);
 	let counts = $state<Counts>({ total: 0 });
+	let currentPage = $state(1);
+	let totalPages = $state(1);
+	let isLoading = $state(false);
 	let isSubmitting = $state(false);
 	let errorMessage = $state('');
 	let successMessage = $state('');
 
 	onMount(async () => {
-		await fetchWishes();
+		await fetchWishes(1);
 	});
 
-	async function fetchWishes() {
+	async function fetchWishes(page: number) {
+		isLoading = true;
 		try {
-			const response = await fetch('/api/wishes-rsvp');
+			const response = await fetch(`/api/wishes-rsvp?page=${page}&limit=10`);
 			const data = await response.json();
 			wishes = data.wishes || [];
 			counts = data.counts || { total: 0 };
+			if (data.pagination) {
+				currentPage = data.pagination.page;
+				totalPages = data.pagination.totalPages;
+			}
 		} catch (error) {
 			console.error('Error fetching wishes:', error);
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	async function goToPage(page: number) {
+		if (page < 1 || page > totalPages || isLoading) return;
+		await fetchWishes(page);
+		// Scroll to top of wishes section
+		const wishesSection = document.getElementById('wishes');
+		if (wishesSection) {
+			wishesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 		}
 	}
 
@@ -54,6 +83,11 @@
 			return;
 		}
 
+		if (attending === 'yes' && (visitorCount < 1 || visitorCount > 20)) {
+			errorMessage = 'Jumlah pengunjung harus antara 1 dan 20';
+			return;
+		}
+
 		isSubmitting = true;
 
 		try {
@@ -64,9 +98,9 @@
 				},
 				body: JSON.stringify({
 					guest_name: wishName,
-					email: wishEmail || null,
 					message: wishMessage,
 					attending,
+					visitor_count: attending === 'yes' ? visitorCount : null,
 				}),
 			});
 
@@ -78,13 +112,13 @@
 
 			successMessage = data.message || 'Terima kasih atas ucapan dan konfirmasi kehadiran Anda!';
 			wishName = '';
-			wishEmail = '';
 			wishMessage = '';
 			attending = 'yes';
+			visitorCount = 1;
 			showForm = false;
 
-			// Refresh wishes list
-			await fetchWishes();
+			// Refresh wishes list - reset to page 1 to show new wish
+			await fetchWishes(1);
 		} catch (error: any) {
 			errorMessage = error.message || 'Terjadi kesalahan. Silakan coba lagi.';
 		} finally {
@@ -93,7 +127,9 @@
 	}
 
 	function formatTimestamp(timestamp: string): string {
-		const date = new Date(timestamp);
+		// Convert SQLite datetime format (YYYY-MM-DD HH:MM:SS) to ISO format with UTC indicator
+		const utcTimestamp = timestamp.replace(' ', 'T') + 'Z';
+		const date = new Date(utcTimestamp);
 		const now = new Date();
 		const diffMs = now.getTime() - date.getTime();
 		const diffMins = Math.floor(diffMs / 60000);
@@ -119,12 +155,19 @@
 	<div class="max-w-6xl mx-auto w-full">
 		<div class="text-center mb-12">
 			<h2 class="font-serif text-4xl md:text-6xl mb-6 font-light text-wedding-navy">
-				Ucapkan Sesuatu
+				Ucapan & Konfirmasi Kehadiran
 			</h2>
 
-			<h3 class="text-2xl md:text-3xl mb-8 text-wedding-navy font-medium">
-				Berikan Ucapan & Doa Restu
+			<h3 class="text-2xl md:text-3xl mb-6 text-wedding-navy font-medium">
+				Sampaikan ucapan selamat Anda dan konfirmasikan kehadiran untuk hari istimewa kami
 			</h3>
+
+			<!-- Callout Banner -->
+			<div class="max-w-3xl mx-auto mb-8 p-4 bg-gradient-to-r from-wedding-sky/30 to-wedding-steel/20 border-2 border-wedding-steel/40 rounded-lg shadow-sm">
+				<p class="text-wedding-navy font-medium text-base md:text-lg">
+					Silakan isi formulir berikut untuk mengirimkan ucapan dan mengonfirmasi kehadiran Anda
+				</p>
+			</div>
 
 			<!-- Counts -->
 			<div class="flex justify-center gap-x-8 gap-y-4 mb-8 flex-wrap">
@@ -137,12 +180,13 @@
 				onclick={() => (showForm = !showForm)}
 				class="wedding-button bg-wedding-navy text-white px-8 py-3 rounded-full transition-all duration-300 hover:bg-wedding-steel border-2 border-transparent hover:border-wedding-steel"
 			>
-				{showForm ? 'Tutup Form' : 'Tulis Ucapan'}
+				{showForm ? 'Tutup Form' : 'Tulis Ucapan & RSVP'}
 			</button>
 		</div>
 
 		{#if showForm}
 			<form
+				transition:fly={{ y: -20, duration: 300 }}
 				class="wedding-card bg-white max-w-2xl mx-auto mb-12 border-2 border-wedding-silver"
 				onsubmit={handleSubmit}
 			>
@@ -174,19 +218,6 @@
 					</div>
 
 					<div>
-						<label for="wish-email" class="block text-sm font-medium text-wedding-navy mb-2">
-							Email (Opsional)
-						</label>
-						<input
-							type="email"
-							id="wish-email"
-							bind:value={wishEmail}
-							class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wedding-gold focus:border-wedding-gold focus:border-transparent"
-							placeholder="email@example.com"
-						/>
-					</div>
-
-					<div>
 						<label for="wish-message" class="block text-sm font-medium text-wedding-navy mb-2">
 							Ucapan Anda * <span class="text-xs text-wedding-navy">(minimal 2 karakter)</span>
 						</label>
@@ -201,40 +232,89 @@
 						/>
 					</div>
 
-					<div>
-						<div class="block text-sm font-medium text-wedding-navy mb-2">
-							Konfirmasi Kehadiran *
+					<div class="p-4 bg-wedding-sky/20 border-2 border-wedding-steel/40 rounded-lg">
+						<div class="flex items-center gap-x-2 mb-2">
+							<svg
+								class="w-5 h-5 text-wedding-steel"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+								/>
+							</svg>
+							<label class="block text-sm font-semibold text-wedding-navy">
+								Konfirmasi Kehadiran *
+							</label>
 						</div>
-						<div class="flex gap-x-4 gap-y-2">
-							<label class="flex items-center cursor-pointer">
+						<p class="text-xs text-wedding-navy/80 mb-3 italic">
+							Mohon konfirmasikan kehadiran Anda sebelum acara
+						</p>
+						<div class="flex gap-x-6 gap-y-2">
+							<label
+								class="flex items-center cursor-pointer p-3 rounded-lg transition-all duration-200 {attending ===
+								'yes'
+									? 'bg-wedding-steel/20 border-2 border-wedding-steel'
+									: 'bg-white border-2 border-gray-200 hover:border-wedding-steel/40'}"
+							>
 								<input
 									type="radio"
 									name="attending"
 									value="yes"
 									bind:group={attending}
-									class="mr-2"
+									class="mr-2 w-4 h-4 text-wedding-steel focus:ring-wedding-steel"
 								/>
-								<span class="text-wedding-navy">Datang</span>
+								<span class="text-wedding-navy font-medium">Datang</span>
 							</label>
-							<label class="flex items-center cursor-pointer">
+							<label
+								class="flex items-center cursor-pointer p-3 rounded-lg transition-all duration-200 {attending ===
+								'no'
+									? 'bg-wedding-steel/20 border-2 border-wedding-steel'
+									: 'bg-white border-2 border-gray-200 hover:border-wedding-steel/40'}"
+							>
 								<input
 									type="radio"
 									name="attending"
 									value="no"
 									bind:group={attending}
-									class="mr-2"
+									onchange={() => {
+										visitorCount = 1;
+									}}
+									class="mr-2 w-4 h-4 text-wedding-steel focus:ring-wedding-steel"
 								/>
-								<span class="text-wedding-navy">Absen</span>
+								<span class="text-wedding-navy font-medium">Absen</span>
 							</label>
 						</div>
 					</div>
+
+					{#if attending === 'yes'}
+						<div>
+							<label for="visitor-count" class="block text-sm font-medium text-wedding-navy mb-2">
+								Jumlah Pengunjung *
+							</label>
+							<input
+								type="number"
+								id="visitor-count"
+								bind:value={visitorCount}
+								required
+								min="1"
+								max="20"
+								class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wedding-gold focus:border-wedding-gold focus:border-transparent"
+								placeholder="1"
+							/>
+						</div>
+					{/if}
 
 					<button
 						type="submit"
 						disabled={isSubmitting}
 						class="w-full wedding-button bg-wedding-steel text-white py-3 rounded-lg transition-colors hover:bg-wedding-accent disabled:opacity-50 disabled:cursor-not-allowed"
 					>
-						{isSubmitting ? 'Mengirim...' : 'Kirim Ucapan'}
+						{isSubmitting ? 'Mengirim...' : 'Kirim Ucapan & Konfirmasi'}
 					</button>
 				</div>
 			</form>
@@ -242,31 +322,55 @@
 
 		<!-- Wishes Display -->
 		<div class="max-w-4xl mx-auto space-y-6">
-			{#each wishes as wish (wish.id)}
-				<div
-					class="wedding-card bg-white transition-all duration-300 hover:shadow-xl border-l-4 border-wedding-steel"
-				>
-					<div class="flex justify-between items-start mb-3">
-						<div class="flex items-center gap-x-3">
-							<h3 class="font-semibold text-lg text-wedding-navy">{wish.guest_name}</h3>
-							{#if wish.attending === 'yes'}
-								<span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Hadir</span>
-							{:else if wish.attending === 'no'}
-								<span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Tidak Hadir</span>
-							{/if}
-						</div>
-						<span class="text-sm text-wedding-text-light">{formatTimestamp(wish.created_at)}</span>
-					</div>
-					<p class="text-wedding-text-dark leading-relaxed">{wish.message}</p>
-				</div>
-			{/each}
-
-			{#if wishes.length === 0}
+			{#if isLoading}
 				<div class="text-center text-wedding-navy py-12">
-					<p>Belum ada ucapan. Jadilah yang pertama memberikan ucapan!</p>
+					<p>Memuat ucapan...</p>
 				</div>
+			{:else}
+				{#each wishes as wish (wish.id)}
+					<div
+						class="wedding-card bg-white transition-all duration-300 hover:shadow-xl border-l-4 border-wedding-steel"
+					>
+						<div class="flex justify-between items-start mb-3">
+							<div class="flex items-center gap-x-3">
+								<h3 class="font-semibold text-lg text-wedding-navy">{wish.guest_name}</h3>
+							</div>
+							<span class="text-sm text-wedding-text-light">{formatTimestamp(wish.created_at)}</span>
+						</div>
+						<p class="text-wedding-text-dark leading-relaxed">{wish.message}</p>
+					</div>
+				{/each}
+
+				{#if wishes.length === 0}
+					<div class="text-center text-wedding-navy py-12">
+						<p>Belum ada ucapan. Jadilah yang pertama memberikan ucapan!</p>
+					</div>
+				{/if}
 			{/if}
 		</div>
+
+		<!-- Pagination Controls -->
+		{#if totalPages > 1 && !isLoading}
+			<div class="max-w-4xl mx-auto mt-8 flex items-center justify-center gap-x-4 gap-y-2 flex-wrap">
+				<button
+					onclick={() => goToPage(currentPage - 1)}
+					disabled={currentPage === 1 || isLoading}
+					class="wedding-button bg-wedding-navy text-white px-6 py-2 rounded-full transition-all duration-300 hover:bg-wedding-steel border-2 border-transparent hover:border-wedding-steel disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-wedding-navy"
+				>
+					Sebelumnya
+				</button>
+				<div class="text-wedding-navy font-medium">
+					Halaman {currentPage} dari {totalPages}
+				</div>
+				<button
+					onclick={() => goToPage(currentPage + 1)}
+					disabled={currentPage === totalPages || isLoading}
+					class="wedding-button bg-wedding-navy text-white px-6 py-2 rounded-full transition-all duration-300 hover:bg-wedding-steel border-2 border-transparent hover:border-wedding-steel disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-wedding-navy"
+				>
+					Selanjutnya
+				</button>
+			</div>
+		{/if}
 
 		<!-- Closing Text -->
 		<div class="mt-12 max-w-3xl mx-auto text-center">

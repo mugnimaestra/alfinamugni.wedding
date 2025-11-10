@@ -1,5 +1,15 @@
 -- Migration: Schema Cleanup and Simplification
 -- Removes unused tables and simplifies schema by eliminating multi-session concept
+-- 
+-- This migration removes the gallery_sessions system introduced in migration 0002.
+-- The session-based upload system is being replaced with a unified gallery approach.
+-- 
+-- Tables dropped:
+-- - rsvps, guest_wishes: Replaced by unified wishes_rsvp table (migration 0004)
+-- - email_notifications: Not currently used
+-- - gallery_sessions: Session system removed (introduced in 0002, removed here)
+--
+-- The photo_uploads table is recreated without the session_id column.
 -- Run: pnpm run db:migrate:preview (dev) or apply to production
 
 -- Drop unused tables
