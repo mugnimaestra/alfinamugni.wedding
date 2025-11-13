@@ -3,7 +3,7 @@
 		<!-- Closing Greeting -->
 		<div class="mb-8">
 			<h3 class="text-2xl md:text-3xl font-serif font-light text-wedding-silver-light mb-4">
-				Wassalamu'alaikum Wr. Wb.
+				Salam Hangat
 			</h3>
 			<p class="text-xl md:text-2xl font-serif font-medium text-wedding-silver-light">
 				Alfina & Mugni

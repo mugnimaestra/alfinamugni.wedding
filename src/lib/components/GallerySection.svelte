@@ -9,17 +9,13 @@
 	<div class="max-w-6xl mx-auto">
 		<!-- Header with Quote -->
 		<div class="text-center mb-16">
-			<h2 class="font-serif text-4xl md:text-6xl mb-8 font-light text-wedding-navy">Love Stories</h2>
+			<h2 class="font-serif text-4xl md:text-6xl mb-8 font-light text-wedding-navy">Kisah Kami</h2>
 
 			<div class="max-w-3xl mx-auto mb-8">
 				<p class="text-lg md:text-xl text-wedding-text-dark italic leading-relaxed">
 					Tidak ada yang spesial dalam cerita kami. Tapi kami sangat spesial untuk satu sama lain.
-					Dan Kami bersyukur, dipertemukan Allah diwaktu terbaik, Kini kami menanti hari istimewa
-					kami.
 				</p>
 			</div>
-
-			<h3 class="font-serif text-2xl md:text-3xl text-wedding-steel">Love Story</h3>
 		</div>
 
 		<!-- Timeline -->

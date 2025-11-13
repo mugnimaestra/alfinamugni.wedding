@@ -157,11 +157,6 @@
 			<h2 class="font-serif text-4xl md:text-6xl mb-6 font-light text-wedding-navy">
 				Wishes & RSVP
 			</h2>
-
-			<h3 class="text-2xl md:text-3xl mb-6 text-wedding-navy font-medium">
-				Sampaikan ucapan selamat Anda dan konfirmasikan kehadiran untuk hari istimewa kami
-			</h3>
-
 			<!-- Callout Banner -->
 			<div class="max-w-3xl mx-auto mb-8 p-4 bg-gradient-to-r from-wedding-sky/30 to-wedding-steel/20 border-2 border-wedding-steel/40 rounded-lg shadow-sm">
 				<p class="text-wedding-navy font-medium text-base md:text-lg">
@@ -169,12 +164,9 @@
 				</p>
 			</div>
 
-			<!-- Counts -->
-			<div class="flex justify-center gap-x-8 gap-y-4 mb-8 flex-wrap">
-				<div class="text-center">
-					<div class="text-3xl font-bold text-wedding-navy">{counts.total}</div>
-					<div class="text-sm text-wedding-navy">Comments</div>
-				</div>
+			<!-- Mascot -->
+			<div class="flex justify-center mb-8">
+				<img src="/mascot.png" alt="Wedding Mascot" class="h-64 w-64 object-contain" />
 			</div>
 			<button
 				onclick={() => (showForm = !showForm)}
