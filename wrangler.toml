@@ -28,4 +28,4 @@ database_id = "b09507db-7dbb-4fb9-bad6-ab4b3bb3d064"
 
 [[env.production.r2_buckets]]
 binding = "WEDDING_PHOTOS"
-bucket_name = "wedding-photos-production"
+bucket_name = "alfinamugni-wedding"
