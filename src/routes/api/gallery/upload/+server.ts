@@ -1,10 +1,13 @@
-import { json, error } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, platform }) => {
 	try {
 		if (!platform?.env.DB || !platform?.env.WEDDING_PHOTOS) {
-			throw error(500, 'Server configuration error');
+			return json(
+				{ success: false, error: 'Server configuration error' },
+				{ status: 500 }
+			);
 		}
 
 		const formData = await request.formData();
@@ -22,18 +25,34 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		const height = parseInt(formData.get('height') as string) || 0;
 
 		if (!file) {
-			throw error(400, 'No file provided');
+			return json(
+				{ success: false, error: 'No file provided' },
+				{ status: 400 }
+			);
 		}
 
 		// Validate file type
-		if (!file.type.startsWith('image/')) {
-			throw error(400, 'Only image files are allowed');
+		const isImage = file.type.startsWith('image/');
+		const isVideo = file.type.startsWith('video/');
+
+		if (!isImage && !isVideo) {
+			return json(
+				{ success: false, error: 'Only image and video files are allowed' },
+				{ status: 400 }
+			);
 		}
 
-		// Validate file size (max 20MB)
-		const maxSize = 20 * 1024 * 1024;
+		// Determine media_type
+		const mediaType = isVideo ? 'video' : 'image';
+
+		// Validate file size (max 20MB for images, 100MB for videos)
+		const maxSize = isVideo ? 100 * 1024 * 1024 : 20 * 1024 * 1024;
 		if (file.size > maxSize) {
-			throw error(400, 'File too large (max 20MB)');
+			const maxSizeMB = isVideo ? '100MB' : '20MB';
+			return json(
+				{ success: false, error: `File too large (max ${maxSizeMB})` },
+				{ status: 400 }
+			);
 		}
 
 		// Generate unique keys for R2
@@ -44,11 +63,19 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		const thumbnailKey = `thumbnails/${new Date().toISOString().split('T')[0]}/${timestamp}-${randomStr}.${extension}`;
 
 		// Upload main image to R2
-		await platform.env.WEDDING_PHOTOS.put(mainKey, file.stream(), {
-			httpMetadata: {
-				contentType: file.type
-			}
-		});
+		try {
+			await platform.env.WEDDING_PHOTOS.put(mainKey, file.stream(), {
+				httpMetadata: {
+					contentType: file.type
+				}
+			});
+		} catch (r2Error) {
+			console.error('R2 upload error:', r2Error);
+			return json(
+				{ success: false, error: 'Failed to upload file to storage. Please try again.' },
+				{ status: 500 }
+			);
+		}
 
 		// Note: Thumbnail should be uploaded separately by the client
 		// Here we just store the thumbnail key for future use
@@ -56,40 +83,55 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		let actualThumbnailKey = thumbnailKey;
 		
 		if (thumbnailFile) {
-			await platform.env.WEDDING_PHOTOS.put(thumbnailKey, thumbnailFile.stream(), {
-				httpMetadata: {
-					contentType: thumbnailFile.type
-				}
-			});
+			try {
+				await platform.env.WEDDING_PHOTOS.put(thumbnailKey, thumbnailFile.stream(), {
+					httpMetadata: {
+						contentType: thumbnailFile.type
+					}
+				});
+			} catch (r2Error) {
+				console.error('Thumbnail upload error:', r2Error);
+				// Continue without thumbnail if it fails
+			}
 		}
 
 		// Save metadata to D1
-		const result = await platform.env.DB.prepare(
-			`INSERT INTO photo_uploads 
-			(filename, original_name, file_size, compressed_size, original_size, compression_ratio,
-			 content_type, bucket_path, r2_key, thumbnail_url, uploader_name, description, 
-			 upload_date, device_info, network_info, width, height)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?, ?, ?)`
-		)
-			.bind(
-				file.name,
-				file.name,
-				file.size,
-				compressedSize,
-				originalSize,
-				compressionRatio,
-				file.type,
-				mainKey,
-				mainKey,
-				actualThumbnailKey,
-				uploaderName,
-				description,
-				deviceInfo,
-				networkInfo,
-				width,
-				height
+		let result;
+		try {
+			result = await platform.env.DB.prepare(
+				`INSERT INTO photo_uploads 
+				(filename, original_name, file_size, compressed_size, original_size, compression_ratio,
+				 content_type, media_type, bucket_path, r2_key, thumbnail_url, uploader_name, description, 
+				 upload_date, device_info, network_info, width, height)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?, ?, ?)`
 			)
-			.run();
+				.bind(
+					file.name,
+					file.name,
+					file.size,
+					compressedSize,
+					originalSize,
+					compressionRatio,
+					file.type,
+					mediaType,
+					mainKey,
+					mainKey,
+					actualThumbnailKey,
+					uploaderName,
+					description,
+					deviceInfo,
+					networkInfo,
+					width,
+					height
+				)
+				.run();
+		} catch (dbError) {
+			console.error('Database error:', dbError);
+			return json(
+				{ success: false, error: 'Failed to save file metadata. Please try again.' },
+				{ status: 500 }
+			);
+		}
 
 		return json({
 			success: true,
@@ -110,10 +152,11 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		});
 	} catch (err) {
 		console.error('Upload error:', err);
-		if (err instanceof Error) {
-			throw error(500, err.message);
-		}
-		throw error(500, 'Upload failed');
+		const errorMessage = err instanceof Error ? err.message : 'Upload failed';
+		return json(
+			{ success: false, error: errorMessage },
+			{ status: 500 }
+		);
 	}
 };
 

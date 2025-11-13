@@ -22,8 +22,10 @@
 <!-- Main Content -->
 <slot />
 
-<!-- Audio Player -->
-<AudioPlayer />
+<!-- Audio Player - Hidden on gallery page -->
+{#if $page.url.pathname !== '/gallery'}
+	<AudioPlayer />
+{/if}
 
 <style lang="postcss" global>
 	@tailwind base;

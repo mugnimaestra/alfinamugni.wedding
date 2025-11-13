@@ -5,24 +5,27 @@ compatibility_flags = ["nodejs_compat"]
 # Cloudflare Pages configuration
 pages_build_output_dir = ".svelte-kit/cloudflare"
 
+# D1 Database bindings (preview/development)
 [[d1_databases]]
 binding = "DB"
 database_name = "wedding-database-preview"
-database_id = "a2cc2db7-740c-4532-ac34-cb7956aac5d4"  # Set via environment variable
+database_id = "a2cc2db7-740c-4532-ac34-cb7956aac5d4"
 
-[[env.production.d1_databases]]
-binding = "DB"
-database_name = "wedding-database"
-database_id = "b09507db-7dbb-4fb9-bad6-ab4b3bb3d064"  # Set via environment variable
-
-# R2 binding for photo storage (used for local dev and preview)
+# R2 binding for photo storage (preview/development)
 [[r2_buckets]]
 binding = "WEDDING_PHOTOS"
 bucket_name = "wedding-photos-preview"
 
-# Environment variables
-[env.development]
-vars = { ENVIRONMENT = "development" }
-
+# Production environment configuration
+# Note: Configure production bindings in Cloudflare Pages dashboard
+# Settings > Environment Variables for better security
 [env.production]
-vars = { ENVIRONMENT = "production" }
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "wedding-database"
+database_id = "b09507db-7dbb-4fb9-bad6-ab4b3bb3d064"
+
+[[env.production.r2_buckets]]
+binding = "WEDDING_PHOTOS"
+bucket_name = "wedding-photos-production"

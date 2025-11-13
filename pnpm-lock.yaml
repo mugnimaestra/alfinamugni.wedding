@@ -41,6 +41,9 @@ importers:
       svelte-inview:
         specifier: ^4.0.4
         version: 4.0.4(svelte@5.43.2)
+      svelte-photoswipe:
+        specifier: ^0.0.2
+        version: 0.0.2
       sveltekit-superforms:
         specifier: ^2.28.0
         version: 2.28.0(@sveltejs/kit@2.48.4(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.43.2)(vite@6.4.1(@types/node@24.10.0)(jiti@1.21.7)))(svelte@5.43.2)(vite@6.4.1(@types/node@24.10.0)(jiti@1.21.7)))(@types/json-schema@7.0.15)(esbuild@0.25.12)(svelte@5.43.2)(typescript@5.9.3)
@@ -2304,6 +2307,11 @@ packages:
   pathval@1.1.1:
     resolution: {integrity: sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==}
 
+  photoswipe@https://codeload.github.com/dimsemenov/PhotoSwipe/tar.gz/008338268efddc55d36cfc3a8fbbb3940a6ddd23:
+    resolution: {tarball: https://codeload.github.com/dimsemenov/PhotoSwipe/tar.gz/008338268efddc55d36cfc3a8fbbb3940a6ddd23}
+    version: 5.1.8
+    engines: {node: '>= 0.12.0'}
+
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
 
@@ -2671,6 +2679,9 @@ packages:
     resolution: {integrity: sha512-PlXNSHHijvQ6MhmSYUj6cMyS+39NttoTffk7W5WYF8T2tsyLgJnKhyuAF+/hSujbY0vpsmqXaMd2nolEKvR8Kw==}
     peerDependencies:
       svelte: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^5.0.0-next
+
+  svelte-photoswipe@0.0.2:
+    resolution: {integrity: sha512-Pa8f3uOsxjWyAUG0VbRQT+QMz3cVt9X6FuPSw/DjR3MSD3wj2+Ng2yNaaqxut2llLO7aulXLK7Vt3JxYiemfDw==}
 
   svelte-preprocess@5.1.4:
     resolution: {integrity: sha512-IvnbQ6D6Ao3Gg6ftiM5tdbR6aAETwjhHV+UKGf5bHGYR69RQvF1ho0JKPcbUON4vy4R7zom13jPjgdOWCQ5hDA==}
@@ -4986,6 +4997,8 @@ snapshots:
 
   pathval@1.1.1: {}
 
+  photoswipe@https://codeload.github.com/dimsemenov/PhotoSwipe/tar.gz/008338268efddc55d36cfc3a8fbbb3940a6ddd23: {}
+
   picocolors@1.1.1: {}
 
   picomatch@2.3.1: {}
@@ -5360,6 +5373,10 @@ snapshots:
   svelte-inview@4.0.4(svelte@5.43.2):
     dependencies:
       svelte: 5.43.2
+
+  svelte-photoswipe@0.0.2:
+    dependencies:
+      photoswipe: https://codeload.github.com/dimsemenov/PhotoSwipe/tar.gz/008338268efddc55d36cfc3a8fbbb3940a6ddd23
 
   svelte-preprocess@5.1.4(postcss-load-config@3.1.4(postcss@8.5.6))(postcss@8.5.6)(svelte@5.43.2)(typescript@5.9.3):
     dependencies:

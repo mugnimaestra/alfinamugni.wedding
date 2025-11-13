@@ -40,6 +40,19 @@
 			Save The Date
 		</h2>
 
+		<!-- Couple Photo -->
+		<div class="mb-8 flex justify-center">
+			<div
+				class="w-40 h-56 mx-auto decorative-frame overflow-hidden flex items-center justify-center"
+			>
+				<img
+					src="/photos/save-the-date-photo.jpg"
+					alt="Alfina & Mugni"
+					class="w-full h-full object-cover"
+				/>
+			</div>
+		</div>
+
 		<p class="text-lg md:text-xl mb-12 text-wedding-text-light">Kami akan menikah dalam</p>
 
 		<div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
@@ -107,3 +120,73 @@
 		</div>
 	</div>
 </section>
+
+<style>
+	.decorative-frame {
+		--b: 3px; /* border thickness */
+		--s: 16px; /* size of corner decoration */
+		--c: #5d88bb; /* wedding-steel color */
+		--c2: #102336; /* wedding-navy color */
+		--c3: #b3cbe4; /* wedding-sky color */
+
+		position: relative;
+		border-radius: 50% / 40%; /* Portrait/oval shape: 50% horizontal, 40% vertical */
+		background:
+			/* Top-left corner */ conic-gradient(
+					from 90deg at top var(--b) left var(--b),
+					transparent 25%,
+					var(--c) 0 50%,
+					transparent 0
+				)
+				0 0,
+			/* Top-right corner */
+				conic-gradient(
+					from 180deg at top var(--b) right var(--b),
+					transparent 25%,
+					var(--c) 0 50%,
+					transparent 0
+				)
+				100% 0,
+			/* Bottom-left corner */
+				conic-gradient(
+					from 0deg at bottom var(--b) left var(--b),
+					transparent 25%,
+					var(--c) 0 50%,
+					transparent 0
+				)
+				0 100%,
+			/* Bottom-right corner */
+				conic-gradient(
+					from -90deg at bottom var(--b) right var(--b),
+					transparent 25%,
+					var(--c) 0 50%,
+					transparent 0
+				)
+				100% 100%,
+			/* Base background - ellipse instead of circle */
+				radial-gradient(ellipse at center, var(--c3) 0%, var(--c3) 100%);
+		background-size: var(--s) var(--s), var(--s) var(--s), var(--s) var(--s), var(--s) var(--s),
+			100% 100%;
+		background-repeat: no-repeat;
+		border: var(--b) solid var(--c);
+		box-shadow: 0 0 0 2px var(--c2), 0 4px 12px rgba(16, 35, 54, 0.15),
+			inset 0 0 0 1px rgba(93, 136, 187, 0.2);
+	}
+
+	.decorative-frame::before {
+		content: '';
+		position: absolute;
+		inset: calc(var(--b) + 2px);
+		border-radius: 50% / 40%; /* Match parent oval shape */
+		border: 1px solid rgba(255, 255, 255, 0.4);
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	.decorative-frame img {
+		position: relative;
+		z-index: 0;
+		border-radius: 50% / 40%; /* Match parent oval shape */
+		box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.1);
+	}
+</style>

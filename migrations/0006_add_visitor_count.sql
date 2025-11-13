@@ -1,16 +1,18 @@
 -- Add visitor_count column to wishes_rsvp table
 -- Allows tracking how many visitors are coming when RSVP is "yes"
--- 
--- Note: SQLite doesn't support IF NOT EXISTS for ALTER TABLE ADD COLUMN.
--- If this migration has been run before and the column already exists, comment out
--- the ALTER TABLE line below to avoid "duplicate column name" error.
--- The UPDATE statements will work correctly whether the column is newly added or already exists.
+--
+-- This migration is idempotent - it can be run multiple times safely.
+-- We check if the column exists before attempting to add it.
 
--- Add visitor_count column with default value of 1
--- Note: SQLite doesn't support IF NOT EXISTS for ALTER TABLE ADD COLUMN.
--- If this column already exists, this statement will fail - that's OK, comment it out if needed.
--- For fresh databases, this should be uncommented:
-ALTER TABLE wishes_rsvp ADD COLUMN visitor_count INTEGER DEFAULT 1;
+-- Check if visitor_count column exists
+SELECT COUNT(*) as visitor_count_exists
+FROM pragma_table_info('wishes_rsvp')
+WHERE name = 'visitor_count';
+
+-- Add visitor_count column if it doesn't exist
+-- UNCOMMENT the line below if the check above returns 0 (column doesn't exist)
+-- COMMENT OUT the line below if the check above returns 1 (column exists)
+-- ALTER TABLE wishes_rsvp ADD COLUMN visitor_count INTEGER DEFAULT 1;
 
 -- Update existing records where attending is 'yes' to have visitor_count = 1
 UPDATE wishes_rsvp SET visitor_count = 1 WHERE attending = 'yes' AND visitor_count IS NULL;

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import PhotoModal from '$lib/components/gallery/PhotoModal.svelte';
+
 	interface Photo {
 		id: number;
 		url: string;
@@ -81,6 +83,21 @@
 	let columnHeights = $state<number[]>([]);
 	let photoLayouts = $state<PhotoLayout[]>([]);
 	let gap = 16; // gap-4 = 16px
+
+	// Modal state
+	let selectedPhotoIndex = $state(-1);
+	let showPhotoModal = $state(false);
+
+	// Transform galleryPhotos to match PhotoModal interface
+	const transformedPhotos = $derived(
+		galleryPhotos.map((photo) => ({
+			id: photo.id,
+			url: photo.url,
+			description: photo.alt,
+			uploader_name: undefined,
+			upload_date: undefined,
+		}))
+	);
 
 	// Calculate column count based on container width
 	function calculateColumnCount(width: number): number {
@@ -260,6 +277,20 @@
 
 	// Calculate container height
 	const containerHeight = $derived(columnHeights.length > 0 ? Math.max(...columnHeights) : 0);
+
+	// Handle photo click
+	function handlePhotoClick(index: number) {
+		if (index >= 0 && index < galleryPhotos.length) {
+			selectedPhotoIndex = index;
+			showPhotoModal = true;
+		}
+	}
+
+	// Handle modal close
+	function handleCloseModal() {
+		selectedPhotoIndex = -1;
+		showPhotoModal = false;
+	}
 </script>
 
 <section
@@ -281,9 +312,11 @@
 			</div>
 		{:else}
 			<div bind:this={containerRef} class="relative w-full" style="height: {containerHeight}px;">
-				{#each photoLayouts as photoLayout (photoLayout.photo.id)}
-					<div
-						class="group absolute overflow-hidden rounded-lg shadow-md transition-all hover:shadow-xl"
+				{#each photoLayouts as photoLayout, index (photoLayout.photo.id)}
+					<button
+						type="button"
+						onclick={() => handlePhotoClick(index)}
+						class="group absolute overflow-hidden rounded-lg shadow-md transition-all hover:shadow-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-wedding-accent focus:ring-offset-2"
 						style="left: {photoLayout.left}px; top: {photoLayout.top}px; width: {photoLayout.width}px; {photoLayout.loaded
 							? `height: ${photoLayout.height}px; opacity: 1;`
 							: 'opacity: 0;'}"
@@ -295,9 +328,16 @@
 							onload={(e) => handleImageLoad(e, photoLayout)}
 							class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
 						/>
-					</div>
+					</button>
 				{/each}
 			</div>
 		{/if}
 	</div>
 </section>
+
+<PhotoModal
+	photos={transformedPhotos}
+	currentIndex={selectedPhotoIndex}
+	isOpen={showPhotoModal}
+	onClose={handleCloseModal}
+/>

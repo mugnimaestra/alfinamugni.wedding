@@ -7,12 +7,17 @@ export const load: PageServerLoad = async ({ platform }) => {
 			return { photos: [] };
 		}
 
+		// Load first 30 photos for initial render
+		const limit = 30;
 		const result = await platform.env.DB.prepare(
-			`SELECT id, filename, original_name, file_size, content_type, r2_key, 
+			`SELECT id, filename, original_name, file_size, content_type, media_type, r2_key, 
 			       uploader_name, description, upload_date, featured
 			FROM photo_uploads
-			ORDER BY upload_date DESC`
-		).all();
+			ORDER BY upload_date DESC
+			LIMIT ?`
+		)
+			.bind(limit)
+			.all();
 
 		return {
 			photos: result.results || []
