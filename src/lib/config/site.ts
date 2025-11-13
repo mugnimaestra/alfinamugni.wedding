@@ -2,7 +2,7 @@
  * Site configuration for metadata and SEO
  */
 export const siteConfig = {
-	name: 'Undangan Pernikahan Alfina & Mugni',
+	name: 'The Wedding of Alfina & Mugni',
 	shortName: 'A&M Wedding',
 	description: 'Bergabunglah bersama kami dalam perayaan cinta Alfina dan Mugni yang memulai perjalanan baru mereka. 29 November 2025 di Jakarta, Indonesia.',
 	url: 'https://alfinamugni.wedding', // Update with actual domain when available

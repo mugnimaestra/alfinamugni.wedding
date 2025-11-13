@@ -9,7 +9,7 @@
 	<div class="max-w-6xl mx-auto">
 		<!-- Header with Quote -->
 		<div class="text-center mb-16">
-			<h2 class="font-serif text-4xl md:text-6xl mb-8 font-light text-wedding-navy">Galeri Foto</h2>
+			<h2 class="font-serif text-4xl md:text-6xl mb-8 font-light text-wedding-navy">Love Stories</h2>
 
 			<div class="max-w-3xl mx-auto mb-8">
 				<p class="text-lg md:text-xl text-wedding-text-dark italic leading-relaxed">

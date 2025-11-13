@@ -4,6 +4,7 @@
 		{ id: 'details', label: 'Detail Acara' },
 		{ id: 'gift', label: 'Hadiah' },
 		{ id: 'gallery', label: 'Kisah Kami' },
+		{ id: 'photo-gallery', label: 'Galeri Foto' },
 		{ id: 'wishes', label: 'Ucapan' },
 	];
 

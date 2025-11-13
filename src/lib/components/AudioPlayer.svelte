@@ -24,12 +24,10 @@
 
 		// Add event listeners
 		audioElement.addEventListener('play', () => {
-			console.log('[AudioPlayer] play event fired');
 			isPlaying = true;
 		});
 
 		audioElement.addEventListener('pause', () => {
-			console.log('[AudioPlayer] pause event fired');
 			isPlaying = false;
 		});
 
@@ -81,75 +79,36 @@
 	});
 
 	async function play() {
-		console.log('[AudioPlayer] play() called', {
-			audioElement: !!audioElement,
-			audioElementPaused: audioElement?.paused,
-			isPlaying,
-			shouldPlay: $audioStore.shouldPlay,
-		});
 		if (audioElement && audioElement.paused) {
 			try {
-				console.log('[AudioPlayer] Attempting to play audio');
 				await audioElement.play();
 				isPlaying = true; // Update synchronously
 				audioStore.setPlaying(true);
 
 				// Reset shouldPlay after successful autoplay to prevent effect from retriggering
 				if ($audioStore.shouldPlay) {
-					console.log('[AudioPlayer] Resetting shouldPlay flag');
 					audioStore.resetShouldPlay();
 				}
-
-				console.log('[AudioPlayer] Audio playing, isPlaying:', isPlaying);
 			} catch (error) {
-				console.warn('[AudioPlayer] Audio autoplay prevented:', error);
 				isPlaying = false;
 				audioStore.setPlaying(false);
 				audioStore.showAutoplayBlockedToast();
 			}
-		} else {
-			console.log(
-				'[AudioPlayer] Cannot play - audioElement:',
-				!!audioElement,
-				'paused:',
-				audioElement?.paused
-			);
 		}
 	}
 
 	function pause() {
-		console.log('[AudioPlayer] pause() called', {
-			audioElement: !!audioElement,
-			audioElementPaused: audioElement?.paused,
-			isPlaying,
-		});
 		if (audioElement && !audioElement.paused) {
-			console.log('[AudioPlayer] Pausing audio element');
 			audioElement.pause();
 			isPlaying = false; // Update synchronously
 			audioStore.setPlaying(false);
-			console.log('[AudioPlayer] Audio paused, isPlaying:', isPlaying);
-		} else {
-			console.log(
-				'[AudioPlayer] Cannot pause - audioElement:',
-				!!audioElement,
-				'paused:',
-				audioElement?.paused
-			);
 		}
 	}
 
 	function togglePlay() {
-		console.log('[AudioPlayer] togglePlay() called', {
-			audioElement: !!audioElement,
-			audioElementPaused: audioElement?.paused,
-			isPlaying,
-		});
 		if (audioElement && !audioElement.paused) {
-			console.log('[AudioPlayer] Calling pause()');
 			pause();
 		} else {
-			console.log('[AudioPlayer] Calling play()');
 			play();
 		}
 	}
@@ -171,7 +130,6 @@
 	<!-- Main Play/Pause Button -->
 	<button
 		onclick={() => {
-			console.log('[AudioPlayer] Button clicked');
 			togglePlay();
 		}}
 		onmouseenter={() => (isHovered = true)}
