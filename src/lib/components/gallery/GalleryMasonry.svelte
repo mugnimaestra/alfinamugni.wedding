@@ -22,6 +22,27 @@
 	let loading = $state(false);
 	let hasMore = $state(true);
 	let sentinelRef = $state<HTMLDivElement | null>(null);
+	let previousPhotoCount = $state(initialPhotos.length);
+	let newPhotoIds = $state<Set<string | number>>(new Set());
+
+	// Watch for new photos added (from uploads)
+	$effect(() => {
+		if (initialPhotos.length > previousPhotoCount) {
+			// New photos were added - mark them for animation
+			const newIds = new Set<string | number>();
+			initialPhotos.slice(0, initialPhotos.length - previousPhotoCount).forEach(p => {
+				newIds.add(p.id);
+			});
+			newPhotoIds = newIds;
+			
+			// Clear animation after 2 seconds
+			setTimeout(() => {
+				newPhotoIds = new Set();
+			}, 2000);
+		}
+		photos = initialPhotos;
+		previousPhotoCount = initialPhotos.length;
+	});
 
 	async function loadMore() {
 		if (loading || !hasMore) return;
@@ -111,7 +132,7 @@
 			<button
 				type="button"
 				onclick={() => onPhotoClick(photo)}
-				class="masonry-item group flex flex-col overflow-hidden rounded-lg border border-wedding-beige bg-white shadow-sm transition-all hover:shadow-lg hover:-translate-y-1"
+				class="masonry-item group flex flex-col overflow-hidden rounded-lg border border-wedding-beige bg-white shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 {newPhotoIds.has(photo.id) ? 'animate-fadeInScale' : ''}"
 			>
 				<div class="relative overflow-hidden">
 					{#if isVideo(photo)}
@@ -188,6 +209,21 @@
 {/if}
 
 <style>
+	@keyframes fadeInScale {
+		from {
+			opacity: 0;
+			transform: scale(0.8);
+		}
+		to {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	.animate-fadeInScale {
+		animation: fadeInScale 0.6s ease-out;
+	}
+
 	.masonry-grid {
 		column-count: 2;
 		column-gap: 1rem;

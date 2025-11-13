@@ -64,7 +64,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 
 		// Upload main image to R2
 		try {
-			await platform.env.WEDDING_PHOTOS.put(mainKey, file.stream(), {
+			await platform.env.WEDDING_PHOTOS.put(mainKey, await file.arrayBuffer(), {
 				httpMetadata: {
 					contentType: file.type
 				}
@@ -84,7 +84,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		
 		if (thumbnailFile) {
 			try {
-				await platform.env.WEDDING_PHOTOS.put(thumbnailKey, thumbnailFile.stream(), {
+				await platform.env.WEDDING_PHOTOS.put(thumbnailKey, await thumbnailFile.arrayBuffer(), {
 					httpMetadata: {
 						contentType: thumbnailFile.type
 					}

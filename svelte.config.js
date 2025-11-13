@@ -11,8 +11,8 @@ const config = {
 				exclude: ['<all>']
 			},
 			platformProxy: {
-				configPath: 'wrangler.toml'
-				// persist: false is default, uses remote preview database
+				configPath: 'wrangler.toml',
+				persist: true // Enable local D1 persistence
 			}
 		}),
 	},

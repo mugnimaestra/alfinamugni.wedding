@@ -299,7 +299,7 @@
 >
 	<div class="max-w-6xl mx-auto">
 		<div class="text-center mb-12">
-			<h2 class="font-serif text-4xl md:text-6xl mb-6 font-light text-wedding-navy">Galeri Foto</h2>
+			<h2 class="font-serif text-4xl md:text-6xl mb-6 font-light text-wedding-navy">Photo Gallery</h2>
 			<p class="text-lg md:text-xl text-wedding-text-light max-w-2xl mx-auto">
 				Momen-momen indah perjalanan cinta kami
 			</p>

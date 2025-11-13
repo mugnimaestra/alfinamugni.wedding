@@ -45,9 +45,9 @@
 		aria-live="polite"
 	>
 		<div
-			class="toast-content bg-white rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] p-4 flex items-start gap-x-3 border-l-4 border-wedding-steel"
+			class="toast-content bg-gradient-to-br from-white to-green-50 rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.2)] p-4 flex items-start gap-x-3 border-l-4 border-green-500"
 		>
-			<div class="toast-message flex-1 text-sm text-wedding-navy">
+			<div class="toast-message flex-1 text-sm text-wedding-navy font-medium">
 				{message}
 			</div>
 		<button

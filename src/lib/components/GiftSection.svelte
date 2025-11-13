@@ -179,7 +179,7 @@
 >
 	<div class="max-w-6xl mx-auto text-center">
 		<h2 class="font-serif text-4xl md:text-6xl mb-6 font-light text-wedding-navy">
-			Amplop Digital
+			Digital Gift
 		</h2>
 
 		<div class="max-w-3xl mx-auto mb-12">
@@ -227,11 +227,11 @@
 							class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-wedding-sky to-wedding-cream rounded-t-lg origin-bottom envelope-flap"
 							style="border: 2px solid rgba(93, 136, 187, 0.3); border-bottom: none; transform-origin: bottom center; transform: rotateX({flapRotation.current}deg); backface-visibility: hidden;"
 						>
-							<!-- Flap inner side (visible when opened) -->
-							<div
-								class="absolute inset-0 bg-gradient-to-b from-wedding-beige to-wedding-cream rounded-t-lg"
-								style="backface-visibility: hidden; transform: rotateX(180deg);"
-							/>
+						<!-- Flap inner side (visible when opened) -->
+						<div
+							class="absolute inset-0 bg-gradient-to-b from-wedding-beige to-wedding-cream rounded-t-lg"
+							style="backface-visibility: hidden; transform: rotateX(180deg);"
+						></div>
 						</div>
 
 						<!-- Envelope Content Area -->

@@ -155,7 +155,7 @@
 	<div class="max-w-6xl mx-auto w-full">
 		<div class="text-center mb-12">
 			<h2 class="font-serif text-4xl md:text-6xl mb-6 font-light text-wedding-navy">
-				Ucapan & Konfirmasi Kehadiran
+				Wishes & RSVP
 			</h2>
 
 			<h3 class="text-2xl md:text-3xl mb-6 text-wedding-navy font-medium">

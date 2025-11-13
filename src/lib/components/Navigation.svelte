@@ -1,11 +1,11 @@
 <script lang="ts">
 	const navItems = [
-		{ id: 'countdown', label: 'Hitung Mundur' },
-		{ id: 'details', label: 'Detail Acara' },
-		{ id: 'gift', label: 'Hadiah' },
-		{ id: 'gallery', label: 'Kisah Kami' },
-		{ id: 'photo-gallery', label: 'Galeri Foto' },
-		{ id: 'wishes', label: 'Ucapan' },
+		{ id: 'countdown', label: 'Save The Date' },
+		{ id: 'details', label: 'Event Details' },
+		{ id: 'gift', label: 'Digital Gift' },
+		{ id: 'gallery', label: 'Love Stories' },
+		{ id: 'wishes', label: 'Wishes & RSVP' },
+		{ id: 'photo-gallery', label: 'Photo Gallery' },
 	];
 
 	function scrollToSection(sectionId: string) {

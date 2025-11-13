@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { getDeviceInfo, getNetworkInfo } from '$lib/utils/device';
+	import Confetti from 'svelte-confetti';
 
 	interface Props {
 		isActive?: boolean;
-		onSuccess?: () => void;
+		onSuccess?: (count: number) => void;
 		onClose: () => void;
 		isOpen: boolean;
 	}
@@ -18,6 +19,8 @@
 	let uploadProgress = $state(0);
 	let error = $state('');
 	let successCount = $state(0);
+	let showSuccess = $state(false);
+	let showConfetti = $state(false);
 
 	function handleFileSelect(e: Event) {
 		const input = e.target as HTMLInputElement;
@@ -39,6 +42,77 @@
 
 	function isVideoFile(file: File): boolean {
 		return file.type.startsWith('video/');
+	}
+
+	async function getMediaDimensions(file: File, preview: string): Promise<{ width: number; height: number }> {
+		try {
+			if (isVideoFile(file)) {
+				// Use HTMLVideoElement for video
+				return new Promise((resolve) => {
+					const video = document.createElement('video');
+					let timeoutId: ReturnType<typeof setTimeout>;
+					
+					const cleanup = () => {
+						clearTimeout(timeoutId);
+						URL.revokeObjectURL(video.src);
+					};
+					
+					video.onloadedmetadata = () => {
+						resolve({
+							width: video.videoWidth || 0,
+							height: video.videoHeight || 0
+						});
+						cleanup();
+					};
+					video.onerror = () => {
+						resolve({ width: 0, height: 0 });
+						cleanup();
+					};
+					
+					video.src = preview;
+					
+					// Timeout after 5 seconds
+					timeoutId = setTimeout(() => {
+						resolve({ width: 0, height: 0 });
+						cleanup();
+					}, 5000);
+				});
+			} else {
+				// Use Image() for images
+				return new Promise((resolve) => {
+					const img = new Image();
+					let timeoutId: ReturnType<typeof setTimeout>;
+					
+					const cleanup = () => {
+						clearTimeout(timeoutId);
+						URL.revokeObjectURL(img.src);
+					};
+					
+					img.onload = () => {
+						resolve({
+							width: img.width || 0,
+							height: img.height || 0
+						});
+						cleanup();
+					};
+					img.onerror = () => {
+						resolve({ width: 0, height: 0 });
+						cleanup();
+					};
+					
+					img.src = preview;
+					
+					// Timeout after 5 seconds
+					timeoutId = setTimeout(() => {
+						resolve({ width: 0, height: 0 });
+						cleanup();
+					}, 5000);
+				});
+			}
+		} catch (err) {
+			console.error('Failed to get media dimensions:', err);
+			return { width: 0, height: 0 };
+		}
 	}
 
 	function removeFile(index: number) {
@@ -75,16 +149,16 @@
 			formData.append('network_info', networkInfo);
 			formData.append('original_size', file.size.toString());
 
+			// Get media dimensions (supports both video and image)
 			try {
-				const img = new Image();
-				img.src = previews[i];
-				await new Promise((resolve) => {
-					img.onload = resolve;
-				});
-				formData.append('width', img.width.toString());
-				formData.append('height', img.height.toString());
+				const dimensions = await getMediaDimensions(file, previews[i]);
+				formData.append('width', dimensions.width.toString());
+				formData.append('height', dimensions.height.toString());
 			} catch (err) {
-				console.error('Failed to get image dimensions:', err);
+				console.error('Failed to get media dimensions:', err);
+				// Set default dimensions if failed
+				formData.append('width', '0');
+				formData.append('height', '0');
 			}
 
 			try {
@@ -130,11 +204,21 @@
 		isUploading = false;
 		uploadProgress = 100;
 
+		// Show success state with confetti!
+		showSuccess = true;
+		showConfetti = true;
+
+		// Hide confetti after animation
 		setTimeout(() => {
+			showConfetti = false;
+		}, 3000);
+
+		// Close modal and trigger refresh after celebration
+		setTimeout(() => {
+			if (onSuccess) onSuccess(successCount);
 			resetForm();
 			onClose();
-			if (onSuccess) onSuccess();
-		}, 1000);
+		}, 2500);
 	}
 
 	function resetForm() {
@@ -145,6 +229,8 @@
 		uploadProgress = 0;
 		error = '';
 		successCount = 0;
+		showSuccess = false;
+		showConfetti = false;
 	}
 
 	function handleClose() {
@@ -157,7 +243,15 @@
 
 {#if isOpen}
 	<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-		<div class="absolute inset-0 bg-black/50" onclick={handleClose}></div>
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div 
+			class="absolute inset-0 bg-black/50" 
+			onclick={handleClose} 
+			onkeydown={(e) => e.key === 'Escape' && handleClose()}
+			role="button" 
+			tabindex="0" 
+			aria-label="Close modal"
+		></div>
 
 		<div
 			class="relative z-10 flex max-h-[90vh] w-full max-w-2xl flex-col rounded-xl border border-wedding-beige bg-white shadow-2xl"
@@ -171,6 +265,7 @@
 					type="button"
 					onclick={handleClose}
 					disabled={isUploading}
+					aria-label="Close upload modal"
 					class="rounded-lg p-1 text-wedding-text-muted transition hover:bg-wedding-cream disabled:opacity-50"
 				>
 					<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -252,6 +347,7 @@
 										type="button"
 										onclick={() => removeFile(i)}
 										disabled={isUploading}
+										aria-label="Remove file"
 										class="absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white opacity-0 transition group-hover:opacity-100 disabled:opacity-50"
 									>
 										<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -296,7 +392,27 @@
 						></textarea>
 					</div>
 
-					{#if isUploading}
+					{#if showSuccess}
+						<div class="rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 p-6 text-center relative overflow-hidden">
+							{#if showConfetti}
+								<Confetti
+									amount={50}
+									duration={3000}
+									destroyOnComplete={true}
+									x={[-0.5, 0.5]}
+									y={[-0.5, 0.5]}
+								/>
+							{/if}
+							<div class="text-5xl mb-3">🎉</div>
+							<h3 class="text-xl font-semibold text-green-800 mb-2">Upload Berhasil!</h3>
+							<p class="text-green-700 font-medium">
+								{successCount} {successCount === 1 ? 'foto' : 'foto'} telah berhasil diunggah
+							</p>
+							<p class="text-sm text-green-600 mt-2">
+								Terima kasih sudah berbagi momen indah! 💚
+							</p>
+						</div>
+					{:else if isUploading}
 						<div class="rounded-lg bg-wedding-cream p-4">
 							<div class="mb-2 flex justify-between text-sm">
 								<span class="text-wedding-text-primary">Uploading...</span>

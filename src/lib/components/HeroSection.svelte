@@ -2,7 +2,7 @@
 	class="min-h-screen bg-gradient-to-b from-wedding-sky to-wedding-white flex flex-col items-center justify-center py-20 px-4 text-center"
 >
 	<div class="max-w-4xl mx-auto">
-		<p class="text-xl md:text-2xl text-wedding-text-light mb-4 font-light">the Wedding of</p>
+		<p class="text-xl md:text-2xl text-wedding-text-light mb-4 font-light">The Wedding of</p>
 
 		<h1 class="font-serif text-5xl md:text-7xl lg:text-8xl text-wedding-navy mb-6 font-light">
 			Alfina & Mugni
