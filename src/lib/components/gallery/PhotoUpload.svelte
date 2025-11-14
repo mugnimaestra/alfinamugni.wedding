@@ -1,26 +1,25 @@
 <script lang="ts">
-	import { getDeviceInfo, getNetworkInfo } from '$lib/utils/device';
-	import Confetti from 'svelte-confetti';
-
 	interface Props {
 		isActive?: boolean;
-		onSuccess?: (count: number) => void;
+		onUploadStart?: (payload: UploadPayload) => void;
 		onClose: () => void;
 		isOpen: boolean;
 	}
 
-	let { isActive = true, onSuccess, onClose, isOpen }: Props = $props();
+	interface UploadPayload {
+		files: File[];
+		uploaderName: string;
+		description: string;
+		previews: string[];
+	}
+
+	let { isActive = true, onUploadStart, onClose, isOpen }: Props = $props();
 
 	let files = $state<File[]>([]);
 	let previews = $state<string[]>([]);
 	let uploaderName = $state('');
 	let description = $state('');
-	let isUploading = $state(false);
-	let uploadProgress = $state(0);
 	let error = $state('');
-	let successCount = $state(0);
-	let showSuccess = $state(false);
-	let showConfetti = $state(false);
 
 	function handleFileSelect(e: Event) {
 		const input = e.target as HTMLInputElement;
@@ -29,14 +28,10 @@
 		const selectedFiles = Array.from(input.files);
 		files = [...files, ...selectedFiles];
 
+		// Use URL.createObjectURL for better memory management
 		selectedFiles.forEach((file) => {
-			const reader = new FileReader();
-			reader.onload = (e) => {
-				if (e.target?.result) {
-					previews = [...previews, e.target.result as string];
-				}
-			};
-			reader.readAsDataURL(file);
+			const objectUrl = URL.createObjectURL(file);
+			previews = [...previews, objectUrl];
 		});
 	}
 
@@ -44,83 +39,16 @@
 		return file.type.startsWith('video/');
 	}
 
-	async function getMediaDimensions(file: File, preview: string): Promise<{ width: number; height: number }> {
-		try {
-			if (isVideoFile(file)) {
-				// Use HTMLVideoElement for video
-				return new Promise((resolve) => {
-					const video = document.createElement('video');
-					let timeoutId: ReturnType<typeof setTimeout>;
-					
-					const cleanup = () => {
-						clearTimeout(timeoutId);
-						URL.revokeObjectURL(video.src);
-					};
-					
-					video.onloadedmetadata = () => {
-						resolve({
-							width: video.videoWidth || 0,
-							height: video.videoHeight || 0
-						});
-						cleanup();
-					};
-					video.onerror = () => {
-						resolve({ width: 0, height: 0 });
-						cleanup();
-					};
-					
-					video.src = preview;
-					
-					// Timeout after 5 seconds
-					timeoutId = setTimeout(() => {
-						resolve({ width: 0, height: 0 });
-						cleanup();
-					}, 5000);
-				});
-			} else {
-				// Use Image() for images
-				return new Promise((resolve) => {
-					const img = new Image();
-					let timeoutId: ReturnType<typeof setTimeout>;
-					
-					const cleanup = () => {
-						clearTimeout(timeoutId);
-						URL.revokeObjectURL(img.src);
-					};
-					
-					img.onload = () => {
-						resolve({
-							width: img.width || 0,
-							height: img.height || 0
-						});
-						cleanup();
-					};
-					img.onerror = () => {
-						resolve({ width: 0, height: 0 });
-						cleanup();
-					};
-					
-					img.src = preview;
-					
-					// Timeout after 5 seconds
-					timeoutId = setTimeout(() => {
-						resolve({ width: 0, height: 0 });
-						cleanup();
-					}, 5000);
-				});
-			}
-		} catch (err) {
-			console.error('Failed to get media dimensions:', err);
-			return { width: 0, height: 0 };
-		}
-	}
-
 	function removeFile(index: number) {
+		// Clean up object URL before removing
+		if (previews[index] && previews[index].startsWith('blob:')) {
+			URL.revokeObjectURL(previews[index]);
+		}
 		files = files.filter((_, i) => i !== index);
 		previews = previews.filter((_, i) => i !== index);
 	}
 
-	async function uploadFiles() {
+	function handleConfirmUpload() {
 		if (files.length === 0) {
 			error = 'Please select at least one photo';
 			return;
@@ -131,114 +59,51 @@
 			return;
 		}
 
-		isUploading = true;
-		error = '';
-		successCount = 0;
-
-		const deviceInfo = getDeviceInfo();
-		const networkInfo = getNetworkInfo();
-
-		for (let i = 0; i < files.length; i++) {
-			const file = files[i];
-			const formData = new FormData();
-
-			formData.append('file', file);
-			formData.append('uploader_name', uploaderName || 'Anonymous');
-			formData.append('description', description);
-			formData.append('device_info', deviceInfo);
-			formData.append('network_info', networkInfo);
-			formData.append('original_size', file.size.toString());
-
-			// Get media dimensions (supports both video and image)
-			try {
-				const dimensions = await getMediaDimensions(file, previews[i]);
-				formData.append('width', dimensions.width.toString());
-				formData.append('height', dimensions.height.toString());
-			} catch (err) {
-				console.error('Failed to get media dimensions:', err);
-				// Set default dimensions if failed
-				formData.append('width', '0');
-				formData.append('height', '0');
-			}
-
-			try {
-				const response = await fetch('/api/gallery/upload', {
-					method: 'POST',
-					body: formData
-				});
-
-				if (!response.ok) {
-					let errorMessage = `Upload failed (${response.status})`;
-					try {
-						const errorData = await response.json();
-						errorMessage = errorData.error || errorData.message || errorMessage;
-					} catch {
-						// If response is not JSON, try to get text
-						try {
-							const text = await response.text();
-							if (text) errorMessage = text;
-						} catch {
-							// Use default error message
-						}
-					}
-					throw new Error(errorMessage);
-				}
-
-				const result = await response.json();
-
-				if (result.success) {
-					successCount++;
-					uploadProgress = Math.round(((i + 1) / files.length) * 100);
-				} else {
-					throw new Error(result.error || result.message || 'Upload failed');
-				}
-			} catch (err) {
-				console.error('Upload error:', err);
-				const errorMessage = err instanceof Error ? err.message : 'Upload failed. Please try again.';
-				error = errorMessage;
-				isUploading = false;
-				return;
-			}
+		// Create payload and call callback
+		if (onUploadStart) {
+			onUploadStart({
+				files: [...files],
+				uploaderName: uploaderName || 'Anonymous',
+				description: description,
+				previews: [...previews]
+			});
 		}
 
-		isUploading = false;
-		uploadProgress = 100;
-
-		// Show success state with confetti!
-		showSuccess = true;
-		showConfetti = true;
-
-		// Hide confetti after animation
-		setTimeout(() => {
-			showConfetti = false;
-		}, 3000);
-
-		// Close modal and trigger refresh after celebration
-		setTimeout(() => {
-			if (onSuccess) onSuccess(successCount);
-			resetForm();
-			onClose();
-		}, 2500);
+		// Close modal immediately
+		resetForm();
+		onClose();
 	}
 
 	function resetForm() {
+		// Clean up all object URLs
+		previews.forEach((url) => {
+			if (url && url.startsWith('blob:')) {
+				URL.revokeObjectURL(url);
+			}
+		});
 		files = [];
 		previews = [];
 		uploaderName = '';
 		description = '';
-		uploadProgress = 0;
 		error = '';
-		successCount = 0;
-		showSuccess = false;
-		showConfetti = false;
 	}
 
 	function handleClose() {
-		if (!isUploading) {
-			resetForm();
-			onClose();
-		}
+		resetForm();
+		onClose();
 	}
+
+	// Cleanup on unmount
+	$effect(() => {
+		return () => {
+			// Cleanup preview URLs when component unmounts
+			previews.forEach((url) => {
+				if (url && url.startsWith('blob:')) {
+					URL.revokeObjectURL(url);
+				}
+			});
+		};
+	});
 </script>
 
 {#if isOpen}
@@ -264,9 +129,8 @@
 				<button
 					type="button"
 					onclick={handleClose}
-					disabled={isUploading}
 					aria-label="Close upload modal"
-					class="rounded-lg p-1 text-wedding-text-muted transition hover:bg-wedding-cream disabled:opacity-50"
+					class="rounded-lg p-1 text-wedding-text-muted transition hover:bg-wedding-cream"
 				>
 					<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
@@ -315,7 +179,7 @@
 								capture="environment"
 								multiple
 								onchange={handleFileSelect}
-								disabled={isUploading || !isActive}
+								disabled={!isActive}
 								class="hidden"
 							/>
 						</label>
@@ -346,9 +210,8 @@
 									<button
 										type="button"
 										onclick={() => removeFile(i)}
-										disabled={isUploading}
 										aria-label="Remove file"
-										class="absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white opacity-0 transition group-hover:opacity-100 disabled:opacity-50"
+										class="absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white opacity-0 transition group-hover:opacity-100"
 									>
 										<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path
@@ -372,9 +235,8 @@
 							type="text"
 							id="uploaderName"
 							bind:value={uploaderName}
-							disabled={isUploading}
 							placeholder="Anonymous"
-							class="w-full rounded-lg border border-wedding-beige px-3 py-2 text-sm focus:border-wedding-sage focus:outline-none focus:ring-2 focus:ring-wedding-sage/20 disabled:bg-gray-50"
+							class="w-full rounded-lg border border-wedding-beige px-3 py-2 text-sm focus:border-wedding-sage focus:outline-none focus:ring-2 focus:ring-wedding-sage/20"
 						/>
 					</div>
 
@@ -385,50 +247,11 @@
 						<textarea
 							id="description"
 							bind:value={description}
-							disabled={isUploading}
 							rows="2"
 							placeholder="Add a caption for your photos..."
-							class="w-full rounded-lg border border-wedding-beige px-3 py-2 text-sm focus:border-wedding-sage focus:outline-none focus:ring-2 focus:ring-wedding-sage/20 disabled:bg-gray-50"
+							class="w-full rounded-lg border border-wedding-beige px-3 py-2 text-sm focus:border-wedding-sage focus:outline-none focus:ring-2 focus:ring-wedding-sage/20"
 						></textarea>
 					</div>
-
-					{#if showSuccess}
-						<div class="rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 p-6 text-center relative overflow-hidden">
-							{#if showConfetti}
-								<Confetti
-									amount={50}
-									duration={3000}
-									destroyOnComplete={true}
-									x={[-0.5, 0.5]}
-									y={[-0.5, 0.5]}
-								/>
-							{/if}
-							<div class="text-5xl mb-3">🎉</div>
-							<h3 class="text-xl font-semibold text-green-800 mb-2">Upload Berhasil!</h3>
-							<p class="text-green-700 font-medium">
-								{successCount} {successCount === 1 ? 'foto' : 'foto'} telah berhasil diunggah
-							</p>
-							<p class="text-sm text-green-600 mt-2">
-								Terima kasih sudah berbagi momen indah! 💚
-							</p>
-						</div>
-					{:else if isUploading}
-						<div class="rounded-lg bg-wedding-cream p-4">
-							<div class="mb-2 flex justify-between text-sm">
-								<span class="text-wedding-text-primary">Uploading...</span>
-								<span class="font-medium text-wedding-sage">{uploadProgress}%</span>
-							</div>
-							<div class="h-2 overflow-hidden rounded-full bg-wedding-beige">
-								<div
-									class="h-full bg-wedding-sage transition-all duration-300"
-									style="width: {uploadProgress}%"
-								></div>
-							</div>
-							<p class="mt-2 text-xs text-wedding-text-muted">
-								{successCount} of {files.length} photos uploaded
-							</p>
-						</div>
-					{/if}
 
 					{#if error}
 						<div class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
@@ -444,22 +267,17 @@
 					<button
 						type="button"
 						onclick={handleClose}
-						disabled={isUploading}
-						class="flex-1 rounded-lg border border-wedding-beige bg-white px-4 py-2 text-sm font-medium text-wedding-text-primary transition hover:bg-wedding-cream disabled:opacity-50"
+						class="flex-1 rounded-lg border border-wedding-beige bg-white px-4 py-2 text-sm font-medium text-wedding-text-primary transition hover:bg-wedding-cream"
 					>
 						Cancel
 					</button>
 					<button
 						type="button"
-						onclick={uploadFiles}
-						disabled={isUploading || !isActive || files.length === 0}
+						onclick={handleConfirmUpload}
+						disabled={!isActive || files.length === 0}
 						class="flex-1 rounded-lg bg-wedding-sage px-4 py-2 text-sm font-medium text-white transition hover:bg-wedding-sage/90 disabled:opacity-50"
 					>
-						{#if isUploading}
-							Uploading...
-						{:else}
-							Upload {files.length > 0 ? `(${files.length})` : ''}
-						{/if}
+						Upload {files.length > 0 ? `(${files.length})` : ''}
 					</button>
 				</div>
 			</div>

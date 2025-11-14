@@ -36,9 +36,7 @@
 	class="min-h-screen flex flex-col items-center justify-center px-4 py-20 bg-gradient-to-b from-wedding-white to-wedding-silver-light"
 >
 	<div class="max-w-4xl mx-auto text-center">
-		<h2 class="font-serif text-4xl md:text-6xl mb-4 font-light text-wedding-navy">
-			Save The Date
-		</h2>
+		<h2 class="font-serif text-4xl md:text-6xl mb-4 font-light text-wedding-navy">Save The Date</h2>
 
 		<!-- Couple Photo -->
 		<div class="mb-8 flex justify-center">
@@ -114,7 +112,7 @@
 		</div>
 
 		<div class="mt-12">
-			<div class="text-2xl md:text-3xl font-serif mb-2 text-wedding-navy">
+			<div class="text-3xl md:text-4xl font-serif font-bold mb-2 text-wedding-navy">
 				Sabtu, 29 November 2025
 			</div>
 		</div>

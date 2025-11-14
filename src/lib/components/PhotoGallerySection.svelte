@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PhotoModal from '$lib/components/gallery/PhotoModal.svelte';
+	import MediaLightbox from '$lib/components/gallery/MediaLightbox.svelte';
 
 	interface Photo {
 		id: number;
@@ -335,7 +335,7 @@
 	</div>
 </section>
 
-<PhotoModal
+<MediaLightbox
 	photos={transformedPhotos}
 	currentIndex={selectedPhotoIndex}
 	isOpen={showPhotoModal}

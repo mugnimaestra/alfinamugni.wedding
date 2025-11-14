@@ -172,7 +172,7 @@
 								<div class="text-wedding-steel text-sm font-medium mb-1">29 November 2025</div>
 								<h3 class="text-xl font-semibold text-wedding-navy mb-2">Resepsi Pernikahan</h3>
 								<p class="text-wedding-text-steel text-sm leading-relaxed">
-									Setelah melewati satu tahun yang panjang mempersiapkan segala hal, Inshaallah
+									Setelah melewati satu tahun yang panjang mempersiapkan segala hal, Insyaallah
 									pernikahan kami akan diadakan pada Sabtu, 29 November 2025.
 								</p>
 							</div>
@@ -207,7 +207,7 @@
 								<div class="text-wedding-steel text-sm font-medium mb-1">29 November 2025</div>
 								<h3 class="text-xl font-semibold text-wedding-navy mb-2">Resepsi Pernikahan</h3>
 								<p class="text-wedding-text-steel text-sm leading-relaxed">
-									Setelah melewati satu tahun yang panjang mempersiapkan segala hal, Inshaallah
+									Setelah melewati satu tahun yang panjang mempersiapkan segala hal, Insyaallah
 									pernikahan kami akan diadakan pada Sabtu, 29 November 2025.
 								</p>
 							</div>

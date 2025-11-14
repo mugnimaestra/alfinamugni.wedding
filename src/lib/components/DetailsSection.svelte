@@ -13,8 +13,7 @@
 				Assalamu'alaikum Wr. Wb
 			</h2>
 			<p class="text-lg md:text-xl text-wedding-text-dark max-w-3xl mx-auto">
-				Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i serta kerabat sekalian
-				untuk menghadiri acara pernikahan kami.
+				Kami dengan hormat mengundang Bapak/Ibu/Saudara/i untuk hadir di pernikahan kami.
 			</p>
 		</div>
 
@@ -73,7 +72,7 @@
 				</h3>
 				<p class="text-wedding-text-dark mb-6">
 					Putra Keempat dari Bapak Suaidi<br />
-					& Ibu Anne Machdalia (Almhm)
+					& Ibu Anne Machdalia (Almh.)
 				</p>
 				<a
 					href="https://www.instagram.com/mugnimaestra/"
@@ -122,10 +121,13 @@
 
 					<h3 class="font-serif text-3xl md:text-4xl text-white mb-4 font-medium">Akad Nikah</h3>
 
-				<div class="mb-6">
-					<p class="text-wedding-sky text-lg mb-2">Sabtu, 29 November 2025</p>
-					<p class="text-white text-xl md:text-2xl font-medium">Pukul : 09.00 WIB – 11.00 WIB</p>
-				</div>					<div class="text-wedding-sky text-base md:text-lg space-y-2 mb-6">
+					<div class="mb-6">
+						<p class="text-wedding-sky text-xl md:text-2xl font-bold mb-2">
+							Sabtu, 29 November 2025
+						</p>
+						<p class="text-white text-xl md:text-2xl font-medium">Pukul : 09.00 WIB – 11.00 WIB</p>
+					</div>
+					<div class="text-wedding-sky text-base md:text-lg space-y-2 mb-6">
 						<p class="font-medium">Tempat : Tamarin Hotel Jakarta</p>
 						<p>Jl. K.H. Wahid Hasyim No.77, RT.1/RW.4</p>
 						<p>Gondangdia, Kec. Menteng, Jakarta 10340</p>
@@ -162,10 +164,13 @@
 
 					<h3 class="font-serif text-3xl md:text-4xl text-white mb-4 font-medium">Resepsi</h3>
 
-				<div class="mb-6">
-					<p class="text-wedding-sky text-lg mb-2">Sabtu, 29 November 2025</p>
-					<p class="text-white text-xl md:text-2xl font-medium">Pukul : 12.00 WIB – 14.00 WIB</p>
-				</div>					<div class="text-wedding-sky text-base md:text-lg space-y-2 mb-6">
+					<div class="mb-6">
+						<p class="text-wedding-sky text-xl md:text-2xl font-bold mb-2">
+							Sabtu, 29 November 2025
+						</p>
+						<p class="text-white text-xl md:text-2xl font-medium">Pukul : 12.00 WIB – 14.00 WIB</p>
+					</div>
+					<div class="text-wedding-sky text-base md:text-lg space-y-2 mb-6">
 						<p class="font-medium">Tempat : Tamarin Hotel Jakarta</p>
 						<p>Jl. K.H. Wahid Hasyim No.77, RT.1/RW.4</p>
 						<p>Gondangdia, Kec. Menteng, Jakarta 10340</p>
