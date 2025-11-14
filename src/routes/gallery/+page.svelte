@@ -4,6 +4,7 @@
 	import FloatingUploadButton from '$lib/components/gallery/FloatingUploadButton.svelte';
 	import PhotoUpload from '$lib/components/gallery/PhotoUpload.svelte';
 	import MediaLightbox from '$lib/components/gallery/MediaLightbox.svelte';
+	import MediaSourcePicker from '$lib/components/gallery/MediaSourcePicker.svelte';
 	import type { PageData } from './$types';
 	import { invalidateAll } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
@@ -35,7 +36,10 @@
 
 	let { data }: { data: PageData } = $props();
 
+	let showMediaSourcePicker = $state(false);
 	let showUploadModal = $state(false);
+	let preSelectedFiles = $state<File[] | undefined>(undefined);
+	let additionalFiles = $state<File[] | undefined>(undefined);
 	let selectedPhotoIndex = $state(-1);
 	let showPhotoModal = $state(false);
 
@@ -373,6 +377,30 @@
 		}
 	}
 
+	function handleSourceSelected(files: FileList) {
+		if (showUploadModal) {
+			// Append mode - PhotoUpload modal sudah open
+			additionalFiles = Array.from(files);
+		} else {
+			// Initial mode - buka PhotoUpload modal
+			preSelectedFiles = Array.from(files);
+			showUploadModal = true;
+		}
+		// Close bottomsheet
+		showMediaSourcePicker = false;
+	}
+
+	function handleRequestMoreFiles() {
+		showMediaSourcePicker = true;
+	}
+
+	function handleUploadModalClose() {
+		showUploadModal = false;
+		// Clear preSelectedFiles and additionalFiles after modal closes
+		preSelectedFiles = undefined;
+		additionalFiles = undefined;
+	}
+
 	// Remove cover-active class to enable scrolling
 	onMount(() => {
 		document.body.classList.remove('cover-active');
@@ -400,12 +428,21 @@
 	</div>
 </main>
 
-<FloatingUploadButton onclick={() => (showUploadModal = true)} />
+<FloatingUploadButton onclick={() => (showMediaSourcePicker = true)} />
+
+<MediaSourcePicker
+	isOpen={showMediaSourcePicker}
+	onClose={() => (showMediaSourcePicker = false)}
+	onFilesSelected={handleSourceSelected}
+/>
 
 <PhotoUpload
 	isOpen={showUploadModal}
-	onClose={() => (showUploadModal = false)}
+	onClose={handleUploadModalClose}
 	onUploadStart={handleUploadStart}
+	{preSelectedFiles}
+	onRequestMoreFiles={handleRequestMoreFiles}
+	{additionalFiles}
 />
 
 <MediaLightbox

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
+	import { page } from '$app/stores';
 
 	interface WishRsvp {
 		id: number;
@@ -22,6 +23,36 @@
 		totalPages: number;
 	}
 
+	/**
+	 * Decodes and sanitizes guest name from URL query parameter
+	 */
+	function decodeGuestName(rawValue: string | null): string | undefined {
+		if (!rawValue) {
+			return undefined;
+		}
+
+		// Decode URL-encoded characters (handles %20, %2B, etc.)
+		let decoded = decodeURIComponent(rawValue);
+
+		// Replace + with spaces
+		decoded = decoded.replace(/\+/g, ' ');
+
+		// Trim whitespace and collapse multiple spaces to single space
+		decoded = decoded.trim().replace(/\s+/g, ' ');
+
+		// Return undefined if empty after processing
+		if (!decoded) {
+			return undefined;
+		}
+
+		// Validate length (max 100 characters)
+		if (decoded.length > 100) {
+			decoded = decoded.substring(0, 100).trim();
+		}
+
+		return decoded;
+	}
+
 	let showForm = $state(false);
 	let wishName = $state('');
 	let wishMessage = $state('');
@@ -38,6 +69,17 @@
 
 	onMount(async () => {
 		await fetchWishes(1);
+	});
+
+	// Pre-fill wishName from query parameter 'to' if available and field is empty
+	$effect(() => {
+		const urlParam = $page.url.searchParams.get('to');
+		if (urlParam && !wishName) {
+			const decodedName = decodeGuestName(urlParam);
+			if (decodedName) {
+				wishName = decodedName;
+			}
+		}
 	});
 
 	async function fetchWishes(page: number) {
