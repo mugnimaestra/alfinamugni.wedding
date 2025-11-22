@@ -7,10 +7,15 @@
 
 	let showBankDetails = $state(false);
 	let animationState = $state<AnimationState>('idle');
+	let giftMethod = $state<'bank' | 'qris'>('bank');
 	let buttonElement = $state<HTMLButtonElement>();
 	let envelopeContainer = $state<HTMLDivElement>();
 	let envelopeFlap = $state<HTMLDivElement>();
 	let cardElement = $state<HTMLDivElement>();
+	let bankContentElement = $state<HTMLDivElement>();
+	let qrisContentElement = $state<HTMLDivElement>();
+	let bankButtonElement = $state<HTMLButtonElement>();
+	let cardContentWrapper = $state<HTMLDivElement>();
 	let prefersReducedMotion = $state(false);
 
 	// Animation values using Svelte 5 Tween
@@ -33,6 +38,15 @@
 	let contentItem2Y = $state(new Tween(10, { duration: 0, easing: cubicOut }));
 	let contentItem3Opacity = $state(new Tween(0, { duration: 0, easing: cubicOut }));
 	let contentItem3Y = $state(new Tween(10, { duration: 0, easing: cubicOut }));
+
+	// Tab switch animations
+	let bankContentOpacity = $state(new Tween(1, { duration: 0, easing: cubicOut }));
+	let bankContentY = $state(new Tween(0, { duration: 0, easing: cubicOut }));
+	let qrisContentOpacity = $state(new Tween(0, { duration: 0, easing: cubicOut }));
+	let qrisContentY = $state(new Tween(10, { duration: 0, easing: cubicOut }));
+	let bankButtonOpacity = $state(new Tween(1, { duration: 0, easing: cubicOut }));
+	let bankButtonY = $state(new Tween(0, { duration: 0, easing: cubicOut }));
+	let cardHeight = $state(new Tween(0, { duration: 0, easing: cubicOut }));
 
 	onMount(() => {
 		prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -151,6 +165,28 @@
 					contentItem3Opacity.set(1, { duration: itemDuration, easing: cubicOut });
 					contentItem3Y.set(0, { duration: itemDuration, easing: cubicOut });
 				}, staggerDelay * 2);
+
+				// Initialize tab switch animations based on current giftMethod
+				await new Promise((resolve) => requestAnimationFrame(resolve));
+				if (cardContentWrapper) {
+					const initialHeight = cardContentWrapper.scrollHeight;
+					cardHeight.set(initialHeight, { duration: 0 });
+				}
+				if (giftMethod === 'bank') {
+					bankContentOpacity.set(1, { duration: 0 });
+					bankContentY.set(0, { duration: 0 });
+					bankButtonOpacity.set(1, { duration: 0 });
+					bankButtonY.set(0, { duration: 0 });
+					qrisContentOpacity.set(0, { duration: 0 });
+					qrisContentY.set(10, { duration: 0 });
+				} else {
+					qrisContentOpacity.set(1, { duration: 0 });
+					qrisContentY.set(0, { duration: 0 });
+					bankContentOpacity.set(0, { duration: 0 });
+					bankContentY.set(10, { duration: 0 });
+					bankButtonOpacity.set(0, { duration: 0 });
+					bankButtonY.set(10, { duration: 0 });
+				}
 			}
 
 			animationState = 'complete';
@@ -171,6 +207,145 @@
 			animationState = 'complete';
 		}
 	}
+
+	async function switchGiftMethod(newMethod: 'bank' | 'qris') {
+		if (newMethod === giftMethod || animationState !== 'complete') {
+			return;
+		}
+
+		const oldMethod = giftMethod;
+		const transitionDuration = getAnimationDuration(300);
+		const fadeOutDuration = getAnimationDuration(200);
+
+		try {
+			// Step 1: Measure current height before switching
+			let currentHeight = 0;
+			if (cardContentWrapper) {
+				currentHeight = cardContentWrapper.offsetHeight;
+			}
+
+			// Step 2: Animate current content out
+			if (oldMethod === 'bank') {
+				bankContentOpacity.set(0, { duration: fadeOutDuration, easing: cubicOut });
+				bankContentY.set(-10, { duration: fadeOutDuration, easing: cubicOut });
+				bankButtonOpacity.set(0, { duration: fadeOutDuration, easing: cubicOut });
+				bankButtonY.set(-10, { duration: fadeOutDuration, easing: cubicOut });
+			} else {
+				qrisContentOpacity.set(0, { duration: fadeOutDuration, easing: cubicOut });
+				qrisContentY.set(-10, { duration: fadeOutDuration, easing: cubicOut });
+			}
+
+			// Wait for fade out
+			await new Promise((resolve) => setTimeout(resolve, fadeOutDuration));
+
+			// Step 3: Update method and wait for DOM
+			giftMethod = newMethod;
+			// Wait for DOM to update (especially important when content is conditionally rendered)
+			await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+			await new Promise((resolve) => setTimeout(resolve, 10)); // Extra time for layout
+
+			// Step 4: Measure new content height
+			let newHeight = 0;
+			if (cardContentWrapper) {
+				// Temporarily reset height to auto to measure natural height
+				cardHeight.set(0, { duration: 0 }); // Reset to auto (0 means auto in our logic)
+				await new Promise((resolve) => requestAnimationFrame(resolve));
+
+				// Set new content to be visible but positioned for measurement
+				if (newMethod === 'bank') {
+					if (bankContentElement) {
+						bankContentOpacity.set(1, { duration: 0 });
+						bankContentY.set(0, { duration: 0 });
+					}
+					if (bankButtonElement) {
+						bankButtonOpacity.set(1, { duration: 0 });
+						bankButtonY.set(0, { duration: 0 });
+					}
+					// Hide QRIS content if it exists
+					if (qrisContentElement) {
+						qrisContentOpacity.set(0, { duration: 0 });
+					}
+				} else {
+					if (qrisContentElement) {
+						qrisContentOpacity.set(1, { duration: 0 });
+						qrisContentY.set(0, { duration: 0 });
+					}
+					// Hide Bank content if it exists
+					if (bankContentElement) {
+						bankContentOpacity.set(0, { duration: 0 });
+					}
+					if (bankButtonElement) {
+						bankButtonOpacity.set(0, { duration: 0 });
+					}
+				}
+
+				// Wait for layout to recalculate with natural height
+				await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+				// Measure the actual natural height
+				newHeight = cardContentWrapper.scrollHeight;
+
+				// Now set opacity back to 0 and reset position for animation
+				if (newMethod === 'bank') {
+					if (bankContentElement) {
+						bankContentOpacity.set(0, { duration: 0 });
+						bankContentY.set(10, { duration: 0 });
+					}
+					if (bankButtonElement) {
+						bankButtonOpacity.set(0, { duration: 0 });
+						bankButtonY.set(10, { duration: 0 });
+					}
+				} else {
+					if (qrisContentElement) {
+						qrisContentOpacity.set(0, { duration: 0 });
+						qrisContentY.set(10, { duration: 0 });
+					}
+				}
+			}
+
+			// Step 5: Re-measure current height and animate card height
+			if (cardContentWrapper && newHeight > 0) {
+				// Re-measure the actual current height after all DOM updates
+				// At this point, cardHeight is 0 (auto), so we get the actual rendered height
+				const actualCurrentHeight = cardContentWrapper.offsetHeight;
+
+				// Set the starting height (with duration 0 for instant set)
+				cardHeight.set(actualCurrentHeight, { duration: 0 });
+
+				// Wait a frame to ensure the height is set
+				await new Promise((resolve) => requestAnimationFrame(resolve));
+
+				// Now animate to the new height
+				cardHeight.set(newHeight, { duration: transitionDuration, easing: cubicOut });
+			}
+
+			// Step 6: Animate new content in (start slightly overlapping with height animation)
+			if (newMethod === 'bank') {
+				bankContentY.set(10, { duration: 0 }); // Start below
+				bankButtonY.set(10, { duration: 0 }); // Start below
+				bankContentOpacity.set(1, { duration: transitionDuration, easing: cubicOut });
+				bankContentY.set(0, { duration: transitionDuration, easing: cubicOut });
+				bankButtonOpacity.set(1, { duration: transitionDuration, easing: cubicOut });
+				bankButtonY.set(0, { duration: transitionDuration, easing: cubicOut });
+			} else {
+				qrisContentY.set(10, { duration: 0 }); // Start below
+				qrisContentOpacity.set(1, { duration: transitionDuration, easing: cubicOut });
+				qrisContentY.set(0, { duration: transitionDuration, easing: cubicOut });
+			}
+		} catch (error) {
+			console.error('Tab switch animation error:', error);
+			// Ensure content is visible on error
+			if (newMethod === 'bank') {
+				bankContentOpacity.set(1);
+				bankContentY.set(0);
+				bankButtonOpacity.set(1);
+				bankButtonY.set(0);
+			} else {
+				qrisContentOpacity.set(1);
+				qrisContentY.set(0);
+			}
+		}
+	}
 </script>
 
 <section
@@ -178,9 +353,7 @@
 	class="min-h-screen flex flex-col items-center justify-center px-4 py-20 bg-gradient-to-b from-wedding-sky to-wedding-silver-light"
 >
 	<div class="max-w-6xl mx-auto text-center">
-		<h2 class="font-serif text-4xl md:text-6xl mb-6 font-light text-wedding-navy">
-			Digital Gift
-		</h2>
+		<h2 class="font-serif text-4xl md:text-6xl mb-6 font-light text-wedding-navy">Digital Gift</h2>
 
 		<div class="max-w-3xl mx-auto mb-12">
 			<p class="text-lg md:text-xl text-wedding-text-light">
@@ -227,11 +400,11 @@
 							class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-wedding-sky to-wedding-cream rounded-t-lg origin-bottom envelope-flap"
 							style="border: 2px solid rgba(93, 136, 187, 0.3); border-bottom: none; transform-origin: bottom center; transform: rotateX({flapRotation.current}deg); backface-visibility: hidden;"
 						>
-						<!-- Flap inner side (visible when opened) -->
-						<div
-							class="absolute inset-0 bg-gradient-to-b from-wedding-beige to-wedding-cream rounded-t-lg"
-							style="backface-visibility: hidden; transform: rotateX(180deg);"
-						></div>
+							<!-- Flap inner side (visible when opened) -->
+							<div
+								class="absolute inset-0 bg-gradient-to-b from-wedding-beige to-wedding-cream rounded-t-lg"
+								style="backface-visibility: hidden; transform: rotateX(180deg);"
+							/>
 						</div>
 
 						<!-- Envelope Content Area -->
@@ -242,27 +415,81 @@
 								style="opacity: {cardOpacity.current}; transform: translateY({cardY.current}px) scale({cardScale.current});"
 							>
 								<div
-									class="mb-4 card-content-item"
-									style="opacity: {contentItem1Opacity.current}; transform: translateY({contentItem1Y.current}px);"
+									bind:this={cardContentWrapper}
+									style="height: {cardHeight.current > 0
+										? cardHeight.current + 'px'
+										: 'auto'}; overflow: hidden;"
 								>
-									<h3 class="text-xl font-semibold mb-2 text-wedding-navy">Transfer Bank</h3>
-									<div class="text-sm text-gray-600 mb-3">Bank Jago</div>
+									<!-- Item 1: Toggle Buttons -->
+									<div
+										class="mb-4 card-content-item"
+										style="opacity: {contentItem1Opacity.current}; transform: translateY({contentItem1Y.current}px);"
+									>
+										<div class="flex gap-2 mb-4">
+											<button
+												class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 {giftMethod ===
+												'bank'
+													? 'bg-wedding-steel text-white shadow-md'
+													: 'bg-gray-100 text-gray-600 hover:bg-gray-200'}"
+												onclick={() => switchGiftMethod('bank')}
+											>
+												Transfer Bank
+											</button>
+											<button
+												class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 {giftMethod ===
+												'qris'
+													? 'bg-wedding-steel text-white shadow-md'
+													: 'bg-gray-100 text-gray-600 hover:bg-gray-200'}"
+												onclick={() => switchGiftMethod('qris')}
+											>
+												QRIS
+											</button>
+										</div>
+									</div>
+
+									<!-- Item 2: Content (Bank or QRIS) -->
+									{#if giftMethod === 'bank'}
+										<div
+											bind:this={bankContentElement}
+											class="mb-4 card-content-item"
+											style="opacity: {bankContentOpacity.current}; transform: translateY({bankContentY.current}px);"
+										>
+											<h3 class="text-xl font-semibold mb-2 text-wedding-navy">Transfer Bank</h3>
+											<div class="text-sm text-gray-600 mb-3">Bank Jago</div>
+											<div
+												class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 rounded-lg"
+											>
+												<div class="text-xs uppercase tracking-wide mb-1">Nomor Rekening</div>
+												<div class="text-lg font-mono">105803971206</div>
+												<div class="text-sm mt-2">ALFINA NURMAYATI</div>
+											</div>
+										</div>
+									{:else}
+										<div
+											bind:this={qrisContentElement}
+											class="mb-4 card-content-item flex justify-center"
+											style="opacity: {qrisContentOpacity.current}; transform: translateY({qrisContentY.current}px);"
+										>
+											<img
+												src="/qris.PNG"
+												alt="QRIS Payment Code"
+												class="w-full max-w-xs rounded-lg shadow-md"
+											/>
+										</div>
+									{/if}
+
+									<!-- Item 3: Footer Action Button (only for Bank) -->
+									{#if giftMethod === 'bank'}
+										<button
+											bind:this={bankButtonElement}
+											class="wedding-button w-full py-2 px-4 rounded transition-colors bg-wedding-steel text-white hover:bg-wedding-navy card-content-item"
+											onclick={() => copyToClipboard('105803971206', 'Bank Jago')}
+											style="opacity: {bankButtonOpacity.current}; transform: translateY({bankButtonY.current}px);"
+										>
+											Salin Nomor Rekening
+										</button>
+									{/if}
 								</div>
-								<div
-									class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 rounded-lg mb-4 card-content-item"
-									style="opacity: {contentItem2Opacity.current}; transform: translateY({contentItem2Y.current}px);"
-								>
-									<div class="text-xs uppercase tracking-wide mb-1">Nomor Rekening</div>
-									<div class="text-lg font-mono">105803971206</div>
-									<div class="text-sm mt-2">ALFINA NURMAYATI</div>
-								</div>
-								<button
-									class="wedding-button w-full py-2 px-4 rounded transition-colors bg-wedding-steel text-white hover:bg-wedding-navy card-content-item"
-									onclick={() => copyToClipboard('105803971206', 'Bank Jago')}
-									style="opacity: {contentItem3Opacity.current}; transform: translateY({contentItem3Y.current}px);"
-								>
-									Salin Nomor Rekening
-								</button>
 							</div>
 						</div>
 					</div>
