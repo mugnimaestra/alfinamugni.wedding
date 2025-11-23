@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { PUBLIC_R2_URL } from '$env/static/public';
+import { getRandomPlaceholder } from '$lib/utils/placeholders';
 
 export const POST: RequestHandler = async ({ request, platform }) => {
 	try {
@@ -13,7 +14,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 
 		const formData = await request.formData();
 		const file = formData.get('file') as File;
-		const uploaderName = (formData.get('uploader_name') as string) || 'Anonymous';
+		const uploaderName = (formData.get('uploader_name') as string) || getRandomPlaceholder();
 		const description = (formData.get('description') as string) || '';
 		
 		// ProcessedImage metadata

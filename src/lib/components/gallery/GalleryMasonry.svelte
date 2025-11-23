@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { getRandomPlaceholder } from '$lib/utils/placeholders';
+
 	interface Photo {
 		id: string | number;
 		url: string;
@@ -69,7 +71,7 @@
 					url: p.url,
 					thumbnail: p.thumbnail,
 					description: p.description || '',
-					uploader_name: p.uploader_name || 'Anonymous',
+					uploader_name: p.uploader_name || getRandomPlaceholder(),
 					upload_date: p.upload_date,
 					content_type: p.content_type || 'image/jpeg',
 					media_type:

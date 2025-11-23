@@ -10,6 +10,7 @@
 	import { toast } from 'svelte-sonner';
 	import { getDeviceInfo, getNetworkInfo } from '$lib/utils/device';
 	import { VideoThumbnailExtractor } from '$lib/utils/image-processor';
+	import { getRandomPlaceholder } from '$lib/utils/placeholders';
 
 	interface Photo {
 		id: number;
@@ -65,7 +66,7 @@
 			url: p.url,
 			thumbnail: p.thumbnail,
 			description: p.description || '',
-			uploader_name: p.uploader_name || 'Anonymous',
+			uploader_name: p.uploader_name || getRandomPlaceholder(),
 			upload_date: p.upload_date,
 			content_type: p.content_type || 'image/jpeg',
 			media_type: p.media_type || (p.content_type?.startsWith('video/') ? 'video' : 'image'),

@@ -1,5 +1,10 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		document.body.classList.remove('cover-active');
+	});
 
 	interface RSVP {
 		id: number;

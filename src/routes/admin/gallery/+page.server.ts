@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { PUBLIC_R2_URL } from '$env/static/public';
+import { getRandomPlaceholder } from '$lib/utils/placeholders';
 
 export const load: PageServerLoad = async ({ platform }) => {
 	if (!platform?.env.DB) {
@@ -43,7 +44,7 @@ export const load: PageServerLoad = async ({ platform }) => {
 					id: photo.id,
 					title: photo.description || photo.original_name || 'Untitled',
 					description: photo.description || '',
-					uploader_name: photo.uploader_name || 'Anonymous',
+					uploader_name: photo.uploader_name || getRandomPlaceholder(),
 					upload_date: photo.upload_date || new Date().toISOString(),
 					thumbnail: photo.thumbnail_public_url
 						? photo.thumbnail_public_url

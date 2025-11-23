@@ -1,6 +1,11 @@
 <script lang="ts">
 	import PhotoCard from '$lib/components/admin/PhotoCard.svelte';
 	import type { PageData } from './$types';
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		document.body.classList.remove('cover-active');
+	});
 
 	interface Photo {
 		id: string | number;
