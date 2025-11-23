@@ -55,13 +55,13 @@ export class ImageProcessor {
     options: ProcessingOptions = {}
   ): Promise<ProcessedImage> {
     const opts = { ...this.DEFAULT_OPTIONS, ...options };
-    
+
     // Validate file
     this.validateImageFile(file, opts.maxFileSizeMB);
 
     // Generate unique ID
     const imageId = this.generateImageId(file);
-    
+
     // Get network and device info
     const networkInfo = await getNetworkInfo();
     const deviceInfo = this.getDeviceInfo();
@@ -133,10 +133,10 @@ export class ImageProcessor {
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      
+
       try {
         progressCallback?.((i / files.length) * 100, file.name);
-        
+
         const processedImage = await this.processImageForUpload(file, opts);
         results.push(processedImage);
 
@@ -181,7 +181,7 @@ export class ImageProcessor {
   ): Promise<{ blob: Blob; result: CompressionResult }> {
     // Determine target size based on network conditions
     let targetSizeKB: number | undefined;
-    
+
     if (networkInfo.saveData || networkInfo.effectiveType === '2g') {
       targetSizeKB = 200; // Very aggressive compression for slow networks
     } else if (networkInfo.effectiveType === '3g') {
@@ -206,7 +206,7 @@ export class ImageProcessor {
       img.onload = () => {
         // Calculate thumbnail dimensions maintaining aspect ratio
         const { width, height } = this.calculateThumbnailDimensions(img.width, img.height, size);
-        
+
         canvas.width = width;
         canvas.height = height;
 
@@ -286,13 +286,13 @@ export class ImageProcessor {
   private getDeviceInfo(): string {
     const ua = navigator.userAgent;
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-    
+
     if (isMobile) {
       if (/Android/i.test(ua)) return 'Android';
       if (/iPhone|iPad|iPod/i.test(ua)) return 'iOS';
       return 'Mobile';
     }
-    
+
     return 'Desktop';
   }
 
@@ -307,10 +307,10 @@ export class ImageProcessor {
   shouldProcessImage(file: File): boolean {
     // Don't process very small images
     if (file.size < 50 * 1024) return false; // Less than 50KB
-    
+
     // Don't process already compressed images
     if (file.size < 500 * 1024) return false; // Less than 500KB
-    
+
     return true;
   }
 }
@@ -358,7 +358,7 @@ export class VideoThumbnailExtractor {
    */
   static async extractThumbnail(
     videoFile: File,
-    timeInSeconds: number = 0.5,
+    timeInSeconds: number = 1.0,
     thumbnailSize: number = 800,
     quality: number = 0.85
   ): Promise<Blob> {
@@ -405,7 +405,7 @@ export class VideoThumbnailExtractor {
             (blob) => {
               // Clean up
               URL.revokeObjectURL(video.src);
-              
+
               if (blob) {
                 resolve(blob);
               } else {

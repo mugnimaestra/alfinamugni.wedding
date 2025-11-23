@@ -259,7 +259,15 @@
 							{#each previews as preview, i (i)}
 								<div class="group relative aspect-square">
 									{#if isVideoFile(files[i])}
-										<video src={preview} class="h-full w-full rounded-lg object-cover" muted />
+										<video
+											src={preview}
+											class="h-full w-full rounded-lg object-cover"
+											muted
+											onloadedmetadata={(e) => {
+												const video = e.currentTarget;
+												video.currentTime = Math.min(1.0, video.duration);
+											}}
+										/>
 										<div
 											class="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg"
 										>

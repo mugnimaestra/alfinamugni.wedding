@@ -142,7 +142,6 @@
 			closeEffect: 'fade',
 			plyr: {
 				config: {
-					ratio: '16:9',
 					muted: false,
 					hideControls: false,
 				},
