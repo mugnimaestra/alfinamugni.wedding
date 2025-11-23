@@ -351,40 +351,83 @@ export class VideoThumbnailExtractor {
   /**
    * Extract thumbnail from video file at specified time
    * @param videoFile Video file to extract thumbnail from
-   * @param timeInSeconds Time in video to capture (default: 0.5s)
+   * @param timeInSeconds Time in video to capture (default: 1.5s)
    * @param thumbnailSize Maximum dimension for thumbnail (default: 800)
    * @param quality JPEG quality (default: 0.85)
-   * @returns Promise resolving to thumbnail blob
+   * @returns Promise resolving to thumbnail blob, or null if generation fails
    */
   static async extractThumbnail(
     videoFile: File,
-    timeInSeconds: number = 1.0,
+    timeInSeconds: number = 1.5,
     thumbnailSize: number = 800,
     quality: number = 0.85
-  ): Promise<Blob> {
-    return new Promise((resolve, reject) => {
+  ): Promise<Blob | null> {
+    return new Promise((resolve) => {
       const video = document.createElement('video');
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
       if (!ctx) {
-        reject(new Error('Failed to get canvas context'));
+        console.error('[VideoThumbnailExtractor] Failed to get canvas context');
+        resolve(null);
         return;
       }
 
+      // Set up video element properties
       video.preload = 'metadata';
       video.muted = true;
       video.playsInline = true;
+      video.crossOrigin = 'anonymous'; // Support for cross-origin videos (R2 public URLs, etc.)
 
-      // Handle video loaded
-      video.onloadedmetadata = () => {
-        // Seek to specified time
-        video.currentTime = Math.min(timeInSeconds, video.duration);
+      let objectUrl: string | null = null;
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+      let isResolved = false;
+
+      // Cleanup function to remove event listeners and free resources
+      const cleanup = () => {
+        if (timeoutId !== null) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        video.removeEventListener('seeked', handleSeeked);
+        video.removeEventListener('error', handleError);
+        if (objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+          objectUrl = null;
+        }
       };
 
-      // Handle seeking complete
-      video.onseeked = () => {
+      // Safe resolution wrapper to prevent race conditions
+      const resolveSafely = (value: Blob | null, errorMessage?: string) => {
+        if (isResolved) return;
+        isResolved = true;
+        if (errorMessage) {
+          console.error(`[VideoThumbnailExtractor] ${errorMessage}`, {
+            fileName: videoFile.name,
+            fileSize: videoFile.size,
+            fileType: videoFile.type,
+          });
+        }
+        cleanup();
+        resolve(value);
+      };
+
+      const handleError = (event?: Event) => {
+        const errorMessage = event
+          ? `Video load error: ${video.error?.message || 'Unknown error'}`
+          : 'Failed to load video file';
+        resolveSafely(null, errorMessage);
+      };
+
+      const captureFrame = () => {
         try {
+          // Validate video dimensions before canvas operations
+          if (!video.videoWidth || !video.videoHeight) {
+            resolveSafely(null, 'Video dimensions are invalid or not available');
+            return;
+          }
+
           // Calculate thumbnail dimensions maintaining aspect ratio
           const { width, height } = this.calculateThumbnailDimensions(
             video.videoWidth,
@@ -403,32 +446,71 @@ export class VideoThumbnailExtractor {
           // Convert canvas to blob
           canvas.toBlob(
             (blob) => {
-              // Clean up
-              URL.revokeObjectURL(video.src);
-
               if (blob) {
-                resolve(blob);
+                resolveSafely(blob);
               } else {
-                reject(new Error('Failed to generate thumbnail blob'));
+                resolveSafely(null, 'Failed to generate thumbnail blob from canvas');
               }
             },
             'image/jpeg',
             quality
           );
         } catch (error) {
-          URL.revokeObjectURL(video.src);
-          reject(error);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error during frame capture';
+          resolveSafely(null, `Frame capture error: ${errorMessage}`);
         }
       };
 
-      // Handle errors
-      video.onerror = () => {
-        URL.revokeObjectURL(video.src);
-        reject(new Error('Failed to load video file'));
+      const handleSeeked = () => {
+        // Add a small delay to ensure frame is rendered on all devices (especially iOS)
+        timeoutId = setTimeout(() => {
+          captureFrame();
+        }, 200);
       };
 
+      const handleLoadedMetadata = () => {
+        try {
+          // Smart seek logic with safe duration handling
+          let seekTime = timeInSeconds;
+          const duration = Number.isFinite(video.duration) ? video.duration : 0;
+
+          if (duration > 0) {
+            // For short videos (< 3s), take the middle frame to avoid black start/end
+            if (duration < 3.0) {
+              seekTime = duration / 2;
+            } else {
+              // For longer videos, ensure we don't exceed duration
+              seekTime = Math.min(timeInSeconds, duration - 0.5);
+              // Ensure we're not too close to start if possible
+              seekTime = Math.max(seekTime, 0.5);
+            }
+          }
+
+          // Ensure seek time is within valid bounds
+          const safeSeekTime = Math.min(duration || seekTime, Math.max(0, seekTime));
+          video.currentTime = safeSeekTime;
+        } catch (error) {
+          // If seeking fails, try to capture current frame
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error during seek';
+          console.warn(`[VideoThumbnailExtractor] Seek failed, attempting to capture current frame: ${errorMessage}`);
+          captureFrame();
+        }
+      };
+
+      // Set up event listeners
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      video.addEventListener('seeked', handleSeeked);
+      video.addEventListener('error', handleError);
+
       // Start loading video
-      video.src = URL.createObjectURL(videoFile);
+      try {
+        objectUrl = URL.createObjectURL(videoFile);
+        video.src = objectUrl;
+        video.load();
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error creating object URL';
+        resolveSafely(null, `Failed to create object URL: ${errorMessage}`);
+      }
     });
   }
 

@@ -189,13 +189,11 @@
 
 		// Generate thumbnail for video files
 		if (VideoThumbnailExtractor.isVideoFile(file)) {
-			try {
-				const thumbnailBlob = await VideoThumbnailExtractor.extractThumbnail(file);
+			const thumbnailBlob = await VideoThumbnailExtractor.extractThumbnail(file);
+			if (thumbnailBlob) {
 				formData.append('thumbnail', thumbnailBlob, `${file.name}-thumb.jpg`);
-			} catch (err) {
-				console.error('Failed to generate video thumbnail:', err);
-				// Continue upload without thumbnail
 			}
+			// Continue upload without thumbnail if generation failed (errors are logged by extractThumbnail)
 		}
 
 		try {
