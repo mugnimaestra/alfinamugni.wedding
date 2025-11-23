@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { getRandomPlaceholder } from '$lib/utils/placeholders';
 
 	interface Props {
 		isActive?: boolean;
@@ -33,6 +34,7 @@
 	let uploaderName = $state('');
 	let description = $state('');
 	let error = $state('');
+	let namePlaceholder = $state(getRandomPlaceholder());
 
 	function isVideoFile(file: File): boolean {
 		return file.type.startsWith('video/');
@@ -62,7 +64,7 @@
 		if (onUploadStart) {
 			onUploadStart({
 				files: [...files],
-				uploaderName: uploaderName || 'Anonymous',
+				uploaderName: uploaderName || getRandomPlaceholder(),
 				description: description,
 				previews: [...previews],
 			});
@@ -85,6 +87,8 @@
 		uploaderName = '';
 		description = '';
 		error = '';
+		// Get a new random placeholder for next time
+		namePlaceholder = getRandomPlaceholder();
 	}
 
 	function handleClose() {
@@ -151,6 +155,20 @@
 			}
 		}
 	});
+
+	// Initialize placeholder when modal opens
+	$effect(() => {
+		if (isOpen) {
+			namePlaceholder = getRandomPlaceholder();
+		}
+	});
+
+	// Update placeholder when input is focused and empty for extra dynamism
+	function handleNameFocus() {
+		if (!uploaderName) {
+			namePlaceholder = getRandomPlaceholder();
+		}
+	}
 
 	// Cleanup on unmount
 	$effect(() => {
@@ -287,7 +305,8 @@
 							type="text"
 							id="uploaderName"
 							bind:value={uploaderName}
-							placeholder="Anonymous"
+							placeholder={namePlaceholder}
+							onfocus={handleNameFocus}
 							class="w-full rounded-lg border border-wedding-beige px-3 py-2 text-sm focus:border-wedding-sage focus:outline-none focus:ring-2 focus:ring-wedding-sage/20"
 						/>
 					</div>
