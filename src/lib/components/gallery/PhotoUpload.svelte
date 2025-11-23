@@ -3,7 +3,7 @@
 
 	interface Props {
 		isActive?: boolean;
-		onUploadStart?: (payload: UploadPayload) => void;
+		onUploadStart?: (_payload: UploadPayload) => void;
 		onClose: () => void;
 		isOpen: boolean;
 		preSelectedFiles?: File[];
@@ -33,20 +33,6 @@
 	let uploaderName = $state('');
 	let description = $state('');
 	let error = $state('');
-
-	function handleFileSelect(e: Event) {
-		const input = e.target as HTMLInputElement;
-		if (!input.files) return;
-
-		const selectedFiles = Array.from(input.files);
-		files = [...files, ...selectedFiles];
-
-		// Use URL.createObjectURL for better memory management
-		selectedFiles.forEach((file) => {
-			const objectUrl = URL.createObjectURL(file);
-			previews = [...previews, objectUrl];
-		});
-	}
 
 	function isVideoFile(file: File): boolean {
 		return file.type.startsWith('video/');
@@ -181,7 +167,6 @@
 
 {#if isOpen}
 	<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="absolute inset-0 bg-black/50"
 			onclick={handleClose}
@@ -224,17 +209,10 @@
 
 				<div class="space-y-4">
 					<div>
-						<label
-							class="flex h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-wedding-beige bg-wedding-cream transition hover:border-wedding-sage"
+						<button
+							type="button"
+							class="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-wedding-beige bg-wedding-cream transition hover:border-wedding-sage"
 							onclick={handleUploadAreaClick}
-							role="button"
-							tabindex="0"
-							onkeydown={(e) => {
-								if (e.key === 'Enter' || e.key === ' ') {
-									e.preventDefault();
-									handleUploadAreaClick();
-								}
-							}}
 						>
 							<svg
 								class="h-12 w-12 text-wedding-text-muted"
@@ -255,7 +233,7 @@
 							<span class="mt-1 text-xs text-wedding-text-muted"
 								>Tap to select from gallery or camera</span
 							>
-						</label>
+						</button>
 					</div>
 
 					{#if previews.length > 0}

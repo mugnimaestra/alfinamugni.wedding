@@ -5,6 +5,12 @@ compatibility_flags = ["nodejs_compat"]
 # Cloudflare Pages configuration
 pages_build_output_dir = ".svelte-kit/cloudflare"
 
+# R2 Public URL for direct asset serving
+# Uncomment to use R2 public URLs (requires files to exist in the R2 bucket)
+# For local dev: Only uncomment if your local database public_url values match this domain
+# For production: This should be set to your R2 custom domain
+# PUBLIC_R2_URL = "https://assets.alfinamugni.wedding"
+
 # D1 Database bindings (preview/development)
 [[d1_databases]]
 binding = "DB"
@@ -12,14 +18,19 @@ database_name = "wedding-database-preview"
 database_id = "a2cc2db7-740c-4532-ac34-cb7956aac5d4"
 
 # R2 binding for photo storage (preview/development)
+# Use local R2 bucket for development
+# To use production R2 in local dev, add: experimental_remote = true
 [[r2_buckets]]
 binding = "WEDDING_PHOTOS"
-bucket_name = "wedding-photos-preview"
+bucket_name = "alfinamugni-wedding"
 
 # Production environment configuration
 # Note: Configure production bindings in Cloudflare Pages dashboard
 # Settings > Environment Variables for better security
 [env.production]
+
+[env.production.vars]
+PUBLIC_R2_URL = "https://assets.alfinamugni.wedding"
 
 [[env.production.d1_databases]]
 binding = "DB"

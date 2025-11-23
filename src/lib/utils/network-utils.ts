@@ -258,7 +258,7 @@ export interface BatteryManager {
   charging: boolean;
   chargingTime: number;
   dischargingTime: number;
-  addEventListener: (type: string, listener: EventListener) => void;
+  addEventListener: (type: string, listener: (event: Event) => void) => void;
 }
 
 export interface NetworkConnectionAPI extends Navigator {
@@ -270,8 +270,8 @@ export interface NetworkConnectionInformation {
   effectiveType?: '2g' | '3g' | '4g' | 'slow-2g';
   rtt?: number;
   saveData?: boolean;
-  addEventListener: (type: string, listener: EventListener) => void;
-  removeEventListener?: (type: string, listener: EventListener) => void;
+  addEventListener: (type: string, listener: (event: Event) => void) => void;
+  removeEventListener?: (type: string, listener: (event: Event) => void) => void;
 }
 
 /**

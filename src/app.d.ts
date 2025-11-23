@@ -6,6 +6,7 @@ declare global {
 			env: {
 				DB: D1Database;
 				WEDDING_PHOTOS?: R2Bucket;
+				R2_PUBLIC_URL?: string;
 			};
 			context: {
 				waitUntil(promise: Promise<unknown>): void;

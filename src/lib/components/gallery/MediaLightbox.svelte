@@ -9,6 +9,7 @@
 	interface Photo {
 		id: string | number;
 		url: string;
+		thumbnail?: string;
 		description?: string;
 		uploader_name?: string;
 		upload_date?: string;
@@ -30,6 +31,7 @@
 		title?: string;
 		description?: string;
 		width?: string;
+		poster?: string;
 	}
 
 	interface GLightboxOptions {
@@ -53,9 +55,19 @@
 		[key: string]: any;
 	}
 
+	interface GLightboxInstance {
+		setElements: (elements: GLightboxElement[]) => void;
+		openAt: (index: number) => void;
+		close: () => void;
+		destroy: () => void;
+		on: (event: string, callback: () => void) => void;
+	}
+
+	type GLightboxFactory = (options: GLightboxOptions) => GLightboxInstance;
+
 	let { photos, currentIndex, isOpen, onClose }: Props = $props();
 
-	let lightboxInstance: any = null;
+	let lightboxInstance: GLightboxInstance | null = null;
 
 	// Load GLightbox dan CSS hanya di client-side
 	onMount(async () => {
@@ -107,6 +119,7 @@
 				title: photo.description || '',
 				description: descriptionHtml || undefined,
 				width: isVideoType ? '90vw' : undefined,
+				poster: isVideoType && photo.thumbnail ? photo.thumbnail : undefined,
 			};
 		});
 	}
@@ -117,13 +130,14 @@
 
 		const elements = transformPhotosToElements(photos);
 
-		lightboxInstance = (GLightbox as any)({
+		lightboxInstance = GLightbox({
 			elements,
 			autoplayVideos: false,
 			touchNavigation: true,
 			loop: false,
 			keyboardNavigation: true,
 			closeOnOutsideClick: true,
+			closeButton: true,
 			openEffect: 'fade',
 			closeEffect: 'fade',
 			plyr: {
@@ -131,15 +145,17 @@
 					ratio: '16:9',
 					muted: false,
 					hideControls: false,
-				} as any,
+				},
 			},
 			skin: 'wedding-theme',
 		});
 
 		// Listen to close event
-		lightboxInstance.on('close', () => {
-			onClose();
-		});
+		if (lightboxInstance) {
+			lightboxInstance.on('close', () => {
+				onClose();
+			});
+		}
 	}
 
 	// Update lightbox elements when photos change
@@ -162,7 +178,9 @@
 				updateLightboxElements();
 				// Small delay to ensure DOM is ready
 				setTimeout(() => {
-					lightboxInstance.openAt(currentIndex);
+					if (lightboxInstance) {
+						lightboxInstance.openAt(currentIndex);
+					}
 				}, 50);
 			}
 		} else if (!isOpen && lightboxInstance) {
@@ -243,34 +261,146 @@
 		color: var(--wedding-text-primary);
 	}
 
+	/* Base button styles */
 	:global(.glightbox-wedding-theme .gbtn) {
-		background-color: rgba(0, 0, 0, 0.5);
-		border-radius: 50%;
-		transition: all 0.3s ease;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		pointer-events: auto !important;
 	}
 
-	:global(.glightbox-wedding-theme .gbtn:hover) {
-		background-color: rgba(0, 0, 0, 0.7);
-		transform: scale(1.1);
+	@keyframes fadeInScale {
+		from {
+			opacity: 0;
+			transform: scale(0.9);
+		}
+		to {
+			opacity: 1;
+			transform: scale(1);
+		}
 	}
 
+	/* Close Button - Elegant Wedding Theme */
 	:global(.glightbox-wedding-theme .gclose) {
-		top: 1rem;
-		right: 1rem;
+		position: absolute !important;
+		top: 1.5rem !important;
+		right: 1.5rem !important;
+		width: 44px !important;
+		height: 44px !important;
+		z-index: 9999 !important;
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+		background-color: rgba(250, 247, 245, 0.9) !important;
+		border: 1.5px solid rgba(77, 51, 38, 0.3) !important;
+		border-radius: 50% !important;
+		backdrop-filter: blur(8px) !important;
+		-webkit-backdrop-filter: blur(8px) !important;
+		box-shadow: 0 2px 8px rgba(77, 51, 38, 0.15) !important;
+		transition: all 0.2s ease !important;
+		pointer-events: auto !important;
+		animation: fadeInScale 0.3s ease-out forwards !important;
 	}
 
+	:global(.glightbox-wedding-theme .gclose:hover) {
+		transform: scale(1.05) !important;
+		border-color: rgba(77, 51, 38, 0.5) !important;
+		box-shadow: 0 4px 12px rgba(77, 51, 38, 0.25) !important;
+		background-color: rgba(250, 247, 245, 0.95) !important;
+	}
+
+	:global(.glightbox-wedding-theme .gclose svg) {
+		fill: #4d3326;
+		width: 20px;
+		height: 20px;
+		stroke: #4d3326;
+		stroke-width: 2.5;
+		transition: all 0.2s ease;
+	}
+
+	:global(.glightbox-wedding-theme .gclose:hover svg) {
+		transform: rotate(90deg);
+	}
+
+	/* Navigation Arrows - Elegant Floating Controls */
 	:global(.glightbox-wedding-theme .gprev),
 	:global(.glightbox-wedding-theme .gnext) {
-		width: 48px;
-		height: 48px;
+		position: absolute !important;
+		width: 56px !important;
+		height: 56px !important;
+		top: 50% !important;
+		transform: translateY(-50%) !important;
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		visibility: visible !important;
+		background-color: rgba(250, 247, 245, 0.85) !important;
+		border: 1.5px solid rgba(77, 51, 38, 0.2) !important;
+		border-radius: 50% !important;
+		backdrop-filter: blur(8px) !important;
+		-webkit-backdrop-filter: blur(8px) !important;
+		box-shadow: 0 2px 8px rgba(77, 51, 38, 0.15) !important;
+		transition: all 0.2s ease !important;
+		pointer-events: auto !important;
+		z-index: 9998 !important;
+	}
+
+	:global(.glightbox-wedding-theme .gprev) {
+		left: 1.5rem !important;
+		opacity: 0 !important;
+		animation: slideInLeft 0.3s ease-out 0.1s forwards !important;
+	}
+
+	:global(.glightbox-wedding-theme .gnext) {
+		right: 1.5rem !important;
+		opacity: 0 !important;
+		animation: slideInRight 0.3s ease-out 0.1s forwards !important;
+	}
+
+	@keyframes slideInLeft {
+		from {
+			opacity: 0;
+			transform: translateY(-50%) translateX(-20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(-50%) translateX(0);
+		}
+	}
+
+	@keyframes slideInRight {
+		from {
+			opacity: 0;
+			transform: translateY(-50%) translateX(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(-50%) translateX(0);
+		}
+	}
+
+	:global(.glightbox-wedding-theme .gprev:hover),
+	:global(.glightbox-wedding-theme .gnext:hover) {
+		transform: translateY(-50%) scale(1.08) !important;
+		background-color: rgba(250, 247, 245, 0.95) !important;
+		border-color: rgba(77, 51, 38, 0.4) !important;
+		box-shadow: 0 4px 12px rgba(77, 51, 38, 0.25) !important;
 	}
 
 	:global(.glightbox-wedding-theme .gprev svg),
-	:global(.glightbox-wedding-theme .gnext svg),
-	:global(.glightbox-wedding-theme .gclose svg) {
-		fill: white;
+	:global(.glightbox-wedding-theme .gnext svg) {
+		fill: #4d3326;
 		width: 24px;
 		height: 24px;
+		transition: transform 0.2s ease;
+	}
+
+	:global(.glightbox-wedding-theme .gprev:hover svg) {
+		transform: translateX(-2px);
+	}
+
+	:global(.glightbox-wedding-theme .gnext:hover svg) {
+		transform: translateX(2px);
 	}
 
 	:global(.glightbox-wedding-theme .gslide-media img) {
@@ -283,15 +413,44 @@
 		width: auto;
 	}
 
-	/* Counter styling */
+	/* Counter Badge - Elegant Wedding Typography */
 	:global(.glightbox-wedding-theme .gslide-counter) {
-		background-color: rgba(0, 0, 0, 0.5);
-		color: white;
-		padding: 0.5rem 1rem;
-		border-radius: 20px;
-		font-size: 0.875rem;
-		top: 1rem;
-		left: 1rem;
+		position: absolute !important;
+		top: 1.5rem !important;
+		left: 1.5rem !important;
+		z-index: 9997 !important;
+		visibility: visible !important;
+		background-color: rgba(77, 51, 38, 0.85) !important;
+		color: #faf7f5 !important;
+		padding: 0.5rem 1rem !important;
+		border-radius: 24px !important;
+		font-size: 0.875rem !important;
+		font-weight: 500 !important;
+		font-family: 'Playfair Display', serif !important;
+		box-shadow: 0 2px 8px rgba(77, 51, 38, 0.2) !important;
+		backdrop-filter: blur(4px) !important;
+		-webkit-backdrop-filter: blur(4px) !important;
+		opacity: 0 !important;
+		animation: fadeInSlideDown 0.3s ease-out 0.15s forwards !important;
+		transition: all 0.2s ease !important;
+		pointer-events: auto !important;
+		display: block !important;
+	}
+
+	@keyframes fadeInSlideDown {
+		from {
+			opacity: 0;
+			transform: translateY(-10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	:global(.glightbox-wedding-theme .gslide-counter:hover) {
+		background-color: rgba(77, 51, 38, 0.95) !important;
+		box-shadow: 0 4px 12px rgba(77, 51, 38, 0.3) !important;
 	}
 
 	/* Responsive adjustments */
@@ -301,10 +460,80 @@
 			max-height: 70vh;
 		}
 
+		/* Mobile Overlay - Lighter brown backdrop */
+		:global(.glightbox-wedding-theme .goverlay) {
+			background: rgba(77, 51, 38, 0.85) !important;
+			backdrop-filter: blur(4px) !important;
+			-webkit-backdrop-filter: blur(4px) !important;
+		}
+
+		/* Mobile Description Area - Brown flat background */
+		:global(.glightbox-wedding-theme .gslide-description) {
+			background-color: #4d3326 !important;
+			border-top: none !important;
+		}
+
+		:global(.glightbox-wedding-theme .gslide-title) {
+			color: #faf7f5 !important;
+		}
+
+		:global(.glightbox-description-content) {
+			color: #faf7f5 !important;
+		}
+
+		:global(.glightbox-desc-text) {
+			color: #faf7f5 !important;
+		}
+
+		:global(.glightbox-uploader-info) {
+			color: rgba(250, 247, 245, 0.8) !important;
+		}
+
+		:global(.glightbox-uploader-name) {
+			color: #faf7f5 !important;
+		}
+
+		/* Mobile Navigation Arrows */
 		:global(.glightbox-wedding-theme .gprev),
 		:global(.glightbox-wedding-theme .gnext) {
-			width: 40px;
-			height: 40px;
+			width: 48px !important;
+			height: 48px !important;
+		}
+
+		:global(.glightbox-wedding-theme .gprev) {
+			left: 1rem !important;
+		}
+
+		:global(.glightbox-wedding-theme .gnext) {
+			right: 1rem !important;
+		}
+
+		:global(.glightbox-wedding-theme .gprev svg),
+		:global(.glightbox-wedding-theme .gnext svg) {
+			width: 20px;
+			height: 20px;
+		}
+
+		/* Mobile Close Button */
+		:global(.glightbox-wedding-theme .gclose) {
+			top: 1rem !important;
+			right: 1rem !important;
+			width: 40px !important;
+			height: 40px !important;
+			background-color: rgba(250, 247, 245, 0.95) !important;
+		}
+
+		:global(.glightbox-wedding-theme .gclose svg) {
+			width: 18px;
+			height: 18px;
+		}
+
+		/* Mobile Counter */
+		:global(.glightbox-wedding-theme .gslide-counter) {
+			top: 1rem !important;
+			left: 1rem !important;
+			font-size: 0.8125rem !important;
+			padding: 0.375rem 0.875rem !important;
 		}
 	}
 </style>

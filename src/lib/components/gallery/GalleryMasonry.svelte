@@ -12,7 +12,7 @@
 
 	interface Props {
 		initialPhotos: Photo[];
-		onPhotoClick: (photo: Photo) => void;
+		onPhotoClick: (_photo: Photo) => void;
 	}
 
 	let { initialPhotos, onPhotoClick }: Props = $props();
@@ -30,11 +30,11 @@
 		if (initialPhotos.length > previousPhotoCount) {
 			// New photos were added - mark them for animation
 			const newIds = new Set<string | number>();
-			initialPhotos.slice(0, initialPhotos.length - previousPhotoCount).forEach(p => {
+			initialPhotos.slice(0, initialPhotos.length - previousPhotoCount).forEach((p) => {
 				newIds.add(p.id);
 			});
 			newPhotoIds = newIds;
-			
+
 			// Clear animation after 2 seconds
 			setTimeout(() => {
 				newPhotoIds = new Set();
@@ -53,15 +53,28 @@
 			const data = await response.json();
 
 			if (data.success && data.photos.length > 0) {
-				const newPhotos = data.photos.map((p: any) => ({
+				// Photos already have url and thumbnail from the API endpoint
+				interface ApiPhoto {
+					id: number;
+					url: string;
+					thumbnail: string;
+					description?: string;
+					uploader_name?: string;
+					upload_date?: string;
+					content_type?: string;
+					media_type?: string;
+				}
+				const newPhotos = (data.photos as ApiPhoto[]).map((p: ApiPhoto) => ({
 					id: p.id,
-					url: `/api/photos/${p.id}`,
-					thumbnail: `/api/photos/${p.id}`,
+					url: p.url,
+					thumbnail: p.thumbnail,
 					description: p.description || '',
 					uploader_name: p.uploader_name || 'Anonymous',
 					upload_date: p.upload_date,
 					content_type: p.content_type || 'image/jpeg',
-					media_type: p.media_type || (p.content_type?.startsWith('video/') ? 'video' : 'image')
+					media_type:
+						(p.media_type as 'image' | 'video') ||
+						(p.content_type?.startsWith('video/') ? 'video' : 'image'),
 				}));
 
 				photos = [...photos, ...newPhotos];
@@ -132,16 +145,33 @@
 			<button
 				type="button"
 				onclick={() => onPhotoClick(photo)}
-				class="masonry-item group flex flex-col overflow-hidden rounded-lg border border-wedding-beige bg-white shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 {newPhotoIds.has(photo.id) ? 'animate-fadeInScale' : ''}"
+				class="masonry-item group flex flex-col overflow-hidden rounded-lg border border-wedding-beige bg-white shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 {newPhotoIds.has(
+					photo.id
+				)
+					? 'animate-fadeInScale'
+					: ''}"
 			>
 				<div class="relative overflow-hidden">
 					{#if isVideo(photo)}
-						<video
-							src={photo.url}
-							class="h-full w-full object-cover"
-							preload="metadata"
-							muted
-						></video>
+						{#if photo.thumbnail}
+							<!-- Use thumbnail image for iOS Safari compatibility -->
+							<img
+								src={photo.thumbnail}
+								alt={photo.description || 'Video thumbnail'}
+								loading="lazy"
+								class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+							/>
+						{:else}
+							<!-- Fallback to video element with poster attribute -->
+							<video
+								src={photo.url}
+								class="h-full w-full object-cover"
+								preload="metadata"
+								muted
+								playsinline
+								poster={photo.thumbnail}
+							/>
+						{/if}
 						<div
 							class="absolute inset-0 flex items-center justify-center bg-black/20 transition-all group-hover:bg-black/30"
 						>
@@ -182,19 +212,25 @@
 		{/each}
 	</div>
 
-	<div bind:this={sentinelRef} class="h-4"></div>
+	<div bind:this={sentinelRef} class="h-4" />
 
 	{#if loading}
 		<div class="flex justify-center py-8">
 			<div class="flex items-center gap-2 text-wedding-text-muted">
 				<svg class="h-6 w-6 animate-spin" fill="none" viewBox="0 0 24 24">
-					<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-					></circle>
+					<circle
+						class="opacity-25"
+						cx="12"
+						cy="12"
+						r="10"
+						stroke="currentColor"
+						stroke-width="4"
+					/>
 					<path
 						class="opacity-75"
 						fill="currentColor"
 						d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-					></path>
+					/>
 				</svg>
 				<span>Loading more...</span>
 			</div>

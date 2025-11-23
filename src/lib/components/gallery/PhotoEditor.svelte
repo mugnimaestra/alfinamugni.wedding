@@ -3,7 +3,7 @@
 
 	interface PhotoEditorProps {
 		imageUrl: string;
-		onSave?: (editedImage: Blob) => void;
+		onSave?: (_editedImage: Blob) => void;
 		onCancel?: () => void;
 	}
 
@@ -29,7 +29,7 @@
 		{ id: 'bw', name: 'B&W', css: 'grayscale(1) contrast(1.2)' },
 		{ id: 'warm', name: 'Warm', css: 'sepia(0.3) saturate(1.3)' },
 		{ id: 'cool', name: 'Cool', css: 'hue-rotate(180deg) saturate(0.8)' },
-		{ id: 'dramatic', name: 'Dramatic', css: 'contrast(1.5) saturate(1.2)' }
+		{ id: 'dramatic', name: 'Dramatic', css: 'contrast(1.5) saturate(1.2)' },
 	];
 
 	// Load and process image
@@ -167,10 +167,14 @@
 
 		try {
 			const blob = await new Promise<Blob>((resolve, reject) => {
-				canvas.toBlob((blob) => {
-					if (blob) resolve(blob);
-					else reject(new Error('Failed to create blob'));
-				}, 'image/jpeg', 0.9);
+				canvas.toBlob(
+					(blob) => {
+						if (blob) resolve(blob);
+						else reject(new Error('Failed to create blob'));
+					},
+					'image/jpeg',
+					0.9
+				);
 			});
 
 			onSave?.(blob);
@@ -204,7 +208,9 @@
 				<canvas
 					bind:this={previewCanvas}
 					class="max-w-full max-h-full shadow-2xl"
-					style="filter: {selectedFilter ? filters.find((f) => f.id === selectedFilter)?.css : 'none'}"
+					style="filter: {selectedFilter
+						? filters.find((f) => f.id === selectedFilter)?.css
+						: 'none'}"
 				/>
 			</div>
 		</div>
@@ -234,10 +240,11 @@
 
 			<!-- Brightness -->
 			<div>
-				<label class="block text-sm font-medium mb-2">
+				<label for="brightness-slider" class="block text-sm font-medium mb-2">
 					Brightness: {brightness}
 				</label>
 				<input
+					id="brightness-slider"
 					type="range"
 					bind:value={brightness}
 					min="-100"
@@ -249,10 +256,11 @@
 
 			<!-- Contrast -->
 			<div>
-				<label class="block text-sm font-medium mb-2">
+				<label for="contrast-slider" class="block text-sm font-medium mb-2">
 					Contrast: {contrast}
 				</label>
 				<input
+					id="contrast-slider"
 					type="range"
 					bind:value={contrast}
 					min="-100"
@@ -264,10 +272,11 @@
 
 			<!-- Saturation -->
 			<div>
-				<label class="block text-sm font-medium mb-2">
+				<label for="saturation-slider" class="block text-sm font-medium mb-2">
 					Saturation: {saturation}
 				</label>
 				<input
+					id="saturation-slider"
 					type="range"
 					bind:value={saturation}
 					min="-100"
@@ -335,4 +344,3 @@
 		border: none;
 	}
 </style>
-

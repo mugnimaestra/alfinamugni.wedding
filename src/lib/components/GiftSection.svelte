@@ -219,9 +219,9 @@
 
 		try {
 			// Step 1: Measure current height before switching
-			let currentHeight = 0;
+			let _currentHeight = 0;
 			if (cardContentWrapper) {
-				currentHeight = cardContentWrapper.offsetHeight;
+				_currentHeight = cardContentWrapper.offsetHeight;
 			}
 
 			// Step 2: Animate current content out

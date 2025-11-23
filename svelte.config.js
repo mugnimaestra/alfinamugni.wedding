@@ -12,7 +12,8 @@ const config = {
 			},
 			platformProxy: {
 				configPath: 'wrangler.toml',
-				persist: true // Enable local D1 persistence
+				persist: true,
+				remote: process.env.REMOTE_BINDINGS === 'true'
 			}
 		}),
 	},

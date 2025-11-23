@@ -5,7 +5,7 @@
 	interface Props {
 		isOpen: boolean;
 		onClose: () => void;
-		onFilesSelected: (files: FileList) => void;
+		onFilesSelected: (_files: FileList) => void;
 	}
 
 	let { isOpen, onClose, onFilesSelected }: Props = $props();
@@ -73,7 +73,7 @@
 		>
 			<!-- Handle bar -->
 			<div class="flex justify-center pt-3 pb-2">
-				<div class="h-1 w-12 rounded-full bg-wedding-beige"></div>
+				<div class="h-1 w-12 rounded-full bg-wedding-beige" />
 			</div>
 
 			<!-- Content -->
@@ -108,7 +108,9 @@
 						</div>
 						<div class="flex-1">
 							<div class="font-medium text-wedding-text-primary">Ambil Foto</div>
-							<div class="text-sm text-wedding-text-muted">Gunakan kamera untuk mengambil foto baru</div>
+							<div class="text-sm text-wedding-text-muted">
+								Gunakan kamera untuk mengambil foto baru
+							</div>
 						</div>
 					</button>
 
@@ -125,7 +127,9 @@
 						</div>
 						<div class="flex-1">
 							<div class="font-medium text-wedding-text-primary">Pilih dari Galeri</div>
-							<div class="text-sm text-wedding-text-muted">Pilih foto atau video dari galeri Anda</div>
+							<div class="text-sm text-wedding-text-muted">
+								Pilih foto atau video dari galeri Anda
+							</div>
 						</div>
 					</button>
 				</div>
@@ -155,4 +159,3 @@
 	class="hidden"
 	aria-label="Gallery input"
 />
-

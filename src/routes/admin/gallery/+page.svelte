@@ -1,7 +1,6 @@
 <script lang="ts">
 	import PhotoCard from '$lib/components/admin/PhotoCard.svelte';
 	import type { PageData } from './$types';
-	import { invalidateAll } from '$app/navigation';
 
 	interface Photo {
 		id: string | number;
@@ -51,7 +50,7 @@
 
 		try {
 			const response = await fetch(`/api/photos/${id}`, {
-				method: 'DELETE'
+				method: 'DELETE',
 			});
 
 			if (response.ok) {
@@ -76,7 +75,7 @@
 			const deletePromises = Array.from(selectedIds).map((id) =>
 				fetch(`/api/photos/${id}`, { method: 'DELETE' }).then((r) => ({
 					id,
-					success: r.ok
+					success: r.ok,
 				}))
 			);
 
@@ -171,6 +170,7 @@
 						type="button"
 						onclick={() => (searchQuery = '')}
 						class="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-wedding-text-muted hover:bg-wedding-cream"
+						aria-label="Clear search"
 					>
 						<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path

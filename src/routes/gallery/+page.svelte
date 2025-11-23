@@ -9,6 +9,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import { getDeviceInfo, getNetworkInfo } from '$lib/utils/device';
+	import { VideoThumbnailExtractor } from '$lib/utils/image-processor';
 
 	interface Photo {
 		id: number;
@@ -19,6 +20,21 @@
 		upload_date: string;
 		r2_key: string;
 		content_type?: string;
+		media_type?: string;
+		thumbnail_url?: string;
+		url: string;
+		thumbnail: string;
+	}
+
+	interface TransformedPhoto {
+		id: number;
+		url: string;
+		thumbnail: string;
+		description: string;
+		uploader_name: string;
+		upload_date: string;
+		content_type: string;
+		media_type: string;
 	}
 
 	interface UploadPayload {
@@ -44,10 +60,10 @@
 	let showPhotoModal = $state(false);
 
 	const transformedPhotos = $derived(
-		data.photos.map((p: any) => ({
+		data.photos.map((p: Photo): TransformedPhoto => ({
 			id: p.id,
-			url: `/api/photos/${p.id}`,
-			thumbnail: `/api/photos/${p.id}`,
+			url: p.url,
+			thumbnail: p.thumbnail,
 			description: p.description || '',
 			uploader_name: p.uploader_name || 'Anonymous',
 			upload_date: p.upload_date,
@@ -56,7 +72,7 @@
 		}))
 	);
 
-	function handlePhotoClick(photo: any) {
+	function handlePhotoClick(photo: TransformedPhoto) {
 		const index = transformedPhotos.findIndex((p) => p.id === photo.id);
 		if (index !== -1) {
 			selectedPhotoIndex = index;
@@ -170,6 +186,17 @@
 			formData.append('height', '0');
 		}
 
+		// Generate thumbnail for video files
+		if (VideoThumbnailExtractor.isVideoFile(file)) {
+			try {
+				const thumbnailBlob = await VideoThumbnailExtractor.extractThumbnail(file);
+				formData.append('thumbnail', thumbnailBlob, `${file.name}-thumb.jpg`);
+			} catch (err) {
+				console.error('Failed to generate video thumbnail:', err);
+				// Continue upload without thumbnail
+			}
+		}
+
 		try {
 			const response = await fetch('/api/gallery/upload', {
 				method: 'POST',
@@ -193,6 +220,7 @@
 			}
 
 			const result = await response.json();
+			console.log('Upload result:', result);
 			if (result.success) {
 				return { success: true };
 			} else {

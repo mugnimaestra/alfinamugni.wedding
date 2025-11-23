@@ -343,3 +343,155 @@ export async function processBatchForUpload(
   return processor.processBatchForUpload(files, options, progressCallback);
 }
 
+/**
+ * Video Thumbnail Extractor
+ * Extracts first frame from video files for thumbnail generation
+ */
+export class VideoThumbnailExtractor {
+  /**
+   * Extract thumbnail from video file at specified time
+   * @param videoFile Video file to extract thumbnail from
+   * @param timeInSeconds Time in video to capture (default: 0.5s)
+   * @param thumbnailSize Maximum dimension for thumbnail (default: 800)
+   * @param quality JPEG quality (default: 0.85)
+   * @returns Promise resolving to thumbnail blob
+   */
+  static async extractThumbnail(
+    videoFile: File,
+    timeInSeconds: number = 0.5,
+    thumbnailSize: number = 800,
+    quality: number = 0.85
+  ): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        reject(new Error('Failed to get canvas context'));
+        return;
+      }
+
+      video.preload = 'metadata';
+      video.muted = true;
+      video.playsInline = true;
+
+      // Handle video loaded
+      video.onloadedmetadata = () => {
+        // Seek to specified time
+        video.currentTime = Math.min(timeInSeconds, video.duration);
+      };
+
+      // Handle seeking complete
+      video.onseeked = () => {
+        try {
+          // Calculate thumbnail dimensions maintaining aspect ratio
+          const { width, height } = this.calculateThumbnailDimensions(
+            video.videoWidth,
+            video.videoHeight,
+            thumbnailSize
+          );
+
+          canvas.width = width;
+          canvas.height = height;
+
+          // Draw video frame to canvas
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(video, 0, 0, width, height);
+
+          // Convert canvas to blob
+          canvas.toBlob(
+            (blob) => {
+              // Clean up
+              URL.revokeObjectURL(video.src);
+              
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject(new Error('Failed to generate thumbnail blob'));
+              }
+            },
+            'image/jpeg',
+            quality
+          );
+        } catch (error) {
+          URL.revokeObjectURL(video.src);
+          reject(error);
+        }
+      };
+
+      // Handle errors
+      video.onerror = () => {
+        URL.revokeObjectURL(video.src);
+        reject(new Error('Failed to load video file'));
+      };
+
+      // Start loading video
+      video.src = URL.createObjectURL(videoFile);
+    });
+  }
+
+  /**
+   * Check if file is a video
+   */
+  static isVideoFile(file: File): boolean {
+    return file.type.startsWith('video/');
+  }
+
+  /**
+   * Calculate thumbnail dimensions maintaining aspect ratio
+   */
+  private static calculateThumbnailDimensions(
+    originalWidth: number,
+    originalHeight: number,
+    maxSize: number
+  ): { width: number; height: number } {
+    const aspectRatio = originalWidth / originalHeight;
+
+    let width = originalWidth;
+    let height = originalHeight;
+
+    if (width > maxSize || height > maxSize) {
+      if (width > height) {
+        width = maxSize;
+        height = Math.round(width / aspectRatio);
+      } else {
+        height = maxSize;
+        width = Math.round(height * aspectRatio);
+      }
+    }
+
+    return { width, height };
+  }
+
+  /**
+   * Get video dimensions without extracting thumbnail
+   */
+  static async getVideoDimensions(videoFile: File): Promise<{ width: number; height: number; duration: number }> {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.muted = true;
+      video.playsInline = true;
+
+      video.onloadedmetadata = () => {
+        const dimensions = {
+          width: video.videoWidth,
+          height: video.videoHeight,
+          duration: video.duration
+        };
+        URL.revokeObjectURL(video.src);
+        resolve(dimensions);
+      };
+
+      video.onerror = () => {
+        URL.revokeObjectURL(video.src);
+        reject(new Error('Failed to load video metadata'));
+      };
+
+      video.src = URL.createObjectURL(videoFile);
+    });
+  }
+}
+

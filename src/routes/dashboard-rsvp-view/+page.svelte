@@ -15,15 +15,6 @@
 		moderated_by: string | null;
 	}
 
-	interface RSVPStats {
-		total: number;
-		yes: number;
-		no: number;
-		maybe: number;
-		totalVisitors: number;
-		recent: number;
-	}
-
 	type SortField = 'guest_name' | 'created_at' | 'attending' | null;
 	type SortDirection = 'asc' | 'desc';
 

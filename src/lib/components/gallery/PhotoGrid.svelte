@@ -10,7 +10,7 @@
 
 	interface Props {
 		photos: Photo[];
-		onPhotoClick: (photo: Photo) => void;
+		onPhotoClick: (_photo: Photo) => void;
 	}
 
 	interface PhotoLayout {
@@ -42,15 +42,15 @@
 	}
 
 	// Debounce function
-	function debounce<T extends (...args: any[]) => void>(
+	function debounce<T extends (..._args: any[]) => void>(
 		func: T,
 		wait: number
-	): (...args: Parameters<T>) => void {
+	): (..._args: Parameters<T>) => void {
 		let timeout: ReturnType<typeof setTimeout> | null = null;
-		return function executedFunction(...args: Parameters<T>) {
+		return function executedFunction(..._args: Parameters<T>) {
 			const later = () => {
 				timeout = null;
-				func(...args);
+				func(..._args);
 			};
 			if (timeout) clearTimeout(timeout);
 			timeout = setTimeout(later, wait);

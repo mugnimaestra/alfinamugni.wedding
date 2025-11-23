@@ -82,7 +82,7 @@
 	// Build full URL for OG image
 	const ogImageUrl = `${siteConfig.url}${siteConfig.ogImage}`;
 	const pageUrl = `${siteConfig.url}${$page.url.pathname}`;
-	
+
 	// JSON-LD structured data for Event schema
 	const eventStructuredData = {
 		'@context': 'https://schema.org',
@@ -99,31 +99,40 @@
 			address: {
 				'@type': 'PostalAddress',
 				addressLocality: 'Jakarta',
-				addressCountry: siteConfig.wedding.location.addressCountry
-			}
+				addressCountry: siteConfig.wedding.location.addressCountry,
+			},
 		},
 		organizer: [
 			{
 				'@type': 'Person',
-				name: siteConfig.wedding.couple.bride
+				name: siteConfig.wedding.couple.bride,
 			},
 			{
 				'@type': 'Person',
-				name: siteConfig.wedding.couple.groom
-			}
+				name: siteConfig.wedding.couple.groom,
+			},
 		],
-		image: ogImageUrl
+		image: ogImageUrl,
 	};
+	const jsonLdScript = `<script type="application/ld+json">${JSON.stringify(
+		eventStructuredData
+	)}<\/script>`;
 </script>
 
 <svelte:head>
 	<title>{siteConfig.name}</title>
 	<meta name="description" content={siteConfig.description} />
-	<meta name="keywords" content="undangan pernikahan, wedding invitation, Alfina, Mugni, Jakarta, Indonesia, 29 November 2025" />
+	<meta
+		name="keywords"
+		content="undangan pernikahan, wedding invitation, Alfina, Mugni, Jakarta, Indonesia, 29 November 2025"
+	/>
 	<meta name="author" content={siteConfig.author} />
-	<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+	<meta
+		name="robots"
+		content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+	/>
 	<link rel="canonical" href={pageUrl} />
-	
+
 	<!-- Open Graph / Facebook -->
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content={pageUrl} />
@@ -134,16 +143,16 @@
 	<meta property="og:image:height" content="630" />
 	<meta property="og:image:alt" content="Undangan Pernikahan Alfina & Mugni" />
 	<meta property="og:locale" content={siteConfig.locale} />
-	
+
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content={siteConfig.name} />
 	<meta name="twitter:description" content={siteConfig.description} />
 	<meta name="twitter:image" content={ogImageUrl} />
 	<meta name="twitter:image:alt" content="Undangan Pernikahan Alfina & Mugni" />
-	
+
 	<!-- JSON-LD Structured Data -->
-	{@html `<script type="application/ld+json">${JSON.stringify(eventStructuredData)}</script>`}
+	{@html jsonLdScript}
 </svelte:head>
 
 <!-- Invitation Cover (shows first, hides after clicking "Open Invitation") -->

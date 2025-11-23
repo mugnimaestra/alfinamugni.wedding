@@ -29,18 +29,28 @@
 	}
 
 	// Props
-	export let maxFiles = 50;
-	export let maxFileSize = 20;
-	export let acceptedFormats = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
-	export let onUploadComplete: ((files: UploadFile[]) => void) | undefined = undefined;
-	export let onError: ((error: string) => void) | undefined = undefined;
+	interface Props {
+		maxFiles?: number;
+		maxFileSize?: number;
+		acceptedFormats?: string[];
+		onUploadComplete?: (files: UploadFile[]) => void;
+		onError?: (error: string) => void;
+	}
+
+	let {
+		maxFiles = 50,
+		maxFileSize = 20,
+		acceptedFormats = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
+		onUploadComplete,
+		onError,
+	}: Props = $props();
 
 	// State
 	let selectedFiles = $state<UploadFile[]>([]);
 	let networkInfo = $state<NetworkInfo | null>(null);
 	let uploadSettings = $state<UploadSettings>({
 		autoCompress: true,
-		autoEnhance: true
+		autoEnhance: true,
 	});
 	let isUploading = $state(false);
 	let totalProgress = $state(0);
@@ -90,7 +100,7 @@
 			deviceInfo: getDeviceInfo(),
 			networkInfo: networkInfo
 				? `${networkInfo.effectiveType} (${networkInfo.downlink}Mbps)`
-				: 'Unknown'
+				: 'Unknown',
 		};
 
 		if (file.type.startsWith('image/')) {
@@ -155,7 +165,7 @@
 					preview,
 					status: 'pending',
 					progress: 0,
-					metadata
+					metadata,
 				};
 
 				selectedFiles = [...selectedFiles, uploadFile];
@@ -183,7 +193,7 @@
 				targetQuality: uploadSettings.autoEnhance ? 0.85 : 0.75,
 				generateThumbnail: true,
 				optimizeForMobile: true,
-				preserveOriginal: false
+				preserveOriginal: false,
 			});
 
 			uploadFile.processed = processed;
@@ -196,7 +206,8 @@
 			console.log(`[EnhancedPhotoUpload] Processed ${uploadFile.file.name}:`, {
 				original: (uploadFile.file.size / 1024 / 1024).toFixed(2) + 'MB',
 				compressed: (processed.compressedBlob.size / 1024 / 1024).toFixed(2) + 'MB',
-				compression: ((1 - processed.compressedBlob.size / uploadFile.file.size) * 100).toFixed(1) + '%'
+				compression:
+					((1 - processed.compressedBlob.size / uploadFile.file.size) * 100).toFixed(1) + '%',
 			});
 		} catch (error) {
 			console.error('Processing failed:', error);
@@ -266,7 +277,7 @@
 
 					const uploadFileObj = new File([fileToUpload], file.file.name, {
 						type: fileToUpload.type,
-						lastModified: Date.now()
+						lastModified: Date.now(),
 					});
 
 					// Upload to API
@@ -277,7 +288,7 @@
 
 					const response = await fetch('/api/gallery/upload', {
 						method: 'POST',
-						body: formData
+						body: formData,
 					});
 
 					if (!response.ok) {
@@ -333,13 +344,6 @@
 				return '📷';
 		}
 	}
-
-	$effect(() => {
-		const filtered = selectedFiles.filter((file) =>
-			file.file.name.toLowerCase().includes(searchQuery.toLowerCase())
-		);
-		return filtered;
-	});
 </script>
 
 <div class="w-full max-w-6xl mx-auto space-y-6">
@@ -367,8 +371,8 @@
 					{networkInfo.timeOfDay === 'peak'
 						? '🔴 Peak Hours'
 						: networkInfo.timeOfDay === 'off-peak'
-							? '🟢 Off-Peak'
-							: '🟡 Normal'}
+						? '🟢 Off-Peak'
+						: '🟡 Normal'}
 				</div>
 			</div>
 		</div>
@@ -491,7 +495,7 @@
 								<div
 									class="bg-blue-600 h-3 rounded-full transition-all duration-300"
 									style="width: {totalProgress}%"
-								></div>
+								/>
 							</div>
 							<div class="text-sm text-gray-600">
 								{selectedFiles.filter((f) => f.status === 'completed').length} /
@@ -546,7 +550,9 @@
 								? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'
 								: 'space-y-2'}
 						>
-							{#each selectedFiles.filter((file) => file.file.name.toLowerCase().includes(searchQuery.toLowerCase())) as file (file.id)}
+							{#each selectedFiles.filter((file) => file.file.name
+									.toLowerCase()
+									.includes(searchQuery.toLowerCase())) as file (file.id)}
 								<div
 									class="relative border border-gray-200 rounded-lg overflow-hidden group {viewMode ===
 									'list'
@@ -625,7 +631,7 @@
 						/>
 						<div
 							class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"
-						></div>
+						/>
 					</label>
 				</div>
 
@@ -635,14 +641,10 @@
 						<div class="text-sm text-gray-500">Apply automatic color and quality enhancements</div>
 					</div>
 					<label class="relative inline-flex items-center cursor-pointer">
-						<input
-							type="checkbox"
-							bind:checked={uploadSettings.autoEnhance}
-							class="sr-only peer"
-						/>
+						<input type="checkbox" bind:checked={uploadSettings.autoEnhance} class="sr-only peer" />
 						<div
 							class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"
-						></div>
+						/>
 					</label>
 				</div>
 
@@ -675,4 +677,3 @@
 		{/if}
 	</div>
 </div>
-

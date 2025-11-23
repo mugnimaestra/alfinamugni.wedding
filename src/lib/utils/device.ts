@@ -25,14 +25,27 @@ export function generateTitle(filename: string): string {
 	return filename.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
 }
 
+interface NetworkInformation extends EventTarget {
+	effectiveType: 'slow-2g' | '2g' | '3g' | '4g';
+	downlink?: number;
+	rtt?: number;
+	saveData?: boolean;
+	onchange?: (event: Event) => void;
+}
+
+interface NavigatorWithConnection extends Navigator {
+	connection?: NetworkInformation;
+}
+
 export function getNetworkInfo(): string {
-	if (typeof navigator === 'undefined' || !('connection' in navigator)) {
+	if (typeof navigator === 'undefined') {
 		return 'Unknown';
 	}
 
-	const connection = (navigator as any).connection;
-	if (!connection) return 'Unknown';
+	const nav = navigator as NavigatorWithConnection;
+	if (!nav.connection) return 'Unknown';
 
+	const connection = nav.connection;
 	const effectiveType = connection.effectiveType || 'Unknown';
 	const downlink = connection.downlink ? `${connection.downlink}Mbps` : '';
 

@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { PUBLIC_R2_URL } from '$env/static/public';
 
 export const POST: RequestHandler = async ({ request, platform }) => {
 	try {
@@ -80,7 +81,11 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		// Note: Thumbnail should be uploaded separately by the client
 		// Here we just store the thumbnail key for future use
 		const thumbnailFile = formData.get('thumbnail') as File | null;
-		let actualThumbnailKey = thumbnailKey;
+		let actualThumbnailKey: string | null = thumbnailKey;
+		
+		if (!thumbnailFile) {
+			actualThumbnailKey = null;
+		}
 		
 		if (thumbnailFile) {
 			try {
@@ -133,18 +138,48 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 			);
 		}
 
+		const photoId = result.meta?.last_row_id;
+		if (!photoId) {
+			return json(
+				{ success: false, error: 'Failed to get photo ID after upload' },
+				{ status: 500 }
+			);
+		}
+
+		// Populate public_url and thumbnail_public_url if PUBLIC_R2_URL is configured
+		const r2PublicUrl = PUBLIC_R2_URL;
+		if (r2PublicUrl) {
+			try {
+				const publicUrl = `${r2PublicUrl}/${mainKey}`;
+				const thumbnailPublicUrl = actualThumbnailKey ? `${r2PublicUrl}/${actualThumbnailKey}` : null;
+
+				await platform.env.DB.prepare(
+					`UPDATE photo_uploads 
+					 SET public_url = ?, thumbnail_public_url = ?
+					 WHERE id = ?`
+				)
+					.bind(publicUrl, thumbnailPublicUrl, photoId)
+					.run();
+			} catch (updateError) {
+				console.error('Failed to update public URLs:', updateError);
+				// Continue anyway - migration 0009 can populate these later
+			}
+		}
+
 		return json({
 			success: true,
 			message: 'Photo uploaded successfully',
 			data: {
-				id: result.meta?.last_row_id,
+				id: photoId,
 				filename: file.name,
 				original_name: file.name,
 				file_size: file.size,
 				upload_date: new Date().toISOString(),
-				preview_url: `/api/photos/${result.meta?.last_row_id}`,
+				preview_url: `/api/photos/${photoId}`,
 				r2_key: mainKey,
 				thumbnail_url: actualThumbnailKey,
+				public_url: r2PublicUrl ? `${r2PublicUrl}/${mainKey}` : null,
+				thumbnail_public_url: r2PublicUrl && actualThumbnailKey ? `${r2PublicUrl}/${actualThumbnailKey}` : null,
 				compression_ratio: compressionRatio.toFixed(2),
 				device_info: deviceInfo,
 				network_info: networkInfo

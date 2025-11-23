@@ -108,15 +108,15 @@
 	}
 
 	// Debounce function
-	function debounce<T extends (...args: any[]) => void>(
+	function debounce<T extends (..._args: any[]) => void>(
 		func: T,
 		wait: number
-	): (...args: Parameters<T>) => void {
+	): (..._args: Parameters<T>) => void {
 		let timeout: ReturnType<typeof setTimeout> | null = null;
-		return function executedFunction(...args: Parameters<T>) {
+		return function executedFunction(..._args: Parameters<T>) {
 			const later = () => {
 				timeout = null;
-				func(...args);
+				func(..._args);
 			};
 			if (timeout) clearTimeout(timeout);
 			timeout = setTimeout(later, wait);
@@ -299,7 +299,9 @@
 >
 	<div class="max-w-6xl mx-auto">
 		<div class="text-center mb-12">
-			<h2 class="font-serif text-4xl md:text-6xl mb-6 font-light text-wedding-navy">Photo Gallery</h2>
+			<h2 class="font-serif text-4xl md:text-6xl mb-6 font-light text-wedding-navy">
+				Photo Gallery
+			</h2>
 			<p class="text-lg md:text-xl text-wedding-text-light max-w-2xl mx-auto">
 				Momen-momen indah perjalanan cinta kami
 			</p>

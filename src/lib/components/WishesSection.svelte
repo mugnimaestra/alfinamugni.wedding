@@ -12,17 +12,6 @@
 		created_at: string;
 	}
 
-	interface Counts {
-		total: number;
-	}
-
-	interface Pagination {
-		page: number;
-		limit: number;
-		total: number;
-		totalPages: number;
-	}
-
 	/**
 	 * Decodes and sanitizes guest name from URL query parameter
 	 */
@@ -59,7 +48,6 @@
 	let attending = $state<'yes' | 'no'>('yes');
 	let visitorCount = $state(1);
 	let wishes = $state<WishRsvp[]>([]);
-	let counts = $state<Counts>({ total: 0 });
 	let currentPage = $state(1);
 	let totalPages = $state(1);
 	let isLoading = $state(false);
@@ -88,7 +76,6 @@
 			const response = await fetch(`/api/wishes-rsvp?page=${page}&limit=10`);
 			const data = await response.json();
 			wishes = data.wishes || [];
-			counts = data.counts || { total: 0 };
 			if (data.pagination) {
 				currentPage = data.pagination.page;
 				totalPages = data.pagination.totalPages;
@@ -200,7 +187,9 @@
 				Wishes & RSVP
 			</h2>
 			<!-- Callout Banner -->
-			<div class="max-w-3xl mx-auto mb-8 p-4 bg-gradient-to-r from-wedding-sky/30 to-wedding-steel/20 border-2 border-wedding-steel/40 rounded-lg shadow-sm">
+			<div
+				class="max-w-3xl mx-auto mb-8 p-4 bg-gradient-to-r from-wedding-sky/30 to-wedding-steel/20 border-2 border-wedding-steel/40 rounded-lg shadow-sm"
+			>
 				<p class="text-wedding-navy font-medium text-base md:text-lg">
 					Silakan isi formulir berikut untuk mengirimkan ucapan dan mengonfirmasi kehadiran Anda
 				</p>
@@ -281,9 +270,9 @@
 									d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
 								/>
 							</svg>
-							<label class="block text-sm font-semibold text-wedding-navy">
+							<span class="block text-sm font-semibold text-wedding-navy">
 								Konfirmasi Kehadiran *
-							</label>
+							</span>
 						</div>
 						<p class="text-xs text-wedding-navy/80 mb-3 italic">
 							Mohon konfirmasikan kehadiran Anda sebelum acara
@@ -369,7 +358,8 @@
 							<div class="flex items-center gap-x-3">
 								<h3 class="font-semibold text-lg text-wedding-navy">{wish.guest_name}</h3>
 							</div>
-							<span class="text-sm text-wedding-text-light">{formatTimestamp(wish.created_at)}</span>
+							<span class="text-sm text-wedding-text-light">{formatTimestamp(wish.created_at)}</span
+							>
 						</div>
 						<p class="text-wedding-text-dark leading-relaxed">{wish.message}</p>
 					</div>
@@ -385,7 +375,9 @@
 
 		<!-- Pagination Controls -->
 		{#if totalPages > 1 && !isLoading}
-			<div class="max-w-4xl mx-auto mt-8 flex items-center justify-center gap-x-4 gap-y-2 flex-wrap">
+			<div
+				class="max-w-4xl mx-auto mt-8 flex items-center justify-center gap-x-4 gap-y-2 flex-wrap"
+			>
 				<button
 					onclick={() => goToPage(currentPage - 1)}
 					disabled={currentPage === 1 || isLoading}
