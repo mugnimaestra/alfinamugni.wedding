@@ -45,7 +45,7 @@
 		closeEffect?: string;
 		plyr?: {
 			config?: {
-				ratio?: string;
+				ratio?: string | null;
 				muted?: boolean;
 				hideControls?: boolean;
 				[key: string]: any;
@@ -112,15 +112,36 @@
 				descriptionHtml += '</div>';
 			}
 
-			return {
+			// Validate and set poster/thumbnail for videos
+			let posterUrl: string | undefined = undefined;
+			if (isVideoType && photo.thumbnail) {
+				// Ensure thumbnail URL is valid (not empty, null, or undefined)
+				// Handle both string and potential null values from server
+				const thumbnail = typeof photo.thumbnail === 'string' ? photo.thumbnail.trim() : '';
+				if (thumbnail && thumbnail.length > 0) {
+					posterUrl = thumbnail;
+					// Debug logging for thumbnail URLs
+					if (browser && import.meta.env.DEV) {
+						console.log('[MediaLightbox] Video thumbnail:', {
+							photoId: photo.id,
+							thumbnailUrl: posterUrl,
+							videoUrl: photo.url,
+						});
+					}
+				}
+			}
+
+			const element: GLightboxElement = {
 				href: photo.url,
 				type: isVideoType ? 'video' : 'image',
 				source: isVideoType ? 'local' : undefined,
 				title: photo.description || '',
 				description: descriptionHtml || undefined,
 				width: isVideoType ? '90vw' : undefined,
-				poster: isVideoType && photo.thumbnail ? photo.thumbnail : undefined,
+				poster: posterUrl,
 			};
+
+			return element;
 		});
 	}
 
@@ -142,6 +163,7 @@
 			closeEffect: 'fade',
 			plyr: {
 				config: {
+					ratio: null, // Respect native video aspect ratio
 					muted: false,
 					hideControls: false,
 				},
@@ -412,6 +434,23 @@
 		width: auto;
 	}
 
+	/* Override Plyr default 16:9 aspect ratio */
+	:global(.glightbox-wedding-theme .gslide-media video),
+	:global(.glightbox-wedding-theme .plyr__video-wrapper) {
+		aspect-ratio: auto !important;
+		max-height: 80vh !important;
+		width: auto !important;
+	}
+
+	:global(.glightbox-wedding-theme .plyr) {
+		aspect-ratio: auto !important;
+	}
+
+	:global(.glightbox-wedding-theme .plyr__video-embed) {
+		aspect-ratio: auto !important;
+		padding-bottom: 0 !important; /* Remove 16:9 padding */
+	}
+
 	/* Counter Badge - Elegant Wedding Typography */
 	:global(.glightbox-wedding-theme .gslide-counter) {
 		position: absolute !important;
@@ -457,6 +496,11 @@
 		:global(.glightbox-wedding-theme .gslide-media img),
 		:global(.glightbox-wedding-theme .gslide-media video) {
 			max-height: 70vh;
+		}
+
+		/* Mobile: Override Plyr aspect ratio */
+		:global(.glightbox-wedding-theme .plyr__video-wrapper) {
+			max-height: 70vh !important;
 		}
 
 		/* Mobile Overlay - Lighter brown backdrop */
