@@ -1,7 +1,7 @@
 -- Production Schema Update Migration
--- Creates the final schema state matching migrations 0001-0006
+-- Creates the final schema state matching migrations 0001-0009
 -- This migration sets up the production database with the unified schema
--- (no sessions, unified wishes_rsvp table, enhanced photo metadata)
+-- (no sessions, unified wishes_rsvp table, enhanced photo metadata, media_type, public_urls)
 
 -- Drop any existing tables that are being replaced
 DROP TABLE IF EXISTS rsvps;
@@ -69,7 +69,10 @@ CREATE TABLE photo_uploads (
   compression_ratio REAL,
   thumbnail_url TEXT,
   device_info TEXT,
-  network_info TEXT
+  network_info TEXT,
+  media_type TEXT CHECK (media_type IN ('image', 'video')),
+  public_url TEXT,
+  thumbnail_public_url TEXT
 );
 
 -- Create wedding_settings table
@@ -119,6 +122,8 @@ CREATE INDEX IF NOT EXISTS idx_photo_uploads_device ON photo_uploads(user_agent)
 CREATE INDEX IF NOT EXISTS idx_photo_uploads_device_info ON photo_uploads(device_info);
 CREATE INDEX IF NOT EXISTS idx_photo_uploads_r2_key ON photo_uploads(r2_key);
 CREATE INDEX IF NOT EXISTS idx_photo_uploads_featured ON photo_uploads(featured);
+CREATE INDEX IF NOT EXISTS idx_photo_uploads_media_type ON photo_uploads(media_type);
+CREATE INDEX IF NOT EXISTS idx_photo_uploads_public_url ON photo_uploads(public_url);
 
 -- Create indexes for page_views
 CREATE INDEX IF NOT EXISTS idx_page_views_path ON page_views(page_path);
