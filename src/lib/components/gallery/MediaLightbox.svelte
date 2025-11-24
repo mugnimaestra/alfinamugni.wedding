@@ -281,6 +281,32 @@
 					
 					document.addEventListener('keydown', handleKeyDown);
 					
+					// Watch slide counter for changes (catches touch swipes and all navigation methods)
+					const slideCounter = document.querySelector('.glightbox-wedding-theme .gslide-counter');
+					if (slideCounter) {
+						navigationObserver = new MutationObserver(() => {
+							// Small delay to let GLightbox finish updating
+							setTimeout(() => {
+								const slideIndex = getCurrentSlideIndex();
+								if (slideIndex >= 0 && slideIndex < photos.length && slideIndex !== lastReportedIndex) {
+									lastReportedIndex = slideIndex;
+									const photo = photos[slideIndex];
+									const photoId = typeof photo.id === 'number' ? photo.id : parseInt(String(photo.id), 10);
+									if (!isNaN(photoId)) {
+										onSlideChange(photoId);
+									}
+								}
+							}, 50);
+						});
+						
+						// Watch for text content changes in the counter
+						navigationObserver.observe(slideCounter, {
+							childList: true,
+							characterData: true,
+							subtree: true
+						});
+					}
+					
 					// Store cleanup function
 					navCleanup = () => {
 						if (prevButton) {
@@ -416,6 +442,26 @@
 	:global(.glightbox-uploader-name) {
 		font-weight: 500;
 		color: var(--wedding-text-primary);
+	}
+
+	/* Video-specific minimalist caption styles */
+	:global(.glightbox-wedding-theme .gslide:has(.plyr) .gslide-description) {
+		padding: 0.5rem !important;
+	}
+
+	:global(.glightbox-wedding-theme .gslide:has(.plyr) .gslide-title) {
+		margin-bottom: 0.25rem !important;
+	}
+
+	:global(.glightbox-wedding-theme .gslide:has(.plyr) .glightbox-desc-text) {
+		font-size: 0.75rem !important;
+		margin-bottom: 0.25rem !important;
+		line-height: 1.4 !important;
+	}
+
+	:global(.glightbox-wedding-theme .gslide:has(.plyr) .glightbox-uploader-info) {
+		font-size: 0.7rem !important;
+		margin-top: 0.25rem !important;
 	}
 
 	/* Base button styles */
@@ -670,6 +716,26 @@
 
 		:global(.glightbox-uploader-name) {
 			color: #faf7f5 !important;
+		}
+
+		/* Mobile Video-specific minimalist caption styles */
+		:global(.glightbox-wedding-theme .gslide:has(.plyr) .gslide-description) {
+			padding: 0.375rem !important;
+		}
+
+		:global(.glightbox-wedding-theme .gslide:has(.plyr) .gslide-title) {
+			margin-bottom: 0.2rem !important;
+		}
+
+		:global(.glightbox-wedding-theme .gslide:has(.plyr) .glightbox-desc-text) {
+			font-size: 0.7rem !important;
+			margin-bottom: 0.2rem !important;
+			line-height: 1.35 !important;
+		}
+
+		:global(.glightbox-wedding-theme .gslide:has(.plyr) .glightbox-uploader-info) {
+			font-size: 0.65rem !important;
+			margin-top: 0.2rem !important;
 		}
 
 		/* Mobile Navigation Arrows */
