@@ -3,6 +3,7 @@
 	import { getRandomPlaceholder } from '$lib/utils/placeholders';
 	import MediaLightbox from '$lib/components/gallery/MediaLightbox.svelte';
 	import { generateThumbnail, VideoThumbnailExtractor } from '$lib/utils/image-processor';
+	import { formatFileSize } from '$lib/utils/file-size';
 
 	interface Props {
 		isActive?: boolean;
@@ -80,6 +81,9 @@
 			uploader_name: uploaderName || undefined,
 		}))
 	);
+
+	// Calculate total file size
+	const totalFileSize = $derived(files.reduce((sum, f) => sum + f.size, 0));
 
 	function handleConfirmUpload() {
 		if (files.length === 0) {
@@ -391,6 +395,28 @@
 											/>
 										{/if}
 									</button>
+									<!-- File size overlay -->
+									<div
+										class="absolute bottom-1 left-1 z-10 rounded bg-black/70 px-1.5 py-0.5 text-xs text-white backdrop-blur-sm"
+									>
+										<div class="flex items-center gap-1">
+											{#if isVideoFile(files[i])}
+												<svg class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+													<path d="M8 5v14l11-7z" />
+												</svg>
+											{:else}
+												<svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+													/>
+												</svg>
+											{/if}
+											<span>{formatFileSize(files[i].size)}</span>
+										</div>
+									</div>
 									<button
 										type="button"
 										onclick={(e) => {
@@ -411,6 +437,17 @@
 									</button>
 								</div>
 							{/each}
+						</div>
+						<!-- Total file size summary -->
+						<div class="mt-2 rounded-lg border border-wedding-beige bg-wedding-cream/50 px-3 py-2">
+							<div class="flex items-center justify-between text-sm">
+								<span class="font-medium text-wedding-text-primary">
+									Total: {formatFileSize(totalFileSize)}
+								</span>
+								<span class="text-wedding-text-muted">
+									{files.length} {files.length === 1 ? 'file' : 'files'}
+								</span>
+							</div>
 						</div>
 					{/if}
 
@@ -457,6 +494,11 @@
 
 			<!-- Sticky Footer with Buttons -->
 			<div class="sticky bottom-0 border-t border-wedding-beige bg-white p-6">
+				{#if files.length > 0}
+					<div class="mb-3 text-center text-xs text-wedding-text-muted">
+						Uploading {formatFileSize(totalFileSize)} may take a while depending on your connection
+					</div>
+				{/if}
 				<div class="flex gap-x-3">
 					<button
 						type="button"
