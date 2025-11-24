@@ -208,36 +208,167 @@
 		description: string,
 		onProgress?: (progress: number) => void
 	): Promise<{ success: boolean; error?: string }> {
-		const formData = new FormData();
 		const deviceInfo = getDeviceInfo();
 		const networkInfo = getNetworkInfo();
-
-		formData.append('file', file);
-		formData.append('uploader_name', uploaderName);
-		formData.append('description', description);
-		formData.append('device_info', deviceInfo);
-		formData.append('network_info', networkInfo);
-		formData.append('original_size', file.size.toString());
+		const originalSize = file.size;
 
 		try {
-			const dimensions = await getMediaDimensions(file, preview);
-			formData.append('width', dimensions.width.toString());
-			formData.append('height', dimensions.height.toString());
-		} catch (err) {
-			console.error('Failed to get media dimensions:', err);
-			formData.append('width', '0');
-			formData.append('height', '0');
-		}
+			// Step 1: Request presigned URL
+			const presignedResponse = await fetch('/api/gallery/presigned-url', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					filename: file.name,
+					contentType: file.type,
+					fileSize: file.size,
+				}),
+			});
 
-		// Generate thumbnail for video files
-		if (VideoThumbnailExtractor.isVideoFile(file)) {
-			const thumbnailBlob = await VideoThumbnailExtractor.extractThumbnail(file);
-			if (thumbnailBlob) {
-				formData.append('thumbnail', thumbnailBlob, `${file.name}-thumb.jpg`);
+			if (!presignedResponse.ok) {
+				const errorData = await presignedResponse.json().catch(() => ({}));
+				return {
+					success: false,
+					error: errorData.error || `Failed to get upload URL (${presignedResponse.status})`,
+				};
 			}
-			// Continue upload without thumbnail if generation failed (errors are logged by extractThumbnail)
-		}
 
+			const presignedData = await presignedResponse.json();
+			if (!presignedData.success || !presignedData.data) {
+				return {
+					success: false,
+					error: presignedData.error || 'Failed to get upload URL',
+				};
+			}
+
+			const { presignedUrl, thumbnailPresignedUrl, mainKey, thumbnailKey } = presignedData.data;
+
+			// Step 2: Get media dimensions
+			let dimensions = { width: 0, height: 0 };
+			try {
+				dimensions = await getMediaDimensions(file, preview);
+			} catch (err) {
+				console.error('Failed to get media dimensions:', err);
+			}
+
+			// Step 3: Upload main file directly to R2 using presigned URL
+			const uploadProgress = (progress: number) => {
+				if (onProgress) {
+					// For large files, we'll track progress at 90% for main file upload
+					// Remaining 10% is for thumbnail and metadata
+					onProgress(progress * 0.9);
+				}
+			};
+
+			const uploadResult = await uploadFileWithProgress(
+				presignedUrl,
+				file,
+				file.type,
+				uploadProgress
+			);
+
+			if (!uploadResult.success) {
+				return uploadResult;
+			}
+
+			// Step 4: Upload thumbnail if it's a video
+			let thumbnailBlob: Blob | null = null;
+			if (VideoThumbnailExtractor.isVideoFile(file)) {
+				try {
+					thumbnailBlob = await VideoThumbnailExtractor.extractThumbnail(file);
+					if (thumbnailBlob && thumbnailPresignedUrl) {
+						const thumbnailProgress = (progress: number) => {
+							if (onProgress) {
+								// Thumbnail upload is 5% of total progress (90-95%)
+								onProgress(90 + progress * 0.05);
+							}
+						};
+
+						const thumbnailResult = await uploadFileWithProgress(
+							thumbnailPresignedUrl,
+							thumbnailBlob,
+							'image/jpeg',
+							thumbnailProgress
+						);
+
+						if (!thumbnailResult.success) {
+							console.warn('Thumbnail upload failed, continuing without thumbnail');
+						}
+					}
+				} catch (err) {
+					console.error('Failed to generate or upload thumbnail:', err);
+					// Continue without thumbnail
+				}
+			}
+
+			// Step 5: Complete upload by saving metadata
+			if (onProgress) {
+				onProgress(95); // Metadata save is 95-100%
+			}
+
+			const completeResponse = await fetch('/api/gallery/complete-upload', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					mainKey,
+					thumbnailKey: thumbnailBlob ? thumbnailKey : null,
+					filename: file.name,
+					originalName: file.name,
+					fileSize: file.size,
+					compressedSize: file.size,
+					originalSize,
+					contentType: file.type,
+					mediaType: file.type.startsWith('video/') ? 'video' : 'image',
+					uploaderName,
+					description,
+					deviceInfo,
+					networkInfo,
+					width: dimensions.width,
+					height: dimensions.height,
+				}),
+			});
+
+			if (!completeResponse.ok) {
+				const errorData = await completeResponse.json().catch(() => ({}));
+				return {
+					success: false,
+					error: errorData.error || `Failed to complete upload (${completeResponse.status})`,
+				};
+			}
+
+			const completeData = await completeResponse.json();
+			if (!completeData.success) {
+				return {
+					success: false,
+					error: completeData.error || 'Failed to complete upload',
+				};
+			}
+
+			if (onProgress) {
+				onProgress(100);
+			}
+
+			return { success: true };
+		} catch (err) {
+			console.error('Upload error:', err);
+			return {
+				success: false,
+				error: err instanceof Error ? err.message : 'Upload failed',
+			};
+		}
+	}
+
+	// Helper function to upload file with progress tracking
+	// Uploads directly to R2 presigned URL (not through Workers)
+	function uploadFileWithProgress(
+		presignedUrl: string,
+		file: File | Blob,
+		contentType: string,
+		onProgress?: (progress: number) => void
+	): Promise<{ success: boolean; error?: string }> {
 		return new Promise((resolve) => {
 			const xhr = new XMLHttpRequest();
 
@@ -253,29 +384,20 @@
 
 			// Handle response
 			xhr.addEventListener('load', () => {
+				// R2 returns 200 OK with empty body on successful PUT
+				// No JSON response, so we check status code only
 				if (xhr.status >= 200 && xhr.status < 300) {
-					try {
-						const result = JSON.parse(xhr.responseText);
-						console.log('Upload result:', result);
-						if (result.success) {
-							resolve({ success: true });
-						} else {
-							resolve({
-								success: false,
-								error: result.error || result.message || 'Upload failed',
-							});
-						}
-					} catch (err) {
-						resolve({ success: false, error: 'Failed to parse response' });
-					}
+					resolve({ success: true });
 				} else {
 					let errorMessage = `Upload failed (${xhr.status})`;
-					try {
-						const errorData = JSON.parse(xhr.responseText);
-						errorMessage = errorData.error || errorData.message || errorMessage;
-					} catch {
-						if (xhr.responseText) {
-							errorMessage = xhr.responseText;
+					// R2 might return XML error messages
+					if (xhr.responseText) {
+						// Try to extract error message from XML if present
+						const xmlMatch = xhr.responseText.match(/<Message>(.*?)<\/Message>/);
+						if (xmlMatch) {
+							errorMessage = xmlMatch[1];
+						} else {
+							errorMessage = xhr.responseText.substring(0, 200);
 						}
 					}
 					resolve({ success: false, error: errorMessage });
@@ -291,9 +413,11 @@
 				resolve({ success: false, error: 'Upload cancelled' });
 			});
 
-			// Send request
-			xhr.open('POST', '/api/gallery/upload');
-			xhr.send(formData);
+			// Send PUT request directly to R2 presigned URL
+			// Content-Type header must match what was signed in the presigned URL
+			xhr.open('PUT', presignedUrl);
+			xhr.setRequestHeader('Content-Type', contentType);
+			xhr.send(file);
 		});
 	}
 
