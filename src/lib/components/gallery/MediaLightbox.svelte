@@ -61,7 +61,8 @@
 		openAt: (index: number) => void;
 		close: () => void;
 		destroy: () => void;
-		on: (event: string, callback: () => void) => void;
+		on: (event: string, callback: (data?: any) => void) => void;
+		getSlideIndex?: () => number;
 	}
 
 	type GLightboxFactory = (options: GLightboxOptions) => GLightboxInstance;
@@ -69,6 +70,9 @@
 	let { photos, currentIndex, isOpen, onClose, onSlideChange }: Props = $props();
 
 	let lightboxInstance: GLightboxInstance | null = null;
+	let lastReportedIndex = $state(-1);
+	let navigationObserver: MutationObserver | null = null;
+	let navCleanup: (() => void) | null = null;
 
 	// Load GLightbox dan CSS hanya di client-side
 	onMount(async () => {
@@ -187,17 +191,107 @@
 			});
 
 			// Listen to slide change events to update hash
+			// GLightbox uses different event names in different versions
 			if (onSlideChange) {
-				lightboxInstance.on('slide_changed', (data: { index: number }) => {
-					const slideIndex = data?.index ?? currentIndex;
-					if (slideIndex >= 0 && slideIndex < photos.length) {
+				const handleSlideChange = (data?: any) => {
+					// Try to get index from event data or from GLightbox instance
+					let slideIndex = -1;
+					
+					if (data) {
+						// Try different possible data structures
+						slideIndex = data.index ?? data.current ?? data.slideIndex ?? -1;
+					}
+					
+					// Fallback: try to get from GLightbox instance if available
+					if (slideIndex === -1 && lightboxInstance?.getSlideIndex) {
+						slideIndex = lightboxInstance.getSlideIndex();
+					}
+					
+					// Final fallback: use currentIndex prop
+					if (slideIndex === -1) {
+						slideIndex = currentIndex;
+					}
+
+					// Only update if index changed and is valid
+					if (slideIndex >= 0 && slideIndex < photos.length && slideIndex !== lastReportedIndex) {
+						lastReportedIndex = slideIndex;
 						const photo = photos[slideIndex];
 						const photoId = typeof photo.id === 'number' ? photo.id : parseInt(String(photo.id), 10);
 						if (!isNaN(photoId)) {
 							onSlideChange(photoId);
 						}
 					}
-				});
+				};
+
+				// Try multiple event names (different GLightbox versions use different names)
+				lightboxInstance.on('slide_changed', handleSlideChange);
+				lightboxInstance.on('slideChange', handleSlideChange);
+				lightboxInstance.on('slidechange', handleSlideChange);
+
+				// Also listen to navigation events as a fallback
+				// Wait a bit for DOM to be ready
+				setTimeout(() => {
+					if (!browser) return;
+					
+					const getCurrentSlideIndex = (): number => {
+						// Try to get slide index from counter
+						const slideCounter = document.querySelector('.glightbox-wedding-theme .gslide-counter');
+						if (slideCounter) {
+							const counterText = slideCounter.textContent || '';
+							const match = counterText.match(/(\d+)\s*\/\s*\d+/);
+							if (match) {
+								return parseInt(match[1], 10) - 1; // Convert to 0-based index
+							}
+						}
+						return -1;
+					};
+					
+					const handleNavAction = () => {
+						// Small delay to let GLightbox update the slide first
+						setTimeout(() => {
+							const slideIndex = getCurrentSlideIndex();
+							if (slideIndex >= 0 && slideIndex < photos.length && slideIndex !== lastReportedIndex) {
+								lastReportedIndex = slideIndex;
+								const photo = photos[slideIndex];
+								const photoId = typeof photo.id === 'number' ? photo.id : parseInt(String(photo.id), 10);
+								if (!isNaN(photoId)) {
+									onSlideChange(photoId);
+								}
+							}
+						}, 100);
+					};
+					
+					// Listen to navigation button clicks
+					const prevButton = document.querySelector('.glightbox-wedding-theme .gprev');
+					const nextButton = document.querySelector('.glightbox-wedding-theme .gnext');
+					
+					if (prevButton) {
+						prevButton.addEventListener('click', handleNavAction);
+					}
+					if (nextButton) {
+						nextButton.addEventListener('click', handleNavAction);
+					}
+					
+					// Also listen to keyboard arrow keys (GLightbox handles these)
+					const handleKeyDown = (e: KeyboardEvent) => {
+						if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+							handleNavAction();
+						}
+					};
+					
+					document.addEventListener('keydown', handleKeyDown);
+					
+					// Store cleanup function
+					navCleanup = () => {
+						if (prevButton) {
+							prevButton.removeEventListener('click', handleNavAction);
+						}
+						if (nextButton) {
+							nextButton.removeEventListener('click', handleNavAction);
+						}
+						document.removeEventListener('keydown', handleKeyDown);
+					};
+				}, 200);
 			}
 		}
 	}
@@ -239,7 +333,26 @@
 		}
 	});
 
+	// Track when lightbox opens to set initial reported index
+	$effect(() => {
+		if (isOpen && currentIndex >= 0 && currentIndex < photos.length) {
+			// Reset last reported index when modal opens
+			lastReportedIndex = currentIndex;
+		}
+	});
+
 	onDestroy(() => {
+		if (navigationObserver) {
+			navigationObserver.disconnect();
+			navigationObserver = null;
+		}
+		
+		// Clean up navigation listeners
+		if (navCleanup) {
+			navCleanup();
+			navCleanup = null;
+		}
+		
 		if (lightboxInstance) {
 			lightboxInstance.destroy();
 			lightboxInstance = null;

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import PhotoCard from '$lib/components/admin/PhotoCard.svelte';
+	import DeletePreviewModal from '$lib/components/admin/DeletePreviewModal.svelte';
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
 
@@ -14,6 +15,9 @@
 		uploader_name: string;
 		upload_date: string;
 		thumbnail: string;
+		url: string;
+		content_type?: string;
+		media_type?: 'image' | 'video';
 	}
 
 	let { data }: { data: PageData } = $props();
@@ -23,6 +27,8 @@
 	let selectedIds = $state<Set<string | number>>(new Set());
 	let isDeleting = $state(false);
 	let toast = $state<{ message: string; type: 'success' | 'error' } | null>(null);
+	let previewPhoto = $state<Photo | null>(null);
+	let showPreviewModal = $state(false);
 
 	const filteredPhotos = $derived(() => {
 		if (!searchQuery.trim()) {
@@ -50,8 +56,24 @@
 		selectedIds = newSet;
 	}
 
-	async function deletePhoto(id: string | number) {
-		if (!confirm('Delete this photo?')) return;
+	function deletePhoto(id: string | number) {
+		const photo = allPhotos.find((p) => p.id === id);
+		if (!photo) return;
+		
+		previewPhoto = photo;
+		showPreviewModal = true;
+	}
+
+	function handleDeleteCancel() {
+		showPreviewModal = false;
+		previewPhoto = null;
+	}
+
+	async function handleDeleteConfirm() {
+		if (!previewPhoto) return;
+
+		const id = previewPhoto.id;
+		showPreviewModal = false;
 
 		try {
 			const response = await fetch(`/api/photos/${id}`, {
@@ -67,6 +89,8 @@
 			}
 		} catch (err) {
 			showToast('Failed to delete photo', 'error');
+		} finally {
+			previewPhoto = null;
 		}
 	}
 
@@ -263,3 +287,10 @@
 		</div>
 	</div>
 {/if}
+
+<DeletePreviewModal
+	photo={previewPhoto}
+	isOpen={showPreviewModal}
+	onCancel={handleDeleteCancel}
+	onConfirm={handleDeleteConfirm}
+/>

@@ -40,6 +40,13 @@ export const load: PageServerLoad = async ({ platform }) => {
 		return {
 			photos: (result.results || []).map((p: unknown) => {
 				const photo = p as PhotoRow;
+				// Construct full media URL: prefer public_url, fallback to API endpoint
+				const fullUrl = photo.public_url || `/api/photos/${photo.id}`;
+				// Determine media type
+				const mediaType = (photo.media_type === 'video' || photo.content_type?.startsWith('video/'))
+					? 'video'
+					: 'image';
+				
 				return {
 					id: photo.id,
 					title: photo.description || photo.original_name || 'Untitled',
@@ -52,7 +59,10 @@ export const load: PageServerLoad = async ({ platform }) => {
 							? `/api/photos/${photo.id}?thumbnail=true`
 							: (photo.public_url
 								? photo.public_url
-								: `/api/photos/${photo.id}`))
+								: `/api/photos/${photo.id}`)),
+					url: fullUrl,
+					content_type: photo.content_type || 'image/jpeg',
+					media_type: mediaType
 				};
 			}),
 			r2PublicUrl

@@ -55,8 +55,10 @@ export function updateMediaHash(id: number, replace: boolean = true): void {
 
 	if (replace) {
 		// Update hash without adding to history (for slide navigation)
-		window.history.replaceState(null, '', hash);
-		// Manually trigger hashchange since replaceState doesn't fire it
+		// Use full URL path to ensure proper replacement
+		const newUrl = window.location.pathname + window.location.search + hash;
+		window.history.replaceState(null, '', newUrl);
+		// Manually trigger hashchange since replaceState doesn't fire it automatically
 		window.dispatchEvent(new HashChangeEvent('hashchange'));
 	} else {
 		// Add to history (for initial open)
