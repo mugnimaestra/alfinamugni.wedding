@@ -5,6 +5,7 @@
 	import PhotoUpload from '$lib/components/gallery/PhotoUpload.svelte';
 	import MediaLightbox from '$lib/components/gallery/MediaLightbox.svelte';
 	import MediaSourcePicker from '$lib/components/gallery/MediaSourcePicker.svelte';
+	import UploadProgressBar from '$lib/components/gallery/UploadProgressBar.svelte';
 	import type { PageData } from './$types';
 	import { invalidateAll } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
@@ -59,6 +60,14 @@
 	let additionalFiles = $state<File[] | undefined>(undefined);
 	let selectedPhotoIndex = $state(-1);
 	let showPhotoModal = $state(false);
+
+	// Upload progress state
+	let isUploading = $state(false);
+	let uploadProgress = $state(0);
+	let currentFileIndex = $state(0);
+	let currentFileName = $state('');
+	let currentFileProgress = $state(0);
+	let totalFiles = $state(0);
 
 	const transformedPhotos = $derived(
 		data.photos.map((p: Photo): TransformedPhoto => ({
@@ -164,7 +173,8 @@
 		file: File,
 		preview: string,
 		uploaderName: string,
-		description: string
+		description: string,
+		onProgress?: (progress: number) => void
 	): Promise<{ success: boolean; error?: string }> {
 		const formData = new FormData();
 		const deviceInfo = getDeviceInfo();
@@ -196,44 +206,74 @@
 			// Continue upload without thumbnail if generation failed (errors are logged by extractThumbnail)
 		}
 
-		try {
-			const response = await fetch('/api/gallery/upload', {
-				method: 'POST',
-				body: formData,
+		return new Promise((resolve) => {
+			const xhr = new XMLHttpRequest();
+
+			// Track upload progress
+			if (onProgress) {
+				xhr.upload.addEventListener('progress', (event) => {
+					if (event.lengthComputable) {
+						const progress = (event.loaded / event.total) * 100;
+						onProgress(progress);
+					}
+				});
+			}
+
+			// Handle response
+			xhr.addEventListener('load', () => {
+				if (xhr.status >= 200 && xhr.status < 300) {
+					try {
+						const result = JSON.parse(xhr.responseText);
+						console.log('Upload result:', result);
+						if (result.success) {
+							resolve({ success: true });
+						} else {
+							resolve({
+								success: false,
+								error: result.error || result.message || 'Upload failed',
+							});
+						}
+					} catch (err) {
+						resolve({ success: false, error: 'Failed to parse response' });
+					}
+				} else {
+					let errorMessage = `Upload failed (${xhr.status})`;
+					try {
+						const errorData = JSON.parse(xhr.responseText);
+						errorMessage = errorData.error || errorData.message || errorMessage;
+					} catch {
+						if (xhr.responseText) {
+							errorMessage = xhr.responseText;
+						}
+					}
+					resolve({ success: false, error: errorMessage });
+				}
 			});
 
-			if (!response.ok) {
-				let errorMessage = `Upload failed (${response.status})`;
-				try {
-					const errorData = await response.json();
-					errorMessage = errorData.error || errorData.message || errorMessage;
-				} catch {
-					try {
-						const text = await response.text();
-						if (text) errorMessage = text;
-					} catch {
-						// Use default error message
-					}
-				}
-				return { success: false, error: errorMessage };
-			}
+			// Handle errors
+			xhr.addEventListener('error', () => {
+				resolve({ success: false, error: 'Network error. Please check your connection.' });
+			});
 
-			const result = await response.json();
-			console.log('Upload result:', result);
-			if (result.success) {
-				return { success: true };
-			} else {
-				return { success: false, error: result.error || result.message || 'Upload failed' };
-			}
-		} catch (err) {
-			const errorMessage = err instanceof Error ? err.message : 'Upload failed. Please try again.';
-			return { success: false, error: errorMessage };
-		}
+			xhr.addEventListener('abort', () => {
+				resolve({ success: false, error: 'Upload cancelled' });
+			});
+
+			// Send request
+			xhr.open('POST', '/api/gallery/upload');
+			xhr.send(formData);
+		});
 	}
 
 	async function handleUploadStart(payload: UploadPayload) {
 		const { files, uploaderName, description, previews } = payload;
-		const totalFiles = files.length;
+		totalFiles = files.length;
+
+		// Initialize upload progress state
+		isUploading = true;
+		uploadProgress = 0;
+		currentFileIndex = 0;
+		currentFileProgress = 0;
 
 		// Show initial loading toast
 		const toastId = toast.loading('Preparing upload...', {
@@ -249,16 +289,34 @@
 			const file = files[i];
 			const preview = previews[i];
 
+			// Update current file info
+			currentFileIndex = i;
+			currentFileName = file.name;
+			currentFileProgress = 0;
+
 			// Update toast with progress
 			toast.loading(`Uploading ${i + 1}/${totalFiles}...`, {
 				id: toastId,
 				description: `${successCount} uploaded, ${failedCount} failed`,
 			});
 
-			const result = await uploadSingleFile(file, preview, uploaderName, description);
+			// Upload with progress tracking
+			const result = await uploadSingleFile(
+				file,
+				preview,
+				uploaderName,
+				description,
+				(progress) => {
+					currentFileProgress = progress;
+					// Calculate overall progress: (completed files + current file progress) / total files
+					const completedFiles = successCount + failedCount;
+					uploadProgress = ((completedFiles + progress / 100) / totalFiles) * 100;
+				}
+			);
 
 			if (result.success) {
 				successCount++;
+				currentFileProgress = 100;
 			} else {
 				failedCount++;
 				failedFiles.push({
@@ -267,7 +325,14 @@
 					preview,
 				});
 			}
+
+			// Update overall progress after file completes
+			uploadProgress = ((successCount + failedCount) / totalFiles) * 100;
 		}
+
+		// Reset upload state
+		isUploading = false;
+		currentFileProgress = 0;
 
 		// Clean up preview URLs
 		previews.forEach((url) => {
@@ -338,7 +403,14 @@
 		uploaderName: string,
 		description: string
 	) {
-		const totalFiles = failedFiles.length;
+		totalFiles = failedFiles.length;
+
+		// Initialize upload progress state for retry
+		isUploading = true;
+		uploadProgress = 0;
+		currentFileIndex = 0;
+		currentFileProgress = 0;
+
 		const toastId = toast.loading(
 			`Mengulangi upload ${totalFiles} ${totalFiles === 1 ? 'file' : 'files'}...`
 		);
@@ -350,15 +422,33 @@
 		for (let i = 0; i < failedFiles.length; i++) {
 			const { file, preview } = failedFiles[i];
 
+			// Update current file info
+			currentFileIndex = i;
+			currentFileName = file.name;
+			currentFileProgress = 0;
+
 			toast.loading(`Mengulangi ${i + 1}/${totalFiles}...`, {
 				id: toastId,
 				description: `${successCount} berhasil, ${failedCount} masih gagal`,
 			});
 
-			const result = await uploadSingleFile(file, preview, uploaderName, description);
+			// Upload with progress tracking
+			const result = await uploadSingleFile(
+				file,
+				preview,
+				uploaderName,
+				description,
+				(progress) => {
+					currentFileProgress = progress;
+					// Calculate overall progress: (completed files + current file progress) / total files
+					const completedFiles = successCount + failedCount;
+					uploadProgress = ((completedFiles + progress / 100) / totalFiles) * 100;
+				}
+			);
 
 			if (result.success) {
 				successCount++;
+				currentFileProgress = 100;
 			} else {
 				failedCount++;
 				stillFailedFiles.push({
@@ -367,7 +457,14 @@
 					preview,
 				});
 			}
+
+			// Update overall progress after file completes
+			uploadProgress = ((successCount + failedCount) / totalFiles) * 100;
 		}
+
+		// Reset upload state
+		isUploading = false;
+		currentFileProgress = 0;
 
 		// Clean up preview URLs
 		failedFiles.forEach(({ preview }) => {
@@ -477,4 +574,13 @@
 	currentIndex={selectedPhotoIndex}
 	isOpen={showPhotoModal}
 	onClose={handleCloseModal}
+/>
+
+<UploadProgressBar
+	isVisible={isUploading}
+	overallProgress={uploadProgress}
+	{currentFileIndex}
+	{totalFiles}
+	{currentFileName}
+	{currentFileProgress}
 />
