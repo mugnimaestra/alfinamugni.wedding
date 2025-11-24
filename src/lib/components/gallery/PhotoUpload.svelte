@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { getRandomPlaceholder } from '$lib/utils/placeholders';
+	import MediaLightbox from '$lib/components/gallery/MediaLightbox.svelte';
+	import { generateThumbnail, VideoThumbnailExtractor } from '$lib/utils/image-processor';
 
 	interface Props {
 		isActive?: boolean;
@@ -30,24 +32,54 @@
 	}: Props = $props();
 
 	let files = $state<File[]>([]);
-	let previews = $state<string[]>([]);
+	let previews = $state<string[]>([]); // Full preview URLs for MediaLightbox
+	let thumbnails = $state<string[]>([]); // Thumbnail URLs for grid display
 	let uploaderName = $state('');
 	let description = $state('');
 	let error = $state('');
 	let namePlaceholder = $state(getRandomPlaceholder());
+	let showPreviewModal = $state(false);
+	let selectedPreviewIndex = $state(-1);
 
 	function isVideoFile(file: File): boolean {
 		return file.type.startsWith('video/');
 	}
 
 	function removeFile(index: number) {
-		// Clean up object URL before removing
+		// Clean up object URLs before removing
 		if (previews[index] && previews[index].startsWith('blob:')) {
 			URL.revokeObjectURL(previews[index]);
 		}
+		if (thumbnails[index] && thumbnails[index].startsWith('blob:')) {
+			URL.revokeObjectURL(thumbnails[index]);
+		}
 		files = files.filter((_, i) => i !== index);
 		previews = previews.filter((_, i) => i !== index);
+		thumbnails = thumbnails.filter((_, i) => i !== index);
 	}
+
+	function handleThumbnailClick(index: number) {
+		selectedPreviewIndex = index;
+		showPreviewModal = true;
+	}
+
+	function handleClosePreviewModal() {
+		showPreviewModal = false;
+		selectedPreviewIndex = -1;
+	}
+
+	// Transform files to Photo format for MediaLightbox
+	const previewPhotos = $derived(
+		files.map((file, index) => ({
+			id: `${file.name}-${file.size}-${index}`,
+			url: previews[index] || '',
+			thumbnail: thumbnails[index] || previews[index] || '',
+			content_type: file.type,
+			media_type: (isVideoFile(file) ? 'video' : 'image') as 'image' | 'video',
+			description: description || undefined,
+			uploader_name: uploaderName || undefined,
+		}))
+	);
 
 	function handleConfirmUpload() {
 		if (files.length === 0) {
@@ -82,11 +114,19 @@
 				URL.revokeObjectURL(url);
 			}
 		});
+		thumbnails.forEach((url) => {
+			if (url && url.startsWith('blob:')) {
+				URL.revokeObjectURL(url);
+			}
+		});
 		files = [];
 		previews = [];
+		thumbnails = [];
 		uploaderName = '';
 		description = '';
 		error = '';
+		showPreviewModal = false;
+		selectedPreviewIndex = -1;
 		// Get a new random placeholder for next time
 		namePlaceholder = getRandomPlaceholder();
 	}
@@ -109,15 +149,43 @@
 			// Using previews.length instead of files.length to avoid dependency on files that we modify
 			const newFiles = [...preSelectedFiles];
 			const newPreviews: string[] = [];
+			const newThumbnails: string[] = [];
 
-			// Create previews for pre-selected files
-			newFiles.forEach((file) => {
-				const objectUrl = URL.createObjectURL(file);
-				newPreviews.push(objectUrl);
-			});
+			// Create previews and thumbnails for pre-selected files
+			(async () => {
+				for (const file of newFiles) {
+					// Create full preview URL
+					const previewUrl = URL.createObjectURL(file);
+					newPreviews.push(previewUrl);
 
-			files = newFiles;
-			previews = newPreviews;
+					// Generate thumbnail
+					try {
+						if (isVideoFile(file)) {
+							const thumbnailBlob = await VideoThumbnailExtractor.extractThumbnail(file, 1.5, 300);
+							if (thumbnailBlob) {
+								const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
+								newThumbnails.push(thumbnailUrl);
+							} else {
+								// Fallback to preview if thumbnail generation fails
+								newThumbnails.push(previewUrl);
+							}
+						} else {
+							// For images, File extends Blob so we can pass it directly
+							const thumbnailBlob = await generateThumbnail(file, 300);
+							const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
+							newThumbnails.push(thumbnailUrl);
+						}
+					} catch (error) {
+						console.error('Failed to generate thumbnail:', error);
+						// Fallback to preview if thumbnail generation fails
+						newThumbnails.push(previewUrl);
+					}
+				}
+
+				files = newFiles;
+				previews = newPreviews;
+				thumbnails = newThumbnails;
+			})();
 		}
 		// Removed: else if (!isOpen) resetForm() - let handleClose() handle cleanup
 	});
@@ -144,14 +212,46 @@
 				// Append to existing files
 				files = [...currentFiles, ...newFiles];
 
-				// Create previews for new files
-				const currentPreviews = untrack(() => previews);
-				const newPreviews: string[] = [];
-				newFiles.forEach((file) => {
-					const objectUrl = URL.createObjectURL(file);
-					newPreviews.push(objectUrl);
-				});
-				previews = [...currentPreviews, ...newPreviews];
+				// Create previews and thumbnails for new files
+				(async () => {
+					const currentPreviews = untrack(() => previews);
+					const currentThumbnails = untrack(() => thumbnails);
+					const newPreviews: string[] = [];
+					const newThumbnails: string[] = [];
+
+					for (const file of newFiles) {
+						// Create full preview URL
+						const previewUrl = URL.createObjectURL(file);
+						newPreviews.push(previewUrl);
+
+						// Generate thumbnail
+						try {
+							if (isVideoFile(file)) {
+								const thumbnailBlob = await VideoThumbnailExtractor.extractThumbnail(file, 1.5, 300);
+								if (thumbnailBlob) {
+									const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
+									newThumbnails.push(thumbnailUrl);
+								} else {
+									// Fallback to preview if thumbnail generation fails
+									newThumbnails.push(previewUrl);
+								}
+							} else {
+								// For images, convert File to Blob first
+								const imageBlob = new Blob([file], { type: file.type });
+								const thumbnailBlob = await generateThumbnail(imageBlob, 300);
+								const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
+								newThumbnails.push(thumbnailUrl);
+							}
+						} catch (error) {
+							console.error('Failed to generate thumbnail:', error);
+							// Fallback to preview if thumbnail generation fails
+							newThumbnails.push(previewUrl);
+						}
+					}
+
+					previews = [...currentPreviews, ...newPreviews];
+					thumbnails = [...currentThumbnails, ...newThumbnails];
+				})();
 			}
 		}
 	});
@@ -175,6 +275,12 @@
 		return () => {
 			// Cleanup preview URLs when component unmounts
 			previews.forEach((url) => {
+				if (url && url.startsWith('blob:')) {
+					URL.revokeObjectURL(url);
+				}
+			});
+			// Cleanup thumbnail URLs when component unmounts
+			thumbnails.forEach((url) => {
 				if (url && url.startsWith('blob:')) {
 					URL.revokeObjectURL(url);
 				}
@@ -258,35 +364,41 @@
 						<div class="grid grid-cols-3 gap-2">
 							{#each previews as preview, i (i)}
 								<div class="group relative aspect-square">
-									{#if isVideoFile(files[i])}
-										<video
-											src={preview}
-											class="h-full w-full rounded-lg object-cover"
-											muted
-											onloadedmetadata={(e) => {
-												const video = e.currentTarget;
-												video.currentTime = Math.min(1.0, video.duration);
-											}}
-										/>
-										<div
-											class="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg"
-										>
-											<svg class="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-												<path d="M8 5v14l11-7z" />
-											</svg>
-										</div>
-									{:else}
-										<img
-											src={preview}
-											alt="Preview {i + 1}"
-											class="h-full w-full rounded-lg object-cover"
-										/>
-									{/if}
 									<button
 										type="button"
-										onclick={() => removeFile(i)}
+										onclick={() => handleThumbnailClick(i)}
+										class="absolute inset-0 h-full w-full cursor-pointer"
+										aria-label="Preview media {i + 1}"
+									>
+										{#if isVideoFile(files[i])}
+											<img
+												src={thumbnails[i] || preview}
+												alt="Video thumbnail {i + 1}"
+												class="h-full w-full rounded-lg object-cover"
+											/>
+											<div
+												class="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg"
+											>
+												<svg class="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+													<path d="M8 5v14l11-7z" />
+												</svg>
+											</div>
+										{:else}
+											<img
+												src={thumbnails[i] || preview}
+												alt="Preview {i + 1}"
+												class="h-full w-full rounded-lg object-cover"
+											/>
+										{/if}
+									</button>
+									<button
+										type="button"
+										onclick={(e) => {
+											e.stopPropagation();
+											removeFile(i);
+										}}
 										aria-label="Remove file"
-										class="absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white opacity-0 transition group-hover:opacity-100"
+										class="absolute right-1 top-1 z-10 rounded-full bg-red-500 p-1 text-white opacity-0 transition group-hover:opacity-100"
 									>
 										<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path
@@ -366,3 +478,10 @@
 		</div>
 	</div>
 {/if}
+
+<MediaLightbox
+	photos={previewPhotos}
+	currentIndex={selectedPreviewIndex}
+	isOpen={showPreviewModal}
+	onClose={handleClosePreviewModal}
+/>

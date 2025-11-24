@@ -577,3 +577,58 @@ export class VideoThumbnailExtractor {
   }
 }
 
+/**
+ * Generate thumbnail from image blob
+ * iOS-compatible canvas-based thumbnail generation
+ * @param imageBlob Image blob to generate thumbnail from
+ * @param size Maximum dimension for thumbnail (default: 300)
+ * @returns Promise resolving to thumbnail blob
+ */
+export async function generateThumbnail(imageBlob: Blob, size: number = 300): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      reject(new Error('Failed to get canvas context'));
+      return;
+    }
+
+    const img = new Image();
+
+    img.onload = () => {
+      // Calculate thumbnail dimensions maintaining aspect ratio
+      const aspectRatio = img.width / img.height;
+      let width = img.width;
+      let height = img.height;
+
+      if (width > size || height > size) {
+        if (width > height) {
+          width = size;
+          height = Math.round(width / aspectRatio);
+        } else {
+          height = size;
+          width = Math.round(height * aspectRatio);
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      // Draw and compress thumbnail
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => blob ? resolve(blob) : reject(new Error('Thumbnail generation failed')),
+        'image/jpeg',
+        0.8
+      );
+    };
+
+    img.onerror = () => reject(new Error('Failed to load image for thumbnail'));
+    img.src = URL.createObjectURL(imageBlob);
+  });
+}
+
