@@ -147,7 +147,7 @@
 			<button
 				type="button"
 				onclick={() => onPhotoClick(photo)}
-				class="masonry-item group flex flex-col overflow-hidden rounded border border-wedding-beige/30 bg-white shadow-sm transition-all hover:shadow-md hover:-translate-y-1 {newPhotoIds.has(
+				class="masonry-item group flex flex-col overflow-hidden rounded-2xl border border-wedding-beige/30 bg-white shadow-sm transition-all hover:shadow-md hover:-translate-y-1 {newPhotoIds.has(
 					photo.id
 				)
 					? 'animate-fadeInScale'
@@ -256,12 +256,12 @@
 
 	.masonry-grid {
 		column-count: 2;
-		column-gap: 0.25rem; /* 4px - minimal spacing for mobile */
+		column-gap: 0.5rem; /* 8px - Pinterest-like spacing for mobile */
 	}
 
 	.masonry-item {
 		break-inside: avoid;
-		margin-bottom: 0.25rem; /* 4px - minimal spacing for mobile */
+		margin-bottom: 0.5rem; /* 8px - Pinterest-like spacing for mobile */
 		display: inline-block;
 		width: 100%;
 	}
@@ -269,20 +269,20 @@
 	@media (min-width: 640px) {
 		.masonry-grid {
 			column-count: 3;
-			column-gap: 0.375rem; /* 6px */
+			column-gap: 0.75rem; /* 12px */
 		}
 		.masonry-item {
-			margin-bottom: 0.375rem; /* 6px */
+			margin-bottom: 0.75rem; /* 12px */
 		}
 	}
 
 	@media (min-width: 1024px) {
 		.masonry-grid {
 			column-count: 4;
-			column-gap: 0.5rem; /* 8px */
+			column-gap: 1rem; /* 16px */
 		}
 		.masonry-item {
-			margin-bottom: 0.5rem; /* 8px */
+			margin-bottom: 1rem; /* 16px */
 		}
 	}
 

@@ -17,7 +17,6 @@
 	import {
 		getCurrentMediaId,
 		openMediaModal,
-		closeMediaModal,
 		updateMediaHash,
 		removeMediaHash
 	} from '$lib/utils/hashModal';
@@ -104,9 +103,9 @@
 	function handleCloseModal() {
 		selectedPhotoIndex = -1;
 		showPhotoModal = false;
-		// Use history.back() to remove hash naturally
+		// Remove hash from URL when closing modal
 		if (browser) {
-			closeMediaModal();
+			removeMediaHash();
 		}
 	}
 
