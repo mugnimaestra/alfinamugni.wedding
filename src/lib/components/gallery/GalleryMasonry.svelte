@@ -147,7 +147,7 @@
 			<button
 				type="button"
 				onclick={() => onPhotoClick(photo)}
-				class="masonry-item group flex flex-col overflow-hidden rounded-lg border border-wedding-beige bg-white shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 {newPhotoIds.has(
+				class="masonry-item group flex flex-col overflow-hidden rounded border border-wedding-beige/30 bg-white shadow-sm transition-all hover:shadow-md hover:-translate-y-1 {newPhotoIds.has(
 					photo.id
 				)
 					? 'animate-fadeInScale'
@@ -194,22 +194,14 @@
 
 					{#if photo.description}
 						<div
-							class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-left opacity-0 transition-opacity group-hover:opacity-100"
+							class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-2 py-1.5 text-left"
 						>
-							<p class="line-clamp-2 text-sm text-white">
+							<p class="truncate text-xs text-white">
 								{photo.description}
 							</p>
 						</div>
 					{/if}
 				</div>
-
-				{#if photo.uploader_name}
-					<div class="p-3 text-left">
-						<p class="text-sm text-wedding-text-muted">
-							by <span class="font-medium text-wedding-text-primary">{photo.uploader_name}</span>
-						</p>
-					</div>
-				{/if}
 			</button>
 		{/each}
 	</div>
@@ -264,12 +256,12 @@
 
 	.masonry-grid {
 		column-count: 2;
-		column-gap: 1rem;
+		column-gap: 0.25rem; /* 4px - minimal spacing for mobile */
 	}
 
 	.masonry-item {
 		break-inside: avoid;
-		margin-bottom: 1rem;
+		margin-bottom: 0.25rem; /* 4px - minimal spacing for mobile */
 		display: inline-block;
 		width: 100%;
 	}
@@ -277,12 +269,20 @@
 	@media (min-width: 640px) {
 		.masonry-grid {
 			column-count: 3;
+			column-gap: 0.375rem; /* 6px */
+		}
+		.masonry-item {
+			margin-bottom: 0.375rem; /* 6px */
 		}
 	}
 
 	@media (min-width: 1024px) {
 		.masonry-grid {
 			column-count: 4;
+			column-gap: 0.5rem; /* 8px */
+		}
+		.masonry-item {
+			margin-bottom: 0.5rem; /* 8px */
 		}
 	}
 
