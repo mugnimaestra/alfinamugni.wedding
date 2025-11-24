@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import GalleryMasonry from '$lib/components/gallery/GalleryMasonry.svelte';
 	import FloatingUploadButton from '$lib/components/gallery/FloatingUploadButton.svelte';
 	import PhotoUpload from '$lib/components/gallery/PhotoUpload.svelte';
@@ -12,6 +13,14 @@
 	import { getDeviceInfo, getNetworkInfo } from '$lib/utils/device';
 	import { VideoThumbnailExtractor } from '$lib/utils/image-processor';
 	import { getRandomPlaceholder } from '$lib/utils/placeholders';
+	import { hashStore } from '$lib/stores/hashStore';
+	import {
+		getCurrentMediaId,
+		openMediaModal,
+		closeMediaModal,
+		updateMediaHash,
+		removeMediaHash
+	} from '$lib/utils/hashModal';
 
 	interface Photo {
 		id: number;
@@ -87,12 +96,35 @@
 		if (index !== -1) {
 			selectedPhotoIndex = index;
 			showPhotoModal = true;
+			// Set hash when opening modal (adds to history for back button)
+			openMediaModal(photo.id);
 		}
 	}
 
 	function handleCloseModal() {
 		selectedPhotoIndex = -1;
 		showPhotoModal = false;
+		// Use history.back() to remove hash naturally
+		if (browser) {
+			closeMediaModal();
+		}
+	}
+
+	function handleSlideChange(photoId: number) {
+		// Update hash when user navigates between slides (without adding to history)
+		updateMediaHash(photoId, true);
+	}
+
+	function openPhotoFromHash(mediaId: number) {
+		// Find photo by ID
+		const index = transformedPhotos.findIndex((p) => p.id === mediaId);
+		if (index !== -1) {
+			selectedPhotoIndex = index;
+			showPhotoModal = true;
+		} else {
+			// Photo not found (deleted or invalid) - silently remove hash
+			removeMediaHash();
+		}
 	}
 
 	async function getMediaDimensions(
@@ -528,6 +560,42 @@
 	// Remove cover-active class to enable scrolling
 	onMount(() => {
 		document.body.classList.remove('cover-active');
+
+		// Check hash on mount and open modal if valid media ID exists
+		if (browser) {
+			const mediaId = getCurrentMediaId();
+			if (mediaId) {
+				openPhotoFromHash(mediaId);
+			}
+
+			// Listen to hash changes (for back button support)
+			const unsubscribe = hashStore.subscribe((hash) => {
+				const mediaId = getCurrentMediaId();
+				if (mediaId) {
+					// Hash exists - open modal with that media
+					if (!showPhotoModal || selectedPhotoIndex < 0) {
+						openPhotoFromHash(mediaId);
+					} else {
+						// Modal is already open, check if we need to switch to different photo
+						const currentPhoto = transformedPhotos[selectedPhotoIndex];
+						if (currentPhoto && currentPhoto.id !== mediaId) {
+							openPhotoFromHash(mediaId);
+						}
+					}
+				} else {
+					// Hash removed - close modal
+					if (showPhotoModal) {
+						selectedPhotoIndex = -1;
+						showPhotoModal = false;
+					}
+				}
+			});
+
+			// Cleanup subscription on component destroy
+			return () => {
+				unsubscribe();
+			};
+		}
 	});
 </script>
 
@@ -574,6 +642,7 @@
 	currentIndex={selectedPhotoIndex}
 	isOpen={showPhotoModal}
 	onClose={handleCloseModal}
+	onSlideChange={handleSlideChange}
 />
 
 <UploadProgressBar

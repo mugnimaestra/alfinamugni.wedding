@@ -22,6 +22,7 @@
 		currentIndex: number;
 		isOpen: boolean;
 		onClose: () => void;
+		onSlideChange?: (photoId: number) => void;
 	}
 
 	interface GLightboxElement {
@@ -65,7 +66,7 @@
 
 	type GLightboxFactory = (options: GLightboxOptions) => GLightboxInstance;
 
-	let { photos, currentIndex, isOpen, onClose }: Props = $props();
+	let { photos, currentIndex, isOpen, onClose, onSlideChange }: Props = $props();
 
 	let lightboxInstance: GLightboxInstance | null = null;
 
@@ -105,7 +106,15 @@
 				}
 				if (photo.uploader_name) {
 					const dateStr = photo.upload_date
-						? ` · ${new Date(photo.upload_date).toLocaleDateString()}`
+						? ` · ${new Date(photo.upload_date).toLocaleString('en-US', {
+								year: 'numeric',
+								month: '2-digit',
+								day: '2-digit',
+								hour: '2-digit',
+								minute: '2-digit',
+								second: '2-digit',
+								hour12: false
+							})}`
 						: '';
 					descriptionHtml += `<p class="glightbox-uploader-info">Shared by <span class="glightbox-uploader-name">${photo.uploader_name}</span>${dateStr}</p>`;
 				}
@@ -176,6 +185,20 @@
 			lightboxInstance.on('close', () => {
 				onClose();
 			});
+
+			// Listen to slide change events to update hash
+			if (onSlideChange) {
+				lightboxInstance.on('slide_changed', (data: { index: number }) => {
+					const slideIndex = data?.index ?? currentIndex;
+					if (slideIndex >= 0 && slideIndex < photos.length) {
+						const photo = photos[slideIndex];
+						const photoId = typeof photo.id === 'number' ? photo.id : parseInt(String(photo.id), 10);
+						if (!isNaN(photoId)) {
+							onSlideChange(photoId);
+						}
+					}
+				});
+			}
 		}
 	}
 
