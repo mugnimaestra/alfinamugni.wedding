@@ -135,8 +135,8 @@
 					d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
 				/>
 			</svg>
-			<h3 class="mt-4 font-serif text-xl font-semibold text-wedding-text-primary">No photos yet</h3>
-			<p class="mt-2 text-wedding-text-muted">
+			<h3 class="mt-4 font-serif text-2xl font-semibold text-wedding-text-primary">No photos yet</h3>
+			<p class="mt-2 text-lg text-wedding-text-muted">
 				Be the first to share a moment from our special day!
 			</p>
 		</div>
@@ -210,7 +210,7 @@
 
 	{#if loading}
 		<div class="flex justify-center py-8">
-			<div class="flex items-center gap-2 text-wedding-text-muted">
+			<div class="flex items-center gap-2 text-base text-wedding-text-muted">
 				<svg class="h-6 w-6 animate-spin" fill="none" viewBox="0 0 24 24">
 					<circle
 						class="opacity-25"
@@ -232,7 +232,7 @@
 	{/if}
 
 	{#if !hasMore && photos.length > 0}
-		<div class="py-8 text-center text-sm text-wedding-text-muted">
+		<div class="py-8 text-center text-base text-wedding-text-muted">
 			You've reached the end of the gallery
 		</div>
 	{/if}

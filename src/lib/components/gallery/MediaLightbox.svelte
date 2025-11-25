@@ -434,7 +434,7 @@
 	}
 
 	:global(.glightbox-uploader-info) {
-		font-size: 0.875rem;
+		font-size: 1rem;
 		color: var(--wedding-text-muted);
 		margin-top: 0.5rem;
 	}
@@ -454,13 +454,13 @@
 	}
 
 	:global(.glightbox-wedding-theme .gslide:has(.plyr) .glightbox-desc-text) {
-		font-size: 0.75rem !important;
+		font-size: 0.875rem !important;
 		margin-bottom: 0.25rem !important;
 		line-height: 1.4 !important;
 	}
 
 	:global(.glightbox-wedding-theme .gslide:has(.plyr) .glightbox-uploader-info) {
-		font-size: 0.7rem !important;
+		font-size: 0.8rem !important;
 		margin-top: 0.25rem !important;
 	}
 
@@ -728,13 +728,13 @@
 		}
 
 		:global(.glightbox-wedding-theme .gslide:has(.plyr) .glightbox-desc-text) {
-			font-size: 0.7rem !important;
+			font-size: 0.8rem !important;
 			margin-bottom: 0.2rem !important;
 			line-height: 1.35 !important;
 		}
 
 		:global(.glightbox-wedding-theme .gslide:has(.plyr) .glightbox-uploader-info) {
-			font-size: 0.65rem !important;
+			font-size: 0.75rem !important;
 			margin-top: 0.2rem !important;
 		}
 

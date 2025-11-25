@@ -80,7 +80,7 @@
 			<div class="px-6 pb-6 pt-2">
 				<!-- Header -->
 				<div class="mb-4 flex items-center justify-between">
-					<h3 class="font-serif text-xl font-semibold text-wedding-text-primary">
+					<h3 class="font-serif text-2xl font-semibold text-wedding-text-primary">
 						Pilih Sumber Media
 					</h3>
 					<button
@@ -107,8 +107,8 @@
 							<Camera class="h-6 w-6" />
 						</div>
 						<div class="flex-1">
-							<div class="font-medium text-wedding-text-primary">Ambil Foto</div>
-							<div class="text-sm text-wedding-text-muted">
+							<div class="text-lg font-medium text-wedding-text-primary">Ambil Foto</div>
+							<div class="text-base text-wedding-text-muted">
 								Gunakan kamera untuk mengambil foto baru
 							</div>
 						</div>
@@ -126,8 +126,8 @@
 							<FolderOpen class="h-6 w-6" />
 						</div>
 						<div class="flex-1">
-							<div class="font-medium text-wedding-text-primary">Pilih dari Galeri</div>
-							<div class="text-sm text-wedding-text-muted">
+							<div class="text-lg font-medium text-wedding-text-primary">Pilih dari Galeri</div>
+							<div class="text-base text-wedding-text-muted">
 								Pilih foto atau video dari galeri Anda
 							</div>
 						</div>

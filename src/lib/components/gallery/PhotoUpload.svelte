@@ -355,12 +355,12 @@
 									d="M12 4v16m8-8H4"
 								/>
 							</svg>
-							<span class="mt-2 text-sm font-medium text-wedding-text-primary"
-								>Upload Photos or Videos</span
-							>
-							<span class="mt-1 text-xs text-wedding-text-muted"
-								>Tap to select from gallery or camera</span
-							>
+						<span class="mt-2 text-base font-medium text-wedding-text-primary"
+							>Upload Photos or Videos</span
+						>
+						<span class="mt-1 text-sm text-wedding-text-muted"
+							>Tap to select from gallery or camera</span
+						>
 						</button>
 					</div>
 
@@ -397,7 +397,7 @@
 									</button>
 									<!-- File size overlay -->
 									<div
-										class="absolute bottom-1 left-1 z-10 rounded bg-black/70 px-1.5 py-0.5 text-xs text-white backdrop-blur-sm"
+										class="absolute bottom-1 left-1 z-10 rounded bg-black/70 px-1.5 py-0.5 text-sm text-white backdrop-blur-sm"
 									>
 										<div class="flex items-center gap-1">
 											{#if isVideoFile(files[i])}
@@ -438,85 +438,85 @@
 								</div>
 							{/each}
 						</div>
-						<!-- Total file size summary -->
-						<div class="mt-2 rounded-lg border border-wedding-beige bg-wedding-cream/50 px-3 py-2">
-							<div class="flex items-center justify-between text-sm">
-								<span class="font-medium text-wedding-text-primary">
-									Total: {formatFileSize(totalFileSize)}
-								</span>
-								<span class="text-wedding-text-muted">
-									{files.length} {files.length === 1 ? 'file' : 'files'}
-								</span>
-							</div>
+					<!-- Total file size summary -->
+					<div class="mt-2 rounded-lg border border-wedding-beige bg-wedding-cream/50 px-3 py-2">
+						<div class="flex items-center justify-between text-base">
+							<span class="font-medium text-wedding-text-primary">
+								Total: {formatFileSize(totalFileSize)}
+							</span>
+							<span class="text-wedding-text-muted">
+								{files.length} {files.length === 1 ? 'file' : 'files'}
+							</span>
 						</div>
+					</div>
 					{/if}
 
-					<div>
-						<label
-							for="uploaderName"
-							class="mb-1 block text-sm font-medium text-wedding-text-primary"
-						>
-							Your Name (optional)
-						</label>
-						<input
-							type="text"
-							id="uploaderName"
-							bind:value={uploaderName}
-							placeholder={namePlaceholder}
-							onfocus={handleNameFocus}
-							class="w-full rounded-lg border border-wedding-beige px-3 py-2 text-sm focus:border-wedding-sage focus:outline-none focus:ring-2 focus:ring-wedding-sage/20"
-						/>
-					</div>
-
-					<div>
-						<label
-							for="description"
-							class="mb-1 block text-sm font-medium text-wedding-text-primary"
-						>
-							Caption (optional)
-						</label>
-						<textarea
-							id="description"
-							bind:value={description}
-							rows="2"
-							placeholder="Add a caption for your photos..."
-							class="w-full rounded-lg border border-wedding-beige px-3 py-2 text-sm focus:border-wedding-sage focus:outline-none focus:ring-2 focus:ring-wedding-sage/20"
-						/>
-					</div>
-
-					{#if error}
-						<div class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-							{error}
-						</div>
-					{/if}
+				<div>
+					<label
+						for="uploaderName"
+						class="mb-1 block text-base font-medium text-wedding-text-primary"
+					>
+						Your Name (optional)
+					</label>
+					<input
+						type="text"
+						id="uploaderName"
+						bind:value={uploaderName}
+						placeholder={namePlaceholder}
+						onfocus={handleNameFocus}
+						class="w-full rounded-lg border border-wedding-beige px-3 py-2 text-base focus:border-wedding-sage focus:outline-none focus:ring-2 focus:ring-wedding-sage/20"
+					/>
 				</div>
-			</div>
 
-			<!-- Sticky Footer with Buttons -->
-			<div class="sticky bottom-0 border-t border-wedding-beige bg-white p-6">
-				{#if files.length > 0}
-					<div class="mb-3 text-center text-xs text-wedding-text-muted">
-						Uploading {formatFileSize(totalFileSize)} may take a while depending on your connection
+				<div>
+					<label
+						for="description"
+						class="mb-1 block text-base font-medium text-wedding-text-primary"
+					>
+						Caption (optional)
+					</label>
+					<textarea
+						id="description"
+						bind:value={description}
+						rows="2"
+						placeholder="Add a caption for your photos..."
+						class="w-full rounded-lg border border-wedding-beige px-3 py-2 text-base focus:border-wedding-sage focus:outline-none focus:ring-2 focus:ring-wedding-sage/20"
+					/>
+				</div>
+
+				{#if error}
+					<div class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-base text-red-800">
+						{error}
 					</div>
 				{/if}
-				<div class="flex gap-x-3">
-					<button
-						type="button"
-						onclick={handleClose}
-						class="flex-1 rounded-lg border-2 border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-					>
-						Cancel
-					</button>
-					<button
-						type="button"
-						onclick={handleConfirmUpload}
-						disabled={!isActive || files.length === 0}
-						class="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:border-2 disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400 enabled:bg-blue-600 enabled:text-white enabled:shadow-md enabled:hover:bg-blue-700"
-					>
-						Upload {files.length > 0 ? `(${files.length})` : ''}
-					</button>
 				</div>
 			</div>
+
+		<!-- Sticky Footer with Buttons -->
+		<div class="sticky bottom-0 border-t border-wedding-beige bg-white p-6">
+			{#if files.length > 0}
+				<div class="mb-3 text-center text-sm text-wedding-text-muted">
+					Uploading {formatFileSize(totalFileSize)} may take a while depending on your connection
+				</div>
+			{/if}
+			<div class="flex gap-x-3">
+				<button
+					type="button"
+					onclick={handleClose}
+					class="flex-1 rounded-lg border-2 border-gray-300 bg-white px-4 py-2.5 text-base font-medium text-gray-700 transition hover:bg-gray-50"
+				>
+					Cancel
+				</button>
+				<button
+					type="button"
+					onclick={handleConfirmUpload}
+					disabled={!isActive || files.length === 0}
+					class="flex-1 rounded-lg px-4 py-2.5 text-base font-medium transition disabled:cursor-not-allowed disabled:border-2 disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400 enabled:bg-blue-600 enabled:text-white enabled:shadow-md enabled:hover:bg-blue-700"
+				>
+					Upload {files.length > 0 ? `(${files.length})` : ''}
+				</button>
+			</div>
+		</div>
 		</div>
 	</div>
 {/if}

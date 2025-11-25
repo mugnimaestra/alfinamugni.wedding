@@ -55,18 +55,18 @@
 							d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
 						/>
 					</svg>
-					<h3 class="font-serif text-lg font-semibold text-wedding-text-primary">
+					<h3 class="font-serif text-xl font-semibold text-wedding-text-primary">
 						Uploading Media
 					</h3>
 				</div>
-				<span class="text-sm font-medium text-wedding-text-secondary">
+				<span class="text-base font-medium text-wedding-text-secondary">
 					{Math.round(overallProgress)}%
 				</span>
 			</div>
 
 			<!-- File Info -->
 			<div class="mb-3">
-				<div class="mb-1 flex items-center justify-between text-sm">
+				<div class="mb-1 flex items-center justify-between text-base">
 					<span class="text-wedding-text-secondary">
 						File {currentFileIndex + 1} of {totalFiles}
 					</span>
@@ -74,7 +74,7 @@
 						{Math.round(currentFileProgress)}%
 					</span>
 				</div>
-				<p class="truncate text-sm font-medium text-wedding-text-primary" title={currentFileName}>
+				<p class="truncate text-base font-medium text-wedding-text-primary" title={currentFileName}>
 					{formatFileName(currentFileName)}
 				</p>
 			</div>

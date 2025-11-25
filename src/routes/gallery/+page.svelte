@@ -734,7 +734,7 @@
 	<div class="mx-auto max-w-[1920px]">
 		<div class="mb-12 text-center">
 			<h1 class="font-serif text-4xl font-light text-wedding-brown md:text-6xl">Wedding Gallery</h1>
-			<p class="mt-4 text-lg text-wedding-text-muted md:text-xl">
+			<p class="mt-4 text-xl text-wedding-text-muted md:text-2xl">
 				Scroll through beautiful moments • Tap to upload yours
 			</p>
 		</div>
