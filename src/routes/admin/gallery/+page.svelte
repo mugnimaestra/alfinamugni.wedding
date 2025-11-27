@@ -41,6 +41,36 @@
 		allPhotos = data.photos || [];
 	});
 
+	// Auto-refresh every 10 seconds with smart pausing
+	$effect(() => {
+		let intervalId: ReturnType<typeof setInterval> | null = null;
+		let isPageVisible = document.visibilityState === 'visible';
+
+		// Handle page visibility changes
+		function handleVisibilityChange() {
+			isPageVisible = document.visibilityState === 'visible';
+		}
+
+		// Set up visibility change listener
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+
+		// Set up auto-refresh interval
+		intervalId = setInterval(() => {
+			// Only refresh if page is visible and not already refreshing
+			if (isPageVisible && !isRefreshing) {
+				handleRefresh();
+			}
+		}, 10000); // 10 seconds
+
+		// Cleanup function
+		return () => {
+			if (intervalId) {
+				clearInterval(intervalId);
+			}
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
+		};
+	});
+
 	async function handleRefresh() {
 		isRefreshing = true;
 		
