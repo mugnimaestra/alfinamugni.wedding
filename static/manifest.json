@@ -1,9 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/web-manifest-combined.json",
-  "name": "Undangan Pernikahan Alfina & Mugni",
-  "short_name": "A&M Wedding",
-  "description": "Bergabunglah bersama kami dalam perayaan cinta Alfina dan Mugni yang memulai perjalanan baru mereka. 29 November 2025 di Jakarta, Indonesia.",
-  "start_url": "/",
+  "name": "Gallery Management - A&M Wedding",
+  "short_name": "Gallery Admin",
+  "description": "Admin gallery management for Alfina & Mugni wedding photo submissions",
+  "start_url": "/admin/gallery",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#B3CBE4",
