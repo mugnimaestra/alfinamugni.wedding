@@ -26,25 +26,25 @@
 		filename: string;
 		original_name: string;
 		uploader_name: string;
-		description: string;
+		description: string | null;
 		upload_date: string;
 		r2_key: string;
 		content_type?: string;
-		media_type?: string;
+		media_type?: 'image' | 'video';
 		thumbnail_url?: string;
 		url: string;
 		thumbnail: string;
 	}
 
 	interface TransformedPhoto {
-		id: number;
+		id: string | number;
 		url: string;
-		thumbnail: string;
-		description: string;
-		uploader_name: string;
-		upload_date: string;
-		content_type: string;
-		media_type: string;
+		thumbnail?: string;
+		description?: string;
+		uploader_name?: string;
+		upload_date?: string;
+		content_type?: string;
+		media_type?: 'image' | 'video';
 	}
 
 	interface UploadPayload {
@@ -78,7 +78,7 @@
 	let totalFiles = $state(0);
 
 	const transformedPhotos = $derived(
-		data.photos.map((p: Photo): TransformedPhoto => ({
+		data.photos.map((p): TransformedPhoto => ({
 			id: p.id,
 			url: p.url,
 			thumbnail: p.thumbnail,
@@ -86,7 +86,7 @@
 			uploader_name: p.uploader_name || getRandomPlaceholder(),
 			upload_date: p.upload_date,
 			content_type: p.content_type || 'image/jpeg',
-			media_type: p.media_type || (p.content_type?.startsWith('video/') ? 'video' : 'image'),
+			media_type: (p.media_type || (p.content_type?.startsWith('video/') ? 'video' : 'image')) as 'image' | 'video',
 		}))
 	);
 
@@ -96,7 +96,7 @@
 			selectedPhotoIndex = index;
 			showPhotoModal = true;
 			// Set hash when opening modal (adds to history for back button)
-			openMediaModal(photo.id);
+			openMediaModal(Number(photo.id));
 		}
 	}
 

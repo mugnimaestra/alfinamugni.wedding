@@ -326,3 +326,9 @@ h6 {
 		display: none !important;
 	}
 }
+
+/* Pull-to-refresh support for PWA */
+.pull-to-refresh-page {
+	overscroll-behavior-y: contain;
+	-webkit-overflow-scrolling: touch;
+}

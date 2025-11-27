@@ -43,7 +43,7 @@ export const load: PageServerLoad = async ({ platform }) => {
 				// Construct full media URL: prefer public_url, fallback to API endpoint
 				const fullUrl = photo.public_url || `/api/photos/${photo.id}`;
 				// Determine media type
-				const mediaType = (photo.media_type === 'video' || photo.content_type?.startsWith('video/'))
+				const mediaType: 'image' | 'video' = (photo.media_type === 'video' || photo.content_type?.startsWith('video/'))
 					? 'video'
 					: 'image';
 				
@@ -62,7 +62,7 @@ export const load: PageServerLoad = async ({ platform }) => {
 								: `/api/photos/${photo.id}`)),
 					url: fullUrl,
 					content_type: photo.content_type || 'image/jpeg',
-					media_type: mediaType
+					media_type: mediaType as 'image' | 'video'
 				};
 			}),
 			r2PublicUrl
